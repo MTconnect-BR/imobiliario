@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { MindMarketMenu } from "@/components/mindmarket-menu";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,7 +22,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={cn("antialiased", inter.variable)}>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        <MindMarketMenu />
+        {children}
+      </body>
     </html>
   );
 }
