@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { MindMarketMenu } from "@/components/mindmarket-menu";
 import { PageTransition } from "@/components/page-transition";
+import { FAQPanel } from "@/components/faq-panel";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body className="font-sans">
         <MindMarketMenu />
         <PageTransition>{children}</PageTransition>
+        <FAQPanel />
       </body>
     </html>
   );

@@ -172,11 +172,23 @@ export function MindMarketMenu() {
         Fale Conosco
       </Link>
 
+      {/* Desktop Footer Links */}
+      <div className="c-menu-desktop_footer_links">
+        <Link href="/termos-de-servico" className="c-menu-desktop_footer_link">
+          Termos de Serviço
+        </Link>
+        <Link href="/politica-de-privacidade" className="c-menu-desktop_footer_link">
+          Política de Privacidade
+        </Link>
+      </div>
+
       {/* Mobile Menu */}
       <div className="c-menu-mobile">
         <div className="c-menu-mobile_bar">
           <div className="c-menu-mobile_logo">
-            <span className="c-menu-mobile_logo_text">Imobiliário</span>
+            <Link href="/" className="c-menu-mobile_logo_text" onClick={closeMenu}>
+              Imobiliário
+            </Link>
           </div>
           <div className="c-menu-mobile_cta">
             <Link
@@ -297,6 +309,22 @@ export function MindMarketMenu() {
               </svg>
             </div>
           </Link>
+          <div className="c-menu-mobile_footer_links">
+            <Link
+              href="/termos-de-servico"
+              className="c-menu-mobile_footer_link"
+              onClick={closeMenu}
+            >
+              Termos de Serviço
+            </Link>
+            <Link
+              href="/politica-de-privacidade"
+              className="c-menu-mobile_footer_link"
+              onClick={closeMenu}
+            >
+              Política de Privacidade
+            </Link>
+          </div>
         </div>
       </div>
     </>

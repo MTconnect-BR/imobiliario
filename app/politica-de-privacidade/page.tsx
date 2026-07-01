@@ -1,16 +1,16 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Termos de Serviço e Política de Privacidade | Imobiliário",
+  title: "Política de Privacidade | Imobiliário",
   description:
-    "Conheça nossos termos de serviço e política de privacidade. Transparência e proteção dos seus dados são nossa prioridade.",
+    "Conheça nossa política de privacidade. Transparência e proteção dos seus dados são nossa prioridade.",
 };
 
-export default function TermosPrivacidade() {
+export default function PoliticaDePrivacidade() {
   return (
     <main className="min-h-screen bg-background">
       <article className="mx-auto max-w-3xl px-6 py-32">
-        <h1 className="text-primary">Termos de Serviço e Política de Privacidade</h1>
+        <h1 className="text-primary">Política de Privacidade</h1>
 
         <div className="mt-12 space-y-8">
           <p className="text-muted-foreground">
@@ -96,14 +96,14 @@ export default function TermosPrivacidade() {
             <ul className="mt-4 space-y-2 text-muted-foreground">
               <li>
                 <strong>Informações do imóvel:</strong> Endereço, características, fotos e
-                documentação doPERTY.
+                documentação do imóvel.
               </li>
               <li>
                 <strong>Dados de contato:</strong> Nome, telefone, e-mail e informações
                 bancárias para repasse de valores.
               </li>
               <li>
-                <strong>Documentação:</strong> escrituras, certidões e outros documentos
+                <strong>Documentação:</strong> Escrituras, certidões e outros documentos
                 necessários para a transação.
               </li>
             </ul>

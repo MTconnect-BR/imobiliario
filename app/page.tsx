@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { FAQPanel } from "@/components/faq-panel";
 import Link from "next/link";
 
 export default function Home() {
@@ -104,14 +103,14 @@ export default function Home() {
       <footer className="px-6 py-12 text-center text-sm text-muted-foreground">
         <p className="mb-2">&copy; 2026 Imobiliário. Todos os direitos reservados.</p>
         <div className="flex items-center justify-center gap-4">
-          <Link href="/termos-e-privacidade" className="underline hover:text-foreground transition-colors">
-            Termos de Serviço e Privacidade
+          <Link href="/termos-de-servico" className="underline hover:text-foreground transition-colors">
+            Termos de Serviço
+          </Link>
+          <Link href="/politica-de-privacidade" className="underline hover:text-foreground transition-colors">
+            Política de Privacidade
           </Link>
         </div>
       </footer>
-
-      {/* FAQ Panel - Fixed at bottom */}
-      <FAQPanel />
     </main>
   );
 }
