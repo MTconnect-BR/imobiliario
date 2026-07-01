@@ -285,6 +285,22 @@ export function MindMarketMenu() {
                 </li>
               ))}
             </ul>
+            <div className="c-menu-mobile_footer_links">
+              <Link
+                href="/termos-de-servico"
+                className="c-menu-mobile_footer_link"
+                onClick={closeMenu}
+              >
+                Termos de Serviço
+              </Link>
+              <Link
+                href="/politica-de-privacidade"
+                className="c-menu-mobile_footer_link"
+                onClick={closeMenu}
+              >
+                Política de Privacidade
+              </Link>
+            </div>
           </div>
           <Link
             href="/contato"
@@ -309,22 +325,6 @@ export function MindMarketMenu() {
               </svg>
             </div>
           </Link>
-          <div className="c-menu-mobile_footer_links">
-            <Link
-              href="/termos-de-servico"
-              className="c-menu-mobile_footer_link"
-              onClick={closeMenu}
-            >
-              Termos de Serviço
-            </Link>
-            <Link
-              href="/politica-de-privacidade"
-              className="c-menu-mobile_footer_link"
-              onClick={closeMenu}
-            >
-              Política de Privacidade
-            </Link>
-          </div>
         </div>
       </div>
     </>
