@@ -70,11 +70,14 @@ export function MindMarketMenu() {
 
   useEffect(() => {
     if (isOpen) {
+      document.documentElement.classList.add("has-menu-mobile-open");
       document.body.style.overflow = "hidden";
     } else {
+      document.documentElement.classList.remove("has-menu-mobile-open");
       document.body.style.overflow = "";
     }
     return () => {
+      document.documentElement.classList.remove("has-menu-mobile-open");
       document.body.style.overflow = "";
     };
   }, [isOpen]);
@@ -158,36 +161,14 @@ export function MindMarketMenu() {
             >
               Fale Conosco
             </Link>
-            <button
-              className="c-menu-desktop_button"
-              onClick={toggleMenu}
-              aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
-            >
-              <span className="c-menu-desktop_button_icon -default">
-                <span className="c-menu-desktop_button_icon_line"></span>
-                <span className="c-menu-desktop_button_icon_line"></span>
-                <span className="c-menu-desktop_button_icon_line"></span>
-              </span>
-              <span className="c-menu-desktop_button_icon -close">
-                <span className="c-menu-desktop_button_icon_line"></span>
-                <span className="c-menu-desktop_button_icon_line"></span>
-              </span>
-            </button>
           </div>
         </div>
       </nav>
 
       {/* Mobile Menu Overlay */}
-      <div className={`c-menu-mobile ${isOpen ? "-open" : ""}`}>
+      <div className="c-menu-mobile">
         <div className="c-menu-mobile_bar">
           <div className="c-menu-mobile_cta">
-            <Link
-              href="/contato"
-              className="c-menu-mobile_contact"
-              onClick={closeMenu}
-            >
-              Fale Conosco
-            </Link>
             <button
               className="c-menu-mobile_burger"
               onClick={toggleMenu}
@@ -208,16 +189,20 @@ export function MindMarketMenu() {
         <div className="c-menu-mobile_nav">
           <div className="c-menu-mobile_nav_inner">
             <ul className="c-menu-mobile_list">
-              {menuItems.map((item) => (
-                <li key={item.label} className="c-menu-mobile_item">
+              {menuItems.map((item, index) => (
+                <li
+                  key={item.label}
+                  className="c-menu-mobile_list_item"
+                  style={{ "--index": index } as React.CSSProperties}
+                >
                   {item.children ? (
                     <>
                       <button
-                        className="c-menu-mobile_link"
+                        className="c-menu-mobile_accordion_button"
                         onClick={() => toggleSubmenu(item.label)}
                         aria-expanded={expandedSubmenu === item.label}
                       >
-                        <span className="c-menu-mobile_link_label">
+                        <span className="c-menu-mobile_accordion_label">
                           {item.label}
                         </span>
                         <svg
@@ -260,10 +245,10 @@ export function MindMarketMenu() {
                   ) : (
                     <Link
                       href={item.href || "#"}
-                      className="c-menu-mobile_link"
+                      className="c-menu-mobile_nav_link"
                       onClick={closeMenu}
                     >
-                      <span className="c-menu-mobile_link_label">
+                      <span className="c-menu-mobile_nav_link_label">
                         {item.label}
                       </span>
                     </Link>
@@ -271,6 +256,29 @@ export function MindMarketMenu() {
                 </li>
               ))}
             </ul>
+            <div className="c-menu-mobile_nav_contact">
+              <div className="c-menu-mobile_nav_contact_icon">
+                <svg
+                  width="48"
+                  height="48"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h38M5 12l19 19M43 12l-19 19" />
+                </svg>
+              </div>
+              <Link
+                href="/contato"
+                className="c-menu-mobile_nav_contact_label"
+                onClick={closeMenu}
+              >
+                Fale Conosco
+              </Link>
+            </div>
             <div className="c-menu-mobile_footer">
               <ul className="c-menu-mobile_footer_list">
                 {footerLinks.map((link) => (
