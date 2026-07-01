@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { FAQPanel } from "@/components/faq-panel";
 
 export default function Home() {
   return (
@@ -102,6 +103,9 @@ export default function Home() {
       <footer className="px-6 py-12 text-center text-sm text-muted-foreground">
         <p>&copy; 2026 Imobiliario. Todos os direitos reservados.</p>
       </footer>
+
+      {/* FAQ Panel - Fixed at bottom */}
+      <FAQPanel />
     </main>
   );
 }
