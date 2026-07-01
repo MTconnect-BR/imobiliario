@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { FAQPanel } from "@/components/faq-panel";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -101,7 +102,12 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="px-6 py-12 text-center text-sm text-muted-foreground">
-        <p>&copy; 2026 Imobiliario. Todos os direitos reservados.</p>
+        <p className="mb-2">&copy; 2026 Imobiliário. Todos os direitos reservados.</p>
+        <div className="flex items-center justify-center gap-4">
+          <Link href="/termos-e-privacidade" className="underline hover:text-foreground transition-colors">
+            Termos de Serviço e Privacidade
+          </Link>
+        </div>
       </footer>
 
       {/* FAQ Panel - Fixed at bottom */}

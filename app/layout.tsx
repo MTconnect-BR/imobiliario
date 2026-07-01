@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { MindMarketMenu } from "@/components/mindmarket-menu";
+import { PageTransition } from "@/components/page-transition";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,7 +25,7 @@ export default function RootLayout({
     <html lang="pt-BR" className={cn("antialiased", inter.variable)}>
       <body className="font-sans">
         <MindMarketMenu />
-        {children}
+        <PageTransition>{children}</PageTransition>
       </body>
     </html>
   );
