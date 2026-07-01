@@ -254,6 +254,7 @@
     align-items: center;
     height: 100%;
     display: inline-flex;
+    position: relative;
 }
 
 .c-menu-desktop_item:hover {
