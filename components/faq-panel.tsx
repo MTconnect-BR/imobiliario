@@ -146,8 +146,8 @@ export function FAQPanel() {
         </span>
         <span className="c-faq-panel_toggle_icon">
           <svg
-            width="1.67em"
-            height="1em"
+            width="12"
+            height="8"
             viewBox="0 0 10 6"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"

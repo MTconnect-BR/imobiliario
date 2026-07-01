@@ -569,8 +569,8 @@ html.has-menu-mobile-open {
 .c-menu-mobile_burger_icon.-default {
     flex-direction: column;
     justify-content: space-between;
-    width: 17px;
-    height: 7px;
+    width: 16px;
+    height: 12px;
     display: flex;
 }
 
@@ -942,8 +942,8 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
 .c-faq-panel_toggle_icon {
     z-index: 2;
     background-color: var(--color-yellow);
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     transition: transform var(--faq-transition-duration) var(--ease-bounce);
     border-radius: 100%;
     justify-content: center;
@@ -952,6 +952,7 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
     flex-shrink: 0;
     position: relative;
     color: var(--color-charcoal);
+    transform: rotate(0deg);
 }
 
 .c-faq-panel.is-open .c-faq-panel_toggle_icon,
