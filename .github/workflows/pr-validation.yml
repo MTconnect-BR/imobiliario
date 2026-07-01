@@ -5,6 +5,10 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -36,13 +40,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Check for lockfile changes
-        run: |
-          if [ -f "package-lock.json" ]; then
-            echo "Lockfile exists - checking for changes..."
-            git diff --name-only HEAD~1 HEAD | grep -q "package-lock.json" && echo "⚠️ Lockfile changed" || echo "✅ Lockfile unchanged"
-          fi
-
       - name: Verify all components exist
         run: |
           echo "Checking shadcn components..."
@@ -50,8 +47,7 @@ jobs:
           EXPECTED_COUNT=60
           ACTUAL_COUNT=$(ls -1 "$COMPONENTS_DIR"/*.tsx 2>/dev/null | wc -l)
           if [ "$ACTUAL_COUNT" -lt "$EXPECTED_COUNT" ]; then
-            echo "⚠️ Expected at least $EXPECTED_COUNT components, found $ACTUAL_COUNT"
-            ls "$COMPONENTS_DIR"/*.tsx
+            echo "Warning: Expected at least $EXPECTED_COUNT components, found $ACTUAL_COUNT"
           else
-            echo "✅ Found $ACTUAL_COUNT components"
+            echo "Found $ACTUAL_COUNT components"
           fi

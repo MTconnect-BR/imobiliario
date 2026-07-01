@@ -4,6 +4,11 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -55,7 +60,7 @@ jobs:
           script: |
             const url = '${{ steps.deploy.outputs.url }}';
             const body = `🚀 **Preview deployed!**\n\n🔗 [Open preview](${url})`;
-            
+
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
