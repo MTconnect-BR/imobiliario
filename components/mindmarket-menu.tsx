@@ -44,12 +44,6 @@ const menuItems: MenuItem[] = [
   { label: "Contato", href: "/contato" },
 ];
 
-const footerLinks = [
-  { label: "Termos de Uso", href: "/termos" },
-  { label: "Política de Privacidade", href: "/privacidade" },
-  { label: "Login", href: "/login" },
-];
-
 export function MindMarketMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>(null);
@@ -154,21 +148,44 @@ export function MindMarketMenu() {
             </ul>
           </div>
           <div className="c-menu-desktop_cta">
-            <Link
-              href="/contato"
-              className="c-menu-desktop_contact"
-              onClick={closeMenu}
+            <button
+              className="c-menu-desktop_button"
+              onClick={toggleMenu}
+              aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
             >
-              Fale Conosco
-            </Link>
+              <span className="c-menu-desktop_button_icon -default">
+                <span className="c-menu-desktop_button_icon_line"></span>
+                <span className="c-menu-desktop_button_icon_line"></span>
+                <span className="c-menu-desktop_button_icon_line"></span>
+              </span>
+              <span className="c-menu-desktop_button_icon -close">
+                <span className="c-menu-desktop_button_icon_line"></span>
+                <span className="c-menu-desktop_button_icon_line"></span>
+              </span>
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
+      {/* Desktop Contact Box - Separado */}
+      <Link href="/contato" className="c-menu-desktop_contact_box">
+        Fale Conosco
+      </Link>
+
+      {/* Mobile Menu */}
       <div className="c-menu-mobile">
         <div className="c-menu-mobile_bar">
+          <div className="c-menu-mobile_logo">
+            <span className="c-menu-mobile_logo_text">Imobiliário</span>
+          </div>
           <div className="c-menu-mobile_cta">
+            <Link
+              href="/contato"
+              className="c-menu-mobile_contact"
+              onClick={closeMenu}
+            >
+              Fale Conosco
+            </Link>
             <button
               className="c-menu-mobile_burger"
               onClick={toggleMenu}
@@ -256,72 +273,30 @@ export function MindMarketMenu() {
                 </li>
               ))}
             </ul>
-            <div className="c-menu-mobile_nav_contact">
-              <div className="c-menu-mobile_nav_contact_icon">
-                <svg
-                  width="48"
-                  height="48"
-                  viewBox="0 0 48 48"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h38M5 12l19 19M43 12l-19 19" />
-                </svg>
-              </div>
-              <Link
-                href="/contato"
-                className="c-menu-mobile_nav_contact_label"
-                onClick={closeMenu}
-              >
-                Fale Conosco
-              </Link>
-            </div>
-            <div className="c-menu-mobile_footer">
-              <ul className="c-menu-mobile_footer_list">
-                {footerLinks.map((link) => (
-                  <li key={link.label} className="c-menu-mobile_footer_item">
-                    <Link
-                      href={link.href}
-                      className="c-menu-mobile_footer_link"
-                      onClick={closeMenu}
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <div className="c-menu-mobile_footer_bottom">
-                <p className="c-menu-mobile_footer_copyright">
-                  © 2026 Imobiliário
-                </p>
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="c-menu-mobile_footer_social"
-                  aria-label="Instagram"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-                  </svg>
-                </a>
-              </div>
-            </div>
           </div>
+          <Link
+            href="/contato"
+            className="c-menu-mobile_nav_contact"
+            onClick={closeMenu}
+          >
+            <span className="c-menu-mobile_nav_contact_label">
+              Fale Conosco
+            </span>
+            <div className="c-menu-mobile_nav_contact_icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
         </div>
       </div>
     </>
