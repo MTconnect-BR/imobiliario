@@ -13,6 +13,11 @@ const FAQPanel = dynamic(
   { ssr: false }
 );
 
+const WhatsAppButton = dynamic(
+  () => import("@/components/whatsapp-button").then((m) => m.WhatsAppButton),
+  { ssr: false }
+);
+
 const PageTransition = dynamic(
   () => import("@/components/page-transition").then((m) => m.PageTransition),
   { ssr: false }
@@ -31,6 +36,7 @@ export function ChromeWrapper({ children }: { children: React.ReactNode }) {
       {!hideChrome && <MindMarketMenu />}
       {hideChrome ? children : <PageTransition>{children}</PageTransition>}
       {!hideChrome && <FAQPanel />}
+      {!hideChrome && <WhatsAppButton />}
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface FAQItem {
   question: string;
@@ -131,13 +131,32 @@ export function FAQPanel() {
     );
   };
 
+  useEffect(() => {
+    const handlePanelToggle = (e: Event) => {
+      const source = (e as CustomEvent).detail.source;
+      if (source !== "faq") {
+        setIsOpen(false);
+        setActiveCategory(null);
+        setExpandedItems([]);
+      }
+    };
+    window.addEventListener("panel:toggle", handlePanelToggle);
+    return () => window.removeEventListener("panel:toggle", handlePanelToggle);
+  }, []);
+
   return (
     <div className={`c-faq-panel ${isOpen ? "is-open" : ""}`}>
       {/* Toggle Button */}
       <button
         type="button"
         className="c-faq-panel_toggle"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          const next = !isOpen;
+          setIsOpen(next);
+          if (next) {
+            window.dispatchEvent(new CustomEvent("panel:toggle", { detail: { source: "faq" } }));
+          }
+        }}
         aria-expanded={isOpen}
         aria-controls="faq-panel"
       >

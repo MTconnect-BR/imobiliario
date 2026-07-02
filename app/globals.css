@@ -1196,6 +1196,47 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
 }
 
 /* ========================================
+   WhatsApp Button
+   ======================================== */
+.c-whatsapp-button {
+    position: fixed;
+    bottom: 80px;
+    right: 16px;
+    z-index: 95;
+    width: 56px;
+    height: 56px;
+    border-radius: 100%;
+    background-color: #25d366;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+    transition: transform var(--transition-duration-fast) var(--ease-bounce),
+                box-shadow var(--transition-duration-fast) var(--ease);
+}
+
+.c-whatsapp-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+}
+
+@media (min-width: 1000px) {
+    .c-whatsapp-button {
+        bottom: 80px;
+        right: 24px;
+    }
+}
+
+/* Hide when mobile menu is open */
+html.has-menu-mobile-open .c-whatsapp-button {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-duration-fast) var(--ease);
+}
+
+/* ========================================
    Page Transitions (MindMarket style)
    ======================================== */
 .page-transition-wrapper {

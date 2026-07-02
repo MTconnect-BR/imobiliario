@@ -50,7 +50,12 @@ export function MindMarketMenu() {
   const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>(null);
 
   const toggleMenu = useCallback(() => {
-    setIsOpen((prev) => !prev);
+    setIsOpen((prev) => {
+      if (!prev) {
+        window.dispatchEvent(new CustomEvent("panel:toggle", { detail: { source: "menu" } }));
+      }
+      return !prev;
+    });
     setExpandedSubmenu(null);
   }, []);
 
@@ -76,6 +81,18 @@ export function MindMarketMenu() {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    const handlePanelToggle = (e: Event) => {
+      const source = (e as CustomEvent).detail.source;
+      if (source !== "menu") {
+        setIsOpen(false);
+        setExpandedSubmenu(null);
+      }
+    };
+    window.addEventListener("panel:toggle", handlePanelToggle);
+    return () => window.removeEventListener("panel:toggle", handlePanelToggle);
+  }, []);
 
   return (
     <>
