@@ -185,6 +185,7 @@ export default function PropertyDetailPage() {
             {/* Back button */}
             <Link
               href="/imoveis"
+              aria-label="Voltar para imóveis"
               className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-charcoal transition-all duration-[0.4s] hover:bg-white hover:scale-[1.05]"
             >
               <ArrowLeft className="h-5 w-5" />

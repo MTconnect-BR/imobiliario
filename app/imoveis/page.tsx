@@ -133,6 +133,7 @@ export default function ImoveisPage() {
               <input
                 type="text"
                 placeholder="Buscar por título, endereço, bairro..."
+                aria-label="Buscar imóveis"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-10 w-full rounded-[10px] border border-border bg-card pl-10 pr-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s]"
@@ -140,11 +141,12 @@ export default function ImoveisPage() {
             </div>
 
             {/* Type filter */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo">
               {typeFilters.map((filter) => (
                 <button
                   key={filter.value}
                   onClick={() => setSelectedType(filter.value)}
+                  aria-pressed={selectedType === filter.value}
                   className={`rounded-[10px] px-4 py-2 text-sm font-medium transition-all duration-[0.4s] ${
                     selectedType === filter.value
                       ? "bg-foreground text-background"
@@ -160,6 +162,7 @@ export default function ImoveisPage() {
             <select
               value={selectedPrice}
               onChange={(e) => setSelectedPrice(e.target.value)}
+              aria-label="Filtrar por faixa de preço"
               className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
             >
               {priceRanges.map((range) => (
@@ -185,9 +188,9 @@ export default function ImoveisPage() {
             /* Empty State */
             <div className="flex flex-col items-center justify-center py-20">
               <Building2 className="mb-4 h-16 w-16 text-muted-foreground/30" />
-              <h3 className="text-xl font-medium tracking-[-0.06em]">
+              <h2 className="text-xl font-medium tracking-[-0.06em]">
                 Nenhum imóvel encontrado
-              </h3>
+              </h2>
               <p className="mt-2 text-center text-muted-foreground">
                 {hasFilters
                   ? "Tente ajustar os filtros ou limpar a busca."

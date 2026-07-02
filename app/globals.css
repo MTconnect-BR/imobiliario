@@ -1201,7 +1201,7 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
    Page Transitions (MindMarket style)
    ======================================== */
 .page-transition-wrapper {
-    will-change: transform, opacity;
+    /* will-change removed for performance — GPU layer promotion is handled by framer-motion */
 }
 
 /* Reduce motion for users who prefer it */

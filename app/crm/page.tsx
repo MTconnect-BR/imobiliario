@@ -190,9 +190,9 @@ export default function CRMPage() {
         ) : (
           <div className="flex flex-col items-center justify-center rounded-[10px] border border-border bg-card py-20">
             <Building2 className="mb-4 h-12 w-12 text-muted-foreground/50" />
-            <h3 className="text-lg font-medium tracking-[-0.06em]">
+            <h2 className="text-lg font-medium tracking-[-0.06em]">
               Nenhum imóvel cadastrado
-            </h3>
+            </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Comece publicando seu primeiro imóvel.
             </p>

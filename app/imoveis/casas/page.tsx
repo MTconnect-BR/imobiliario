@@ -68,6 +68,7 @@ export default function CasasPage() {
             <input
               type="text"
               placeholder="Buscar por título, endereço, bairro..."
+              aria-label="Buscar casas"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-10 w-full rounded-[10px] border border-border bg-card pl-10 pr-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s]"
@@ -76,6 +77,7 @@ export default function CasasPage() {
           <select
             value={selectedState}
             onChange={(e) => setSelectedState(e.target.value)}
+            aria-label="Filtrar por estado"
             className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
           >
             <option value="all">Todos os estados</option>
@@ -95,9 +97,9 @@ export default function CasasPage() {
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Home className="mb-4 h-16 w-16 text-muted-foreground/30" />
-              <h3 className="text-xl font-medium tracking-[-0.06em]">
+              <h2 className="text-xl font-medium tracking-[-0.06em]">
                 Nenhuma casa encontrada
-              </h3>
+              </h2>
               <p className="mt-2 text-muted-foreground">
                 {searchQuery || selectedState !== "all"
                   ? "Tente ajustar os filtros."
