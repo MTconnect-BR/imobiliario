@@ -63,11 +63,12 @@ async function fillPropertyForm(page: import("@playwright/test").Page, data: typ
   await page.locator("select").first().selectOption(data.type);
   await page.locator("select").nth(1).selectOption(data.status);
 
-  await page.locator('input[type="number"]').first().fill(String(data.price));
-  await page.locator('input[type="number"]').nth(1).fill(String(data.area));
-  await page.locator('input[type="number"]').nth(2).fill(String(data.bedrooms));
-  await page.locator('input[type="number"]').nth(3).fill(String(data.bathrooms));
-  await page.locator('input[type="number"]').nth(4).fill(String(data.parkingSpaces));
+  // Price is type="text" with currency formatting
+  await page.getByPlaceholder("R$ 0,00").fill(String(data.price));
+  await page.locator('input[type="number"]').first().fill(String(data.area));
+  await page.locator('input[type="number"]').nth(1).fill(String(data.bedrooms));
+  await page.locator('input[type="number"]').nth(2).fill(String(data.bathrooms));
+  await page.locator('input[type="number"]').nth(3).fill(String(data.parkingSpaces));
 
   await page.getByPlaceholder("Rua, complemento").first().fill(data.address);
   await page.getByPlaceholder("Nº").fill(data.addressNumber);
@@ -366,11 +367,11 @@ test.describe("CRM — Property in Public Catalog", () => {
     await page.getByPlaceholder("Ex: Apartamento 3 quartos").fill("Casa teste catalogo");
     await page.locator("select").first().selectOption("casa");
     await page.locator("select").nth(1).selectOption("disponivel");
-    await page.locator('input[type="number"]').first().fill("300000");
-    await page.locator('input[type="number"]').nth(1).fill("80");
-    await page.locator('input[type="number"]').nth(2).fill("2");
+    await page.getByPlaceholder("R$ 0,00").fill("300000");
+    await page.locator('input[type="number"]').first().fill("80");
+    await page.locator('input[type="number"]').nth(1).fill("2");
+    await page.locator('input[type="number"]').nth(2).fill("1");
     await page.locator('input[type="number"]').nth(3).fill("1");
-    await page.locator('input[type="number"]').nth(4).fill("1");
     await page.getByPlaceholder("Rua, complemento").first().fill("Rua Teste");
     await page.getByPlaceholder("Bairro").fill("Centro");
     await page.getByPlaceholder("Cidade").fill("Goiania");

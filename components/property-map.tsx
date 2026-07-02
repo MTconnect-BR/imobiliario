@@ -24,6 +24,12 @@ export function PropertyMap({ lat, lng, title, address }: PropertyMapProps) {
 
       if (cancelled || !mapRef.current) return;
 
+      L.Icon.Default.mergeOptions({
+        iconUrl: "/marker-icon.png",
+        iconRetinaUrl: "/marker-icon-2x.png",
+        shadowUrl: "/marker-shadow.png",
+      });
+
       const map = L.map(mapRef.current!, {
         center: [lat, lng],
         zoom: 15,

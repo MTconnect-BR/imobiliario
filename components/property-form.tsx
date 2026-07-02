@@ -156,6 +156,12 @@ export function PropertyForm({
 
       if (cancelled || !mapRef.current || mapInstanceRef.current) return;
 
+      L.Icon.Default.mergeOptions({
+        iconUrl: "/marker-icon.png",
+        iconRetinaUrl: "/marker-icon-2x.png",
+        shadowUrl: "/marker-shadow.png",
+      });
+
       const center: [number, number] = [
         watchedLat ?? -15.7801,
         watchedLng ?? -47.9292,
@@ -457,25 +463,36 @@ export function PropertyForm({
               <FormField
                 control={form.control}
                 name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium">
-                      Preço (R$)
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        className={inputClass}
-                        value={field.value || ""}
-                        onChange={(e) =>
-                          field.onChange(e.target.valueAsNumber || 0)
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const formatted = field.value
+                    ? new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(field.value)
+                    : "";
+                  return (
+                    <FormItem>
+                      <FormLabel className="text-xs font-medium">
+                        Preço (R$)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="R$ 0,00"
+                          className={inputClass}
+                          value={formatted}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/\D/g, "");
+                            const num = raw ? parseInt(raw, 10) : 0;
+                            field.onChange(num);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <FormField
