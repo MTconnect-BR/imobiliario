@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export const metadata = {
   title: "Política de Privacidade | Imobiliário",
   description:
@@ -370,14 +368,6 @@ export default function PoliticaDePrivacidade() {
           </section>
         </div>
 
-        <div className="mt-16 border-t border-border pt-8">
-          <Link
-            href="/"
-            className="text-sm text-muted-foreground transition-colors hover:text-primary"
-          >
-            ← Voltar para a página inicial
-          </Link>
-        </div>
       </article>
     </main>
   );

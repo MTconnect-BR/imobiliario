@@ -142,14 +142,7 @@ export default function ForgotPasswordClient() {
             </Form>
           )}
 
-          <div className="mt-6 text-center">
-            <Link
-              href="/auth/signin"
-              className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-            >
-              ← Voltar para o login
-            </Link>
-          </div>
+
         </CardContent>
       </Card>
     </div>

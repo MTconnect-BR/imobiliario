@@ -75,17 +75,6 @@ export default function ContatoPage() {
         </div>
       </section>
 
-      {/* Back link */}
-      <section className="px-6 pb-16">
-        <div className="mx-auto max-w-6xl">
-          <Link
-            href="/"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            ← Voltar para a página inicial
-          </Link>
-        </div>
-      </section>
     </main>
   );
 }

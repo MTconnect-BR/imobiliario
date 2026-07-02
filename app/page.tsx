@@ -1,6 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
@@ -26,55 +24,66 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="px-6 py-20">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="text-center text-primary">
-            Por que nos escolher?
+      {/* Por que nos escolher — green card section */}
+      <section className="px-6 py-12">
+        <div className="mx-auto max-w-6xl rounded-[10px] border border-border bg-[#8ed462] px-8 py-20 md:px-16">
+          <h2 className="tracking-[-0.06em] text-charcoal">
+            Por que nos <strong>escolher</strong>?
           </h2>
-          <p className="lead mt-4 text-center">
-            Oferecemos a melhor experiencia em busca de imoveis
+          <p className="mt-4 max-w-2xl text-charcoal/80">
+            Construímos nossa plataforma em torno de três pilares: transparência,
+            eficiência e cuidado. Trabalhamos para que cada cliente encontre o
+            imóvel ideal com confiança e segurança.
           </p>
 
-          <div className="mt-16 grid gap-6 md:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <Badge variant="green">Mais Vendido</Badge>
-                <CardTitle>Busca Inteligente</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Encontre imoveis com nossa busca avancada por localizacao,
-                  preco, tamanho e muito mais.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Badge variant="yellow">Popular</Badge>
-                <CardTitle>Visitas Virtuais</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Conheca cada imovel em 360 graus antes de agendar uma visita
-                  presencial.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Badge variant="blue">Novo</Badge>
-                <CardTitle>Financiamento</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Simule seu financiamento e encontre as melhores opcoes de
-                  credito imobiliario.
-                </p>
-              </CardContent>
-            </Card>
+          <div className="mt-12 grid gap-8 md:grid-cols-2">
+            <div>
+              <h3 className="text-lg font-medium tracking-[-0.06em] text-charcoal">
+                Atendimento Personalizado
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
+                Um consultor dedicado acompanha cada etapa da sua busca, da
+                primeira visita ao fechamento. Você nunca é apenas mais um
+                número.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium tracking-[-0.06em] text-charcoal">
+                Conhecimento Local
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
+                Nossa equipe conhece cada bairro, cada mercado e cada
+                oportunidade. Insights regionais que fazem a diferença na sua
+                decisão.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium tracking-[-0.06em] text-charcoal">
+                Melhor Custo-Benefício
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
+                Padrões rigorosos de qualidade em todas as regiões, entregando
+                resultados comparáveis sem custos excessivos.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium tracking-[-0.06em] text-charcoal">
+                Cobertura Nacional
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
+                Com parceiros em todo o Brasil, estamos alinhados com seu
+                horário e disponíveis quando você precisar.
+              </p>
+            </div>
+            <div className="md:col-span-2 md:max-w-md">
+              <h3 className="text-lg font-medium tracking-[-0.06em] text-charcoal">
+                Transparência Total
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
+                Cada imóvel é verificado por nossos especialistas. Documentação,
+                história e condições reais — sem surpresas.
+              </p>
+            </div>
           </div>
         </div>
       </section>
