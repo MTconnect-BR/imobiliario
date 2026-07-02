@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const ALLOWED_ORGS = ["mmdj", "enterprise"];
+const ALLOWED_ORGS = ["MTconnect-BR"];
+const ALLOWED_USERS = ["mmdj04"];
 
 async function exchangeCodeForToken(code: string): Promise<string | null> {
   const clientId = process.env.GITHUB_CLIENT_ID;
@@ -52,7 +53,7 @@ async function checkOrgMembership(
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
-  const redirectBase = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const redirectBase = process.env.NEXT_PUBLIC_APP_URL || "https://imobiliario-nu.vercel.app";
 
   if (!code) {
     return NextResponse.redirect(
@@ -76,9 +77,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Step 3: Check organization membership
-  const isMember = await checkOrgMembership(token, githubUser.login);
-  if (!isMember) {
+  // Step 3: Check authorization — allowed user OR org member
+  const isAllowedUser = ALLOWED_USERS.includes(githubUser.login);
+  const isOrgMember = isAllowedUser
+    ? true
+    : await checkOrgMembership(token, githubUser.login);
+
+  if (!isOrgMember) {
     return NextResponse.redirect(
       new URL(
         `/auth/signin?error=not_member&github_login=${encodeURIComponent(githubUser.login)}`,
