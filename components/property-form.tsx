@@ -141,16 +141,20 @@ export function PropertyForm({
     }
   }, [open, property, form]);
 
-  // Initialize Leaflet map
+  // Initialize Leaflet map — wait for portal DOM via MutationObserver
   useEffect(() => {
-    if (!open || !mapRef.current || mapInstanceRef.current) return;
+    if (!open || mapInstanceRef.current) return;
 
     let cancelled = false;
+    let observer: MutationObserver | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     async function initMap() {
+      if (cancelled || !mapRef.current || mapInstanceRef.current) return;
+
       const L = (await import("leaflet")).default;
 
-      if (cancelled || !mapRef.current) return;
+      if (cancelled || !mapRef.current || mapInstanceRef.current) return;
 
       const center: [number, number] = [
         watchedLat ?? -15.7801,
@@ -189,10 +193,37 @@ export function PropertyForm({
       setMapReady(true);
     }
 
-    initMap();
+    function tryInit() {
+      if (mapRef.current && !mapInstanceRef.current) {
+        initMap();
+      }
+    }
+
+    // Try immediately in case portal is already mounted
+    tryInit();
+
+    // If not yet initialized, watch for portal DOM changes
+    if (!mapInstanceRef.current) {
+      observer = new MutationObserver(() => {
+        tryInit();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      // Also poll as fallback
+      const pollId = setInterval(() => {
+        tryInit();
+        if (mapInstanceRef.current) clearInterval(pollId);
+      }, 100);
+
+      timeoutId = setTimeout(() => {
+        clearInterval(pollId);
+      }, 5000);
+    }
 
     return () => {
       cancelled = true;
+      if (observer) observer.disconnect();
+      if (timeoutId) clearTimeout(timeoutId);
       if (mapInstanceRef.current) {
         (mapInstanceRef.current as { remove: () => void }).remove();
         mapInstanceRef.current = null;
@@ -298,7 +329,23 @@ export function PropertyForm({
       if (data.bairro) form.setValue("neighborhood", data.bairro);
       if (data.localidade) form.setValue("city", data.localidade);
       if (data.uf) form.setValue("state", data.uf);
-      toast.success("Endereço preenchido automaticamente");
+
+      // Geocode with Nominatim via API route (server-side, no CORS issues)
+      const query = `${data.logradouro || ""}, ${data.localidade || ""}, ${data.uf || ""}, Brasil`;
+      try {
+        const geoRes = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`);
+        const geoData = await geoRes.json();
+        if (geoData.length > 0) {
+          const { lat, lon } = geoData[0];
+          form.setValue("lat", Math.round(parseFloat(lat) * 1e6) / 1e6);
+          form.setValue("lng", Math.round(parseFloat(lon) * 1e6) / 1e6);
+          toast.success("Endereço e localização preenchidos automaticamente");
+        } else {
+          toast.success("Endereço preenchido automaticamente");
+        }
+      } catch {
+        toast.success("Endereço preenchido automaticamente");
+      }
     } catch {
       toast.error("Erro ao buscar CEP");
     } finally {

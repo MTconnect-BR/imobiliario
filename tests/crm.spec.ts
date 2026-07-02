@@ -208,7 +208,7 @@ test.describe("CRM — CEP Auto-fill", () => {
     await openForm(page);
   });
 
-  test("should auto-fill address from valid CEP", async ({ page }) => {
+  test("should auto-fill address and coordinates from valid CEP", async ({ page }) => {
     const cepInput = page.getByPlaceholder("00000-000");
     await cepInput.scrollIntoViewIfNeeded();
     await cepInput.fill("01310-100");
@@ -221,6 +221,17 @@ test.describe("CRM — CEP Auto-fill", () => {
 
     const addressInput = page.getByPlaceholder("Rua, complemento").first();
     await expect(addressInput).toHaveValue(/./, { timeout: 15000 });
+
+    // Verify lat/lng are filled via Nominatim geocoding
+    await page.waitForTimeout(5000);
+    const latInput = page.getByPlaceholder("-15.7801").first();
+    const lngInput = page.getByPlaceholder("-47.9292").first();
+    const latVal = await latInput.inputValue();
+    const lngVal = await lngInput.inputValue();
+    expect(Number(latVal)).not.toBeNaN();
+    expect(Number(lngVal)).not.toBeNaN();
+    expect(latVal).not.toBe("");
+    expect(lngVal).not.toBe("");
   });
 
   test("should not fill address for invalid CEP", async ({ page }) => {
