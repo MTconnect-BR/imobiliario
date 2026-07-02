@@ -11,8 +11,8 @@ test.describe("Homepage", () => {
 
   test("should have search panel elements", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("button", { name: "Comprar" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Alugar" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Comprar" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Alugar" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Buscar" })).toBeVisible();
   });
 
