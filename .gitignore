@@ -9,3 +9,7 @@ dist/
 next-env.d.ts
 .vercel
 .env*
+test-results/
+playwright-report/
+blob-report/
+.playwright/
