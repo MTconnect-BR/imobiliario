@@ -46,7 +46,7 @@ function SignInContent() {
   const error = searchParams.get("error");
   const githubStatus = searchParams.get("github");
   const githubLogin = searchParams.get("github_login");
-  const redirect = searchParams.get("redirect") || "/crm";
+  const redirect = searchParams.get("redirect") || sessionStorage.getItem("oauth_redirect") || "/crm";
 
   const handleGithubCallback = useCallback(() => {
     if (githubStatus !== "success") return;
@@ -63,6 +63,7 @@ function SignInContent() {
       deleteCookie("github_user");
 
       if (result.success) {
+        sessionStorage.removeItem("oauth_redirect");
         toast.success("Login via GitHub realizado com sucesso!");
         router.push(redirect);
       } else {
@@ -94,7 +95,8 @@ function SignInContent() {
   useEffect(() => {
     const session = getSession();
     if (session) {
-      router.push(redirect);
+      sessionStorage.removeItem("oauth_redirect");
+      router.replace(redirect);
     }
   }, [router, redirect]);
 
@@ -110,8 +112,9 @@ function SignInContent() {
     setLoading(false);
 
     if (result.success) {
+      sessionStorage.removeItem("oauth_redirect");
       toast.success("Login realizado com sucesso!");
-      router.push(redirect);
+      router.replace(redirect);
     } else {
       toast.error(result.error || "Erro ao fazer login.");
     }
@@ -144,6 +147,7 @@ function SignInContent() {
             disabled={githubLoading}
             onClick={() => {
               setGithubLoading(true);
+              sessionStorage.setItem("oauth_redirect", redirect);
               window.location.href = "/api/auth/github";
             }}
           >

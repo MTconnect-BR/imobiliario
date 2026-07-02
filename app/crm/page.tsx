@@ -41,7 +41,7 @@ export default function CRMPage() {
     const s = getSession();
     setSession(s);
     if (!s) {
-      router.push("/auth/signin?redirect=/crm");
+      router.replace("/auth/signin?redirect=/crm");
     } else {
       setAuthChecked(true);
     }
@@ -95,7 +95,7 @@ export default function CRMPage() {
     logout();
     setSession(null);
     toast.success("Logout realizado!");
-    router.push("/auth/signin");
+    router.replace("/auth/signin");
   }
 
   if (!authChecked) {
