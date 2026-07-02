@@ -1226,3 +1226,11 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Leaflet z-index — keep map below menu (100) and FAQ (90) */
+.leaflet-container {
+    z-index: 0 !important;
+}
+.leaflet-pane {
+    z-index: 1 !important;
+}
