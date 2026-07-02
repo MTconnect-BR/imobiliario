@@ -252,7 +252,7 @@ export default function PropertyDetailPage() {
               <div className="mt-3 flex items-center gap-2 text-muted-foreground">
                 <MapPin className="h-4 w-4" />
                 <span className="text-sm tracking-[-0.04em]">
-                  {property.address}, {property.neighborhood}, {property.city} - {property.state}
+                  {property.address}{property.addressNumber ? `, ${property.addressNumber}` : ""}, {property.neighborhood}, {property.city} - {property.state}
                 </span>
               </div>
 
@@ -327,7 +327,7 @@ export default function PropertyDetailPage() {
                     lat={property.lat}
                     lng={property.lng}
                     title={property.title}
-                    address={`${property.address}, ${property.neighborhood}, ${property.city} - ${property.state}`}
+                    address={`${property.address}${property.addressNumber ? `, ${property.addressNumber}` : ""}, ${property.neighborhood}, ${property.city} - ${property.state}`}
                   />
                   <a
                     href={`https://www.google.com/maps?q=${property.lat},${property.lng}`}
@@ -380,7 +380,7 @@ export default function PropertyDetailPage() {
                   <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3 sm:col-span-2">
                     <span className="text-sm text-muted-foreground">Endereço</span>
                     <span className="text-right text-sm font-medium">
-                      {property.address}, {property.neighborhood}
+                      {property.address}{property.addressNumber ? `, ${property.addressNumber}` : ""}, {property.neighborhood}
                     </span>
                   </div>
                   <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3">

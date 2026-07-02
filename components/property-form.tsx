@@ -27,6 +27,7 @@ import { Property, PropertyInput } from "@/lib/properties";
 import { Upload, X, LinkIcon, MapPin, Search } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
+import "leaflet/dist/leaflet.css";
 
 const propertySchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
@@ -38,6 +39,7 @@ const propertySchema = z.object({
   bathrooms: z.number().min(0),
   parkingSpaces: z.number().min(0),
   address: z.string().min(1, "Endereço é obrigatório"),
+  addressNumber: z.string().optional(),
   neighborhood: z.string().min(1, "Bairro é obrigatório"),
   city: z.string().min(1, "Cidade é obrigatória"),
   state: z.string().min(2, "UF é obrigatória").max(2),
@@ -66,6 +68,7 @@ const defaultValues: PropertyFormValues = {
   bathrooms: 0,
   parkingSpaces: 0,
   address: "",
+  addressNumber: "",
   neighborhood: "",
   city: "",
   state: "",
@@ -121,6 +124,7 @@ export function PropertyForm({
           bathrooms: property.bathrooms,
           parkingSpaces: property.parkingSpaces,
           address: property.address,
+          addressNumber: property.addressNumber ?? "",
           neighborhood: property.neighborhood,
           city: property.city,
           state: property.state,
@@ -306,6 +310,7 @@ export function PropertyForm({
     onSave({
       ...data,
       description: data.description || "",
+      addressNumber: data.addressNumber || "",
       imageUrl: data.images[0] ?? "",
       images: data.images,
       lat: data.lat,
@@ -559,25 +564,45 @@ export function PropertyForm({
                 </Button>
               </div>
 
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium">
-                      Endereço
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Rua, número, complemento"
-                        className={inputClass}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-[1fr_120px] gap-3">
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-medium">
+                        Endereço
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Rua, complemento"
+                          className={inputClass}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="addressNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-medium">
+                        Número
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Nº"
+                          className={inputClass}
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
 
             <div className="grid grid-cols-3 gap-4">
               <FormField
