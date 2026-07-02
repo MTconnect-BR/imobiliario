@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Plus, Building2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Plus, Building2, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { PropertyForm } from "@/components/property-form";
@@ -22,14 +24,21 @@ import {
   updateProperty,
   deleteProperty,
 } from "@/lib/properties";
+import { getSession, logout } from "@/lib/auth";
 import { toast } from "sonner";
 
 export default function CRMPage() {
+  const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [deletingProperty, setDeletingProperty] = useState<Property | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [session, setSession] = useState<Omit<import("@/lib/auth").User, "password"> | null>(null);
+
+  useEffect(() => {
+    setSession(getSession());
+  }, []);
 
   const loadProperties = useCallback(() => {
     setProperties(getAllProperties());
@@ -75,11 +84,18 @@ export default function CRMPage() {
     loadProperties();
   }
 
+  function handleLogout() {
+    logout();
+    setSession(null);
+    toast.success("Logout realizado!");
+    router.push("/auth/signin");
+  }
+
   const columns = getPropertyColumns(handleEdit, handleDeleteClick);
 
   return (
     <main className="min-h-screen bg-background pb-20">
-      <div className="mx-auto max-w-7xl px-6 pt-32">
+      <div className="mx-auto max-w-7xl px-6 pt-8">
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -90,10 +106,31 @@ export default function CRMPage() {
               Gerencie seus imóveis publicados na plataforma.
             </p>
           </div>
-          <Button variant="green" size="lg" onClick={handleCreate}>
-            <Plus className="h-5 w-5" />
-            Novo Imóvel
-          </Button>
+          <div className="flex items-center gap-3">
+            {session ? (
+              <>
+                <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="h-4 w-4" />
+                  {session.name}
+                </span>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+                  Sair
+                </Button>
+              </>
+            ) : (
+              <Link href="/auth/signin">
+                <Button variant="outline" size="sm">
+                  <User className="h-4 w-4" />
+                  Entrar
+                </Button>
+              </Link>
+            )}
+            <Button variant="green" size="lg" onClick={handleCreate}>
+              <Plus className="h-5 w-5" />
+              Novo Imóvel
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
