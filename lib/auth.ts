@@ -2,7 +2,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  password: string;
+  password?: string;
+  avatarUrl?: string;
+  githubId?: number;
   createdAt: string;
 }
 
@@ -27,14 +29,62 @@ function generateId(): string {
   return crypto.randomUUID?.() ?? Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0;
+export function getSession(): Omit<User, "password"> | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const data = localStorage.getItem(SESSION_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch {
+    return null;
   }
-  return btoa(`_${Math.abs(hash)}_${str.length}`);
+}
+
+export function setSession(user: User): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password, ...safe } = user;
+  localStorage.setItem(SESSION_KEY, JSON.stringify(safe));
+}
+
+export function logout(): void {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+export function isGithubSession(): boolean {
+  const session = getSession();
+  return !!session?.githubId;
+}
+
+export function loginWithGithub(githubUser: {
+  id: number;
+  login: string;
+  email: string;
+  avatar_url: string;
+}): { success: boolean; error?: string } {
+  const users = readUsers();
+  let user = users.find((u) => u.githubId === githubUser.id);
+
+  if (user) {
+    // Update existing user info
+    user.name = githubUser.login;
+    user.email = githubUser.email;
+    user.avatarUrl = githubUser.avatar_url;
+    writeUsers(users);
+  } else {
+    // Create new user
+    user = {
+      id: generateId(),
+      name: githubUser.login,
+      email: githubUser.email,
+      avatarUrl: githubUser.avatar_url,
+      githubId: githubUser.id,
+      createdAt: new Date().toISOString(),
+    };
+    users.push(user);
+    writeUsers(users);
+  }
+
+  setSession(user);
+  return { success: true };
 }
 
 export function register(name: string, email: string, password: string): { success: boolean; error?: string } {
@@ -51,7 +101,6 @@ export function register(name: string, email: string, password: string): { succe
   };
   users.push(user);
   writeUsers(users);
-  setSession(user);
   return { success: true };
 }
 
@@ -67,24 +116,14 @@ export function login(email: string, password: string): { success: boolean; erro
   return { success: true, user };
 }
 
-export function logout(): void {
-  localStorage.removeItem(SESSION_KEY);
-}
-
-export function setSession(user: User): void {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password, ...safe } = user;
-  localStorage.setItem(SESSION_KEY, JSON.stringify(safe));
-}
-
-export function getSession(): Omit<User, "password"> | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const data = localStorage.getItem(SESSION_KEY);
-    return data ? JSON.parse(data) : null;
-  } catch {
-    return null;
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
   }
+  return btoa(`_${Math.abs(hash)}_${str.length}`);
 }
 
 export function forgotPassword(email: string): { success: boolean; error?: string } {

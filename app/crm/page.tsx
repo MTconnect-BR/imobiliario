@@ -35,10 +35,17 @@ export default function CRMPage() {
   const [deletingProperty, setDeletingProperty] = useState<Property | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [session, setSession] = useState<Omit<import("@/lib/auth").User, "password"> | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    setSession(getSession());
-  }, []);
+    const s = getSession();
+    setSession(s);
+    if (!s) {
+      router.push("/auth/signin?redirect=/crm");
+    } else {
+      setAuthChecked(true);
+    }
+  }, [router]);
 
   const loadProperties = useCallback(() => {
     setProperties(getAllProperties());
@@ -89,6 +96,17 @@ export default function CRMPage() {
     setSession(null);
     toast.success("Logout realizado!");
     router.push("/auth/signin");
+  }
+
+  if (!authChecked) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">Verificando acesso...</p>
+        </div>
+      </main>
+    );
   }
 
   const columns = getPropertyColumns(handleEdit, handleDeleteClick);
