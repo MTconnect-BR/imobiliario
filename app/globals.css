@@ -100,7 +100,7 @@
     --secondary: #e0dbce;
     --secondary-foreground: #2c2e2a;
     --muted: #e0dbce;
-    --muted-foreground: #6b6b6b;
+    --muted-foreground: #595959;
     --accent: #8ed462;
     --accent-foreground: #2c2e2a;
     --destructive: #ff705d;
@@ -178,7 +178,7 @@
     h1, h2, h3, h4, h5, h6 {
         font-weight: 500;
         letter-spacing: -0.06em;
-        line-height: 0.95;
+        line-height: 1.0;
     }
     h1 {
         font-size: clamp(2.25rem, 1.5rem + 3.75vw, 4rem);
@@ -484,14 +484,13 @@
 
 .c-menu-desktop_footer_link {
     font-size: 13px;
-    color: var(--color-charcoal);
-    opacity: 0.5;
+    color: #595959;
     text-decoration: none;
-    transition: opacity var(--transition-duration-fast) var(--ease);
+    transition: color var(--transition-duration-fast) var(--ease);
 }
 
 .c-menu-desktop_footer_link:hover {
-    opacity: 1;
+    color: var(--color-charcoal);
 }
 
 /* ========================================
@@ -897,14 +896,13 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
 
 .c-menu-mobile_footer_link {
     font-size: 13px;
-    color: var(--color-charcoal);
-    opacity: 0.5;
+    color: #595959;
     text-decoration: none;
-    transition: opacity var(--transition-duration-fast) var(--ease);
+    transition: color var(--transition-duration-fast) var(--ease);
 }
 
 .c-menu-mobile_footer_link:hover {
-    opacity: 1;
+    color: var(--color-charcoal);
 }
 
 /* ========================================
@@ -1201,7 +1199,19 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
    Page Transitions (MindMarket style)
    ======================================== */
 .page-transition-wrapper {
-    /* will-change removed for performance — GPU layer promotion is handled by framer-motion */
+    /* will-change removed for performance */
+}
+
+/* Focus-visible for custom CSS elements */
+.c-menu-desktop_link:focus-visible,
+.c-menu-desktop_button:focus-visible,
+.c-menu-mobile_burger:focus-visible,
+.c-faq-panel_toggle:focus-visible,
+.c-faq-panel_category:focus-visible,
+.c-faq-panel_item_question:focus-visible {
+    outline: 2px solid var(--color-green);
+    outline-offset: 2px;
+    border-radius: 4px;
 }
 
 /* Reduce motion for users who prefer it */
@@ -1209,5 +1219,10 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
     .page-transition-wrapper {
         animation: none !important;
         transition: none !important;
+    }
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }

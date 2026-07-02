@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import {
   Property,
@@ -45,9 +46,12 @@ export function PropertyCatalogCard({ property }: PropertyCatalogCardProps) {
         {/* Image */}
         <div className="relative aspect-[16/9] overflow-hidden bg-muted">
           {property.imageUrl ? (
-            <img
+            <Image
               src={property.imageUrl}
               alt={property.title}
+              width={600}
+              height={338}
+              loading="lazy"
               className="h-full w-full object-cover transition-transform duration-[0.4s] group-hover:scale-105"
             />
           ) : (

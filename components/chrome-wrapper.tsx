@@ -1,9 +1,22 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { MindMarketMenu } from "@/components/mindmarket-menu";
-import { PageTransition } from "@/components/page-transition";
-import { FAQPanel } from "@/components/faq-panel";
+import dynamic from "next/dynamic";
+
+const MindMarketMenu = dynamic(
+  () => import("@/components/mindmarket-menu").then((m) => m.MindMarketMenu),
+  { ssr: false }
+);
+
+const FAQPanel = dynamic(
+  () => import("@/components/faq-panel").then((m) => m.FAQPanel),
+  { ssr: false }
+);
+
+const PageTransition = dynamic(
+  () => import("@/components/page-transition").then((m) => m.PageTransition),
+  { ssr: false }
+);
 
 const HIDDEN_CHROME_ROUTES = ["/crm", "/auth"];
 

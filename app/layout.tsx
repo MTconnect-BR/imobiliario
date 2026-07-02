@@ -4,7 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { ChromeWrapper } from "@/components/chrome-wrapper";
+import { RootLayoutClient } from "@/components/root-layout-client";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -86,7 +86,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={cn("antialiased", inter.variable)}>
       <body className="font-sans">
-        <ChromeWrapper>{children}</ChromeWrapper>
+        <RootLayoutClient>{children}</RootLayoutClient>
         <Analytics />
         <SpeedInsights />
       </body>

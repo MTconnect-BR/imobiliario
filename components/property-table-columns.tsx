@@ -1,6 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import Image from "next/image";
 import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,9 +49,12 @@ export function getPropertyColumns(
         return (
           <div className="h-10 w-10 overflow-hidden rounded-[10px] bg-muted">
             {url ? (
-              <img
+              <Image
                 src={url}
                 alt={row.getValue("title") as string}
+                width={40}
+                height={40}
+                loading="lazy"
                 className="h-full w-full object-cover"
               />
             ) : (
