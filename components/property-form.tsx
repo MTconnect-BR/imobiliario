@@ -621,7 +621,7 @@ export function PropertyForm({
                   variant="outline"
                   className="mt-[22px] h-10"
                   onClick={fetchCep}
-                  disabled={cepLoading || cepInput.replace(/\D/g, "").length !== 8}
+                  disabled={cepLoading || (watchedCep ?? "").replace(/\D/g, "").length !== 8}
                 >
                   {cepLoading ? (
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
