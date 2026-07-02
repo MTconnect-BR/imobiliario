@@ -17,6 +17,9 @@ export interface Property {
   state: string;
   description: string;
   imageUrl: string;
+  images: string[];
+  lat?: number;
+  lng?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,7 +36,13 @@ function readStorage(): Property[] {
   if (typeof window === "undefined") return [];
   try {
     const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    // Migrate old properties: ensure images[] exists
+    return parsed.map((p: Record<string, unknown>) => ({
+      ...p,
+      images: p.images ?? (p.imageUrl ? [p.imageUrl] : []),
+    })) as Property[];
   } catch {
     return [];
   }
@@ -57,6 +66,7 @@ export function createProperty(input: PropertyInput): Property {
   const now = new Date().toISOString();
   const property: Property = {
     ...input,
+    images: input.images ?? (input.imageUrl ? [input.imageUrl] : []),
     id: generateId(),
     createdAt: now,
     updatedAt: now,
