@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   Building2,
   Calendar,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { PropertyCarouselSection } from "@/components/property-carousel-section";
+import { PropertyMap } from "@/components/property-map";
 import {
   Property,
   getPropertyById,
@@ -121,7 +123,10 @@ export default function PropertyDetailPage() {
         ? "yellow"
         : "red";
 
-  const galleryImages = [property.imageUrl];
+  const galleryImages =
+    property.images?.length > 0
+      ? property.images
+      : [property.imageUrl].filter(Boolean);
 
   return (
     <main className="min-h-screen bg-background">
@@ -309,6 +314,32 @@ export default function PropertyDetailPage() {
                   {property.description}
                 </p>
               </div>
+
+              <Separator className="my-8" />
+
+              {/* Map */}
+              {property.lat != null && property.lng != null && (
+                <div>
+                  <h2 className="mb-4 text-xl font-medium tracking-[-0.06em]">
+                    Localização
+                  </h2>
+                  <PropertyMap
+                    lat={property.lat}
+                    lng={property.lng}
+                    title={property.title}
+                    address={`${property.address}, ${property.neighborhood}, ${property.city} - ${property.state}`}
+                  />
+                  <a
+                    href={`https://www.google.com/maps?q=${property.lat},${property.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Abrir no Google Maps
+                  </a>
+                </div>
+              )}
 
               <Separator className="my-8" />
 
