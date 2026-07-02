@@ -41,6 +41,7 @@ const menuItems: MenuItem[] = [
     ],
   },
   { label: "Blog", href: "/blog" },
+  { label: "CRM", href: "/crm" },
   { label: "Contato", href: "/contato" },
 ];
 
