@@ -114,3 +114,9 @@ export function formatPrice(price: number): string {
     maximumFractionDigits: 0,
   }).format(price);
 }
+
+export function getRelatedProperties(property: Property, limit = 6): Property[] {
+  return getAllProperties()
+    .filter((p) => p.id !== property.id && (p.type === property.type || p.city === property.city))
+    .slice(0, limit);
+}
