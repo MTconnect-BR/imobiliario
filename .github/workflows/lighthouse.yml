@@ -26,5 +26,4 @@ jobs:
             https://imobiliario-nu.vercel.app/
             https://imobiliario-nu.vercel.app/imoveis
             https://imobiliario-nu.vercel.app/auth/signin
-          budgetPath: ./lighthouserc.json
           configPath: ./lighthouserc.json
