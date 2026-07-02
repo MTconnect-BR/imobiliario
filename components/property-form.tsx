@@ -43,6 +43,7 @@ const propertySchema = z.object({
   neighborhood: z.string().min(1, "Bairro é obrigatório"),
   city: z.string().min(1, "Cidade é obrigatória"),
   state: z.string().min(2, "UF é obrigatória").max(2),
+  cep: z.string().optional(),
   description: z.string().optional(),
   images: z.array(z.string()),
   lat: z.number().optional(),
@@ -72,6 +73,7 @@ const defaultValues: PropertyFormValues = {
   neighborhood: "",
   city: "",
   state: "",
+  cep: "",
   description: "",
   images: [],
   lat: undefined,
@@ -94,7 +96,6 @@ export function PropertyForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [mapReady, setMapReady] = useState(false);
-  const [cepInput, setCepInput] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
 
   const form = useForm<PropertyFormValues>({
@@ -105,6 +106,7 @@ export function PropertyForm({
   const watchedImages = form.watch("images");
   const watchedLat = form.watch("lat");
   const watchedLng = form.watch("lng");
+  const watchedCep = form.watch("cep");
 
   useEffect(() => {
     if (open) {
@@ -128,6 +130,7 @@ export function PropertyForm({
           neighborhood: property.neighborhood,
           city: property.city,
           state: property.state,
+          cep: property.cep ?? "",
           description: property.description,
           images,
           lat: property.lat,
@@ -137,7 +140,6 @@ export function PropertyForm({
         form.reset(defaultValues);
       }
       setImageUrlInput("");
-      setCepInput("");
     }
   }, [open, property, form]);
 
@@ -311,7 +313,7 @@ export function PropertyForm({
   }
 
   async function fetchCep() {
-    const digits = cepInput.replace(/\D/g, "");
+    const digits = (watchedCep ?? "").replace(/\D/g, "");
     if (digits.length !== 8) {
       toast.error("CEP deve ter 8 dígitos");
       return;
@@ -364,6 +366,7 @@ export function PropertyForm({
       ...data,
       description: data.description || "",
       addressNumber: data.addressNumber || "",
+      cep: data.cep || "",
       imageUrl: data.images[0] ?? "",
       images: data.images,
       lat: data.lat,
@@ -603,8 +606,8 @@ export function PropertyForm({
                     placeholder="00000-000"
                     maxLength={9}
                     className={inputClass}
-                    value={cepInput}
-                    onChange={(e) => setCepInput(formatCep(e.target.value))}
+                    value={watchedCep ?? ""}
+                    onChange={(e) => form.setValue("cep", formatCep(e.target.value))}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();

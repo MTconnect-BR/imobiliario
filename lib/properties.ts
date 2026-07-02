@@ -16,6 +16,7 @@ export interface Property {
   neighborhood: string;
   city: string;
   state: string;
+  cep: string;
   description: string;
   imageUrl: string;
   images: string[];
