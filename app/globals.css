@@ -685,7 +685,7 @@ html.has-menu-mobile-open .c-menu-mobile_burger_icon.-close .c-menu-mobile_burge
     display: flex;
     flex-direction: column;
     gap: 8px;
-    overflow: hidden;
+    overflow: auto;
 }
 
 html.has-menu-mobile-open .c-menu-mobile_nav {
@@ -696,8 +696,7 @@ html.has-menu-mobile-open .c-menu-mobile_nav {
 .c-menu-mobile_nav_inner {
     pointer-events: auto;
     width: 100%;
-    flex: 1;
-    min-height: 0;
+    flex: 0 1 auto;
     padding: 0;
     position: relative;
     overflow: auto;
@@ -1186,7 +1185,6 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
 @media (max-width: 480px) {
     .c-faq-panel {
         width: calc(100% - 2 * var(--faq-gutter));
-        bottom: calc(var(--faq-gutter) + 80px); /* Above mobile menu bar */
     }
 
     .c-faq-panel_categories {
