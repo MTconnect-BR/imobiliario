@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Search, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,18 @@ export default function ImoveisPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [selectedPrice, setSelectedPrice] = useState("all");
+
+  const searchParams = useSearchParams();
+
+  // Initialize filters from URL query params (e.g. from homepage search)
+  useEffect(() => {
+    const s = searchParams.get("search");
+    const t = searchParams.get("type");
+    const p = searchParams.get("price");
+    if (s) setSearchQuery(s);
+    if (t) setSelectedType(t);
+    if (p) setSelectedPrice(p);
+  }, [searchParams]);
 
   // Load properties on mount
   useState(() => {

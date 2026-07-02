@@ -9,10 +9,11 @@ test.describe("Homepage", () => {
     await expect(page.getByText("Encontre o imovel perfeito")).toBeVisible();
   });
 
-  test("should have CTA buttons visible", async ({ page }) => {
+  test("should have search panel elements", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("button", { name: "Comece agora" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Saiba mais" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Comprar" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Alugar" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Buscar" })).toBeVisible();
   });
 
   test("should navigate to legal pages from footer", async ({ page }) => {
