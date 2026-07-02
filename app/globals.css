@@ -1200,6 +1200,7 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
    ======================================== */
 .page-transition-wrapper {
     /* will-change removed for performance */
+    padding-bottom: 5rem;
 }
 
 /* Focus-visible for custom CSS elements */

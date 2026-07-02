@@ -103,7 +103,7 @@ test.describe("Property Detail", () => {
 
   test("should render detail page with all sections", async ({ page }) => {
     await page.goto("/imoveis");
-    const firstCard = page.locator("a[href^='/imoveis/']").first();
+    const firstCard = page.locator("main a[href^='/imoveis/']").first();
     const count = await firstCard.count();
     if (count > 0) {
       await firstCard.click();
@@ -115,7 +115,7 @@ test.describe("Property Detail", () => {
 
   test("should have Google Maps link when lat/lng exist", async ({ page }) => {
     await page.goto("/imoveis");
-    const firstCard = page.locator("a[href^='/imoveis/']").first();
+    const firstCard = page.locator("main a[href^='/imoveis/']").first();
     const count = await firstCard.count();
     if (count > 0) {
       await firstCard.click();
