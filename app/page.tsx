@@ -201,25 +201,25 @@ export default function Home() {
       {/* Carousel Section */}
       <section className="bg-primary px-6 py-20 text-primary-foreground">
         <div className="mx-auto max-w-6xl">
-          <div className="mb-10 flex items-center justify-between">
-            <h2 className="tracking-[-0.06em] text-white">
-              Por que escolher a <strong>Imobiliário</strong>?
-            </h2>
-            <div className="flex gap-2">
-              <CarouselPrevious
-                variant="outline"
-                size="icon"
-                className="relative inset-auto h-10 w-10 rounded-full border-green text-green hover:bg-green hover:text-charcoal disabled:opacity-40"
-              />
-              <CarouselNext
-                variant="outline"
-                size="icon"
-                className="relative inset-auto h-10 w-10 rounded-full border-green text-green hover:bg-green hover:text-charcoal disabled:opacity-40"
-              />
-            </div>
-          </div>
-
           <Carousel opts={{ align: "start", loop: false }}>
+            <div className="mb-10 flex items-center justify-between">
+              <h2 className="tracking-[-0.06em] text-white">
+                Por que escolher a <strong>Imobiliário</strong>?
+              </h2>
+              <div className="flex gap-2">
+                <CarouselPrevious
+                  variant="outline"
+                  size="icon"
+                  className="relative inset-auto h-10 w-10 rounded-full border-green text-green hover:bg-green hover:text-charcoal disabled:opacity-40"
+                />
+                <CarouselNext
+                  variant="outline"
+                  size="icon"
+                  className="relative inset-auto h-10 w-10 rounded-full border-green text-green hover:bg-green hover:text-charcoal disabled:opacity-40"
+                />
+              </div>
+            </div>
+
             <CarouselContent>
               <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
                 <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-[#f5f1e4] p-8 sm:min-h-[500px]">
