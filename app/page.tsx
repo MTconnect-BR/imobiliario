@@ -205,7 +205,8 @@ export default function Home() {
                     <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-40 w-40" aria-hidden="true">
                       <circle cx="40" cy="40" r="28" stroke="#2c2e2a" strokeWidth="2.5" strokeLinecap="round" opacity="0.15"/>
                       <circle cx="40" cy="40" r="22" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round"/>
-                      <path d="M35 20v40M35 20h10M45 20v10c0 5-3 8-10 8M45 38l-10 22M52 20v40" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M40 16v48" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round"/>
+                      <path d="M50 20c-12 0-16 8-16 14s4 10 16 10c12 0 16 6 16 12s-4 14-16 14" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
                   <p className="text-sm leading-relaxed text-charcoal/70">
