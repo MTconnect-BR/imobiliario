@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import ImoveisClient from "./client";
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function ImoveisPage() {
-  return <ImoveisClient />;
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><p className="text-muted-foreground">Carregando...</p></div>}>
+      <ImoveisClient />
+    </Suspense>
+  );
 }

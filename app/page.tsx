@@ -1,13 +1,5 @@
-"use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { HomeSearch } from "@/components/home-search";
 import {
   Carousel,
   CarouselContent,
@@ -16,36 +8,7 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 
-const typeFilters = [
-  { value: "all", label: "Todos os imóveis" },
-  { value: "casa", label: "Casas" },
-  { value: "apartamento", label: "Apartamentos" },
-  { value: "terreno", label: "Terrenos" },
-  { value: "comercial", label: "Comerciais" },
-];
-
-const priceRanges = [
-  { value: "all", label: "Qualquer preço" },
-  { value: "0-300000", label: "Até R$ 300.000" },
-  { value: "300000-600000", label: "R$ 300.000 - R$ 600.000" },
-  { value: "600000-1000000", label: "R$ 600.000 - R$ 1.000.000" },
-  { value: "1000000-999999999", label: "Acima de R$ 1.000.000" },
-];
-
 export default function Home() {
-  const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [type, setType] = useState("all");
-  const [price, setPrice] = useState("all");
-
-  function handleSearch() {
-    const params = new URLSearchParams();
-    if (search) params.set("search", search);
-    if (type !== "all") params.set("type", type);
-    if (price !== "all") params.set("price", price);
-    router.push(`/imoveis?${params.toString()}`);
-  }
-
   return (
     <main className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -57,81 +20,7 @@ export default function Home() {
           A plataforma completa para comprar, alugar e investir em imóveis.
           Descubra oportunidades únicas com as melhores condições do mercado.
         </p>
-
-        {/* Search Panel Card */}
-        <Card className="mt-10 w-full max-w-2xl">
-          <CardContent className="p-6">
-            <Tabs defaultValue="comprar">
-              <TabsList variant="line" className="mb-6 w-full">
-                <TabsTrigger value="comprar">Comprar</TabsTrigger>
-                <TabsTrigger value="alugar">Alugar</TabsTrigger>
-                <TabsTrigger value="novo">Imóvel novo</TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            {/* Location Search */}
-            <div className="mb-4">
-              <label className="mb-1.5 block text-sm font-medium text-foreground">
-                Onde deseja morar?
-              </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Busque rua, bairro ou cidade"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            {/* Type & Price Row */}
-            <div className="mb-6 grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">
-                  Tipo de imóvel
-                </label>
-                <select
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="h-10 w-full rounded-[10px] border border-input bg-transparent px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none cursor-pointer"
-                >
-                  {typeFilters.map((f) => (
-                    <option key={f.value} value={f.value}>
-                      {f.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">
-                  Faixa de preço
-                </label>
-                <select
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  className="h-10 w-full rounded-[10px] border border-input bg-transparent px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none cursor-pointer"
-                >
-                  {priceRanges.map((r) => (
-                    <option key={r.value} value={r.value}>
-                      {r.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <Button
-              variant="green"
-              size="lg"
-              className="w-full"
-              onClick={handleSearch}
-            >
-              Buscar
-            </Button>
-          </CardContent>
-        </Card>
+        <HomeSearch />
       </section>
 
       {/* Por que nos escolher — green card section */}
@@ -198,7 +87,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Carousel Section */}
+      {/* Carousel 1 — Por que escolher */}
       <section className="bg-primary px-6 py-20 text-primary-foreground">
         <div className="mx-auto max-w-6xl">
           <Carousel opts={{ align: "start", loop: false, dragFree: true, containScroll: "trimSnaps", duration: 20 }}>
@@ -261,6 +150,166 @@ export default function Home() {
                       Transparência total: cada imóvel é verificado por nossos
                       especialistas. Documentação, história e condições reais —
                       sem surpresas. Padrões rigorosos de qualidade.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-[#f5f1e4] p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    <strong>Segurança</strong> Jurídica
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Documentação verificada por especialistas. Processos
+                      seguros do início ao fechamento, com assessoria jurídica
+                      completa em cada etapa.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-[#f5f1e4] p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    <strong>Financiamento</strong> Facilitado
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Parcerias com os principais bancos do Brasil. Crédito
+                      imobiliário com as melhores condições do mercado e
+                      aprovação rápida.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-[#f5f1e4] p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    <strong>Suporte</strong> Pós-Venda
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Acompanhamento contínuo após a compra. Assistência com
+                      manutenção, questões legais e qualquer necessidade que
+                      surgir.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+            </CarouselContent>
+          </Carousel>
+        </div>
+      </section>
+
+      {/* Carousel 2 — Como funciona */}
+      <section className="bg-[#8ed462] px-6 py-20">
+        <div className="mx-auto max-w-6xl">
+          <Carousel opts={{ align: "start", loop: false, dragFree: true, containScroll: "trimSnaps", duration: 20 }}>
+            <div className="mb-10 flex items-center justify-between">
+              <h2 className="tracking-[-0.06em] text-charcoal">
+                Como funciona a <strong>Imobiliário</strong>?
+              </h2>
+              <div className="flex gap-2">
+                <CarouselPrevious
+                  variant="outline"
+                  size="icon"
+                  className="relative inset-auto h-10 w-10 rounded-full border-charcoal text-charcoal hover:bg-charcoal hover:text-white disabled:opacity-40"
+                />
+                <CarouselNext
+                  variant="outline"
+                  size="icon"
+                  className="relative inset-auto h-10 w-10 rounded-full border-charcoal text-charcoal hover:bg-charcoal hover:text-white disabled:opacity-40"
+                />
+              </div>
+            </div>
+
+            <CarouselContent>
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-white p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    <strong>Busque</strong>
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Encontre o imóvel perfeito pelo nosso search inteligente
+                      com filtros por tipo, preço e localização. Resultados
+                      precisos em segundos.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-white p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    <strong>Agende</strong>
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Visite presencialmente ou faça um tour virtual 360° antes
+                      de tomar sua decisão. Conheça cada detalhe do imóvel.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-white p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    <strong>Negocie</strong>
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Condições especiais e total transparência em cada etapa
+                      da negociação. Sem surpresas, sem letras miúdas.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-white p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    <strong>Financie</strong>
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Crédito imobiliário com as melhores taxas. Parceria com
+                      os principais bancos do Brasil para facilitar seu
+                      financiamento.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-white p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    <strong>Compre</strong>
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Fechamento seguro com assessoria jurídica completa e
+                      documentação verificada. Cuidamos de cada detalhe para
+                      você.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-white p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    <strong>Apoio</strong>
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Suporte contínuo pós-compra. Estamos sempre disponíveis
+                      quando você precisar. Manutenção, questões legais e muito
+                      mais.
                     </p>
                   </div>
                 </div>
