@@ -347,7 +347,7 @@ export default function ImoveisPage() {
                               opts={{ align: "start", loop: group.properties.length > 3, containScroll: "trimSnaps" }}
                               className="w-full"
                             >
-                              <CarouselContent className="-ml-4">
+                              <CarouselContent>
                                 {group.properties.map((property) => (
                                   <CarouselItem
                                     key={property.id}

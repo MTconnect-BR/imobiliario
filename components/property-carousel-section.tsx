@@ -52,7 +52,7 @@ export function PropertyCarouselSection({
           opts={{ align: "start", loop: properties.length > 3, containScroll: "trimSnaps" }}
           className="w-full"
         >
-          <CarouselContent className="-ml-4">
+          <CarouselContent>
             {properties.map((property) => (
               <CarouselItem
                 key={property.id}
