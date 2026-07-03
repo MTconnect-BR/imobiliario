@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 
 const ChromeWrapper = dynamic(
   () => import("@/components/chrome-wrapper").then((m) => m.ChromeWrapper),
-  { ssr: false }
+  { ssr: true }
 );
 
 export function RootLayoutClient({ children }: { children: React.ReactNode }) {

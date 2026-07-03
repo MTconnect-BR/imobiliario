@@ -28,6 +28,7 @@ type CarouselContextProps = {
   scrollNext: () => void
   canScrollPrev: boolean
   canScrollNext: boolean
+  isReady: boolean
 } & CarouselProps
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
@@ -60,6 +61,7 @@ function Carousel({
   )
   const [canScrollPrev, setCanScrollPrev] = React.useState(false)
   const [canScrollNext, setCanScrollNext] = React.useState(false)
+  const [isReady, setIsReady] = React.useState(false)
 
   const onSelect = React.useCallback((api: CarouselApi) => {
     if (!api) return
@@ -91,6 +93,7 @@ function Carousel({
   React.useEffect(() => {
     if (!api || !setApi) return
     setApi(api)
+    setIsReady(true)
   }, [api, setApi])
 
   React.useEffect(() => {
@@ -116,6 +119,7 @@ function Carousel({
         scrollNext,
         canScrollPrev,
         canScrollNext,
+        isReady,
       }}
     >
       <div
@@ -133,13 +137,14 @@ function Carousel({
 }
 
 function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
-  const { carouselRef, orientation } = useCarousel()
+  const { carouselRef, orientation, isReady } = useCarousel()
 
   return (
     <div
       ref={carouselRef}
       className="overflow-hidden"
       data-slot="carousel-content"
+      data-ready={isReady || undefined}
     >
       <div
         className={cn(
