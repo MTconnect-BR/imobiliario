@@ -28,9 +28,10 @@ test.describe("Homepage", () => {
 
   test("should display carousel section with trust cards", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("Pronto para encontrar seu imóvel?")).toBeVisible();
-    await expect(page.getByPlaceholder("Digite seu email")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Cadastrar" })).toBeVisible();
+    await expect(page.getByText("Por que escolher a")).toBeVisible();
+    await expect(page.getByText("O que nos diferencia?")).toBeVisible();
+    await expect(page.getByText("Vantagens da plataforma")).toBeVisible();
+    await expect(page.getByText("Por que confiar na Imobiliário?")).toBeVisible();
   });
 });
 
