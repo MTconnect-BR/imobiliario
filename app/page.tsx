@@ -138,12 +138,17 @@ export default function Home() {
                   </h3>
                   <div className="flex flex-1 items-center justify-center">
                     <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-40 w-40" aria-hidden="true">
-                      <path d="M10 40h60M40 10v60" stroke="#2c2e2a" strokeWidth="2" strokeLinecap="round" opacity="0.2"/>
-                      <path d="M15 25c8-2 16 3 20 10s18 5 25-2" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M12 50c10 4 22-2 30 5s20 2 28-6" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
-                      <circle cx="25" cy="25" r="4" stroke="#2c2e2a" strokeWidth="2" strokeLinecap="round"/>
-                      <circle cx="55" cy="50" r="4" stroke="#8ed462" strokeWidth="2" strokeLinecap="round"/>
-                      <circle cx="40" cy="38" r="3" fill="#8ed462" opacity="0.3"/>
+                      <path d="M15 15v45h50" stroke="#2c2e2a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.3"/>
+                      <path d="M15 25h50M15 40h50M15 55h50" stroke="#2c2e2a" strokeWidth="0.8" strokeLinecap="round" opacity="0.15"/>
+                      <path d="M25 15v45M40 15v45M55 15v45" stroke="#2c2e2a" strokeWidth="0.8" strokeLinecap="round" opacity="0.15"/>
+                      <path d="M15 48 L 25 44 L 40 42 L 55 36 L 65 34" stroke="#8ed462" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+                      <circle cx="25" cy="44" r="1.5" fill="#8ed462" opacity="0.5"/>
+                      <circle cx="40" cy="42" r="1.5" fill="#8ed462" opacity="0.5"/>
+                      <circle cx="55" cy="36" r="1.5" fill="#8ed462" opacity="0.5"/>
+                      <path d="M15 58 L 25 50 L 40 35 L 55 22 L 65 15" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="25" cy="50" r="3" fill="#8ed462" stroke="#ffffff" strokeWidth="1"/>
+                      <circle cx="40" cy="35" r="3" fill="#8ed462" stroke="#ffffff" strokeWidth="1"/>
+                      <circle cx="55" cy="22" r="3" fill="#8ed462" stroke="#ffffff" strokeWidth="1"/>
                     </svg>
                   </div>
                   <p className="text-sm leading-relaxed text-charcoal/70">
@@ -224,12 +229,15 @@ export default function Home() {
                   </h3>
                   <div className="flex flex-1 items-center justify-center">
                     <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-40 w-40" aria-hidden="true">
-                      <path d="M20 50c0-11 9-20 20-20s20 9 20 20" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M14 56c0-14.4 11.1-26 26-26s26 11.6 26 26" stroke="#2c2e2a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.2"/>
-                      <circle cx="40" cy="26" r="6" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round"/>
-                      <path d="M28 44l8 8 16-16" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"/>
-                      <path d="M32 62h16" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round"/>
-                      <path d="M36 66h8" stroke="#8ed462" strokeWidth="2" strokeLinecap="round" opacity="0.5"/>
+                      <path d="M22 62c0-7 8-12 18-12s18 5 18 12" stroke="#2c2e2a" strokeWidth="2.5" strokeLinecap="round" opacity="0.8"/>
+                      <circle cx="40" cy="30" r="9" stroke="#2c2e2a" strokeWidth="2.5" strokeLinecap="round" opacity="0.8"/>
+                      <path d="M28 30a12 12 0 0 1 24 0" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round"/>
+                      <rect x="26" y="26" width="3" height="8" rx="1.5" fill="#8ed462"/>
+                      <rect x="51" y="26" width="3" height="8" rx="1.5" fill="#8ed462"/>
+                      <path d="M28 33c0 5 4 8 8 8" stroke="#8ed462" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="37" cy="41" r="1.5" fill="#8ed462"/>
+                      <circle cx="58" cy="54" r="10" fill="#8ed462" stroke="#ffffff" strokeWidth="2"/>
+                      <path d="M54 54l3 3 5-5" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
                   <p className="text-sm leading-relaxed text-charcoal/70">
