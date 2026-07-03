@@ -116,7 +116,7 @@ export default function Home() {
                     O que nos <strong>diferencia</strong>?
                   </h3>
                   <div className="flex flex-1 items-center justify-center">
-                    <img src="/icons/carousel/diamond.svg" alt="" className="h-40 w-40" aria-hidden="true" />
+                    <img src="/icons/carousel/person-support.svg" alt="" className="h-40 w-40" aria-hidden="true" />
                   </div>
                   <p className="text-sm leading-relaxed text-charcoal/70">
                     Atendimento personalizado do início ao fim. Um consultor
