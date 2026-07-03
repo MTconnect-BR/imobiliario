@@ -23,22 +23,22 @@ const faqCategories: FAQCategory[] = [
       {
         question: "Como funciona o processo de compra?",
         answer:
-          "O processo de compra envolve busca do imovel, negociacao, assinatura do contrato, pagamento do sinal, financiamento (se necessario) e registro em cartorio.",
+          "O processo de compra envolve busca do imóvel, negociação, assinatura do contrato, pagamento do sinal, financiamento (se necessário) e registro em cartório.",
       },
       {
-        question: "Quais documentos sao necessarios?",
+        question: "Quais documentos são necessários?",
         answer:
-          "RG, CPF, comprovante de renda, extrato do FGTS (se aplicavel), declaracao de imposto de renda e comprovante de endereco.",
+          "RG, CPF, comprovante de renda, extrato do FGTS (se aplicável), declaração de imposto de renda e comprovante de endereço.",
       },
       {
-        question: "Posso visitar os imoveis antes de comprar?",
+        question: "Posso visitar os imóveis antes de comprar?",
         answer:
-          "Sim! Agendamos visitas presenciais ou oferecemos turmas virtuais em 360 graus para voce conhecer cada detalhe.",
+          "Sim! Agendamos visitas presenciais ou oferecemos turmas virtuais em 360 graus para você conhecer cada detalhe.",
       },
       {
-        question: "Qual o prazo medio para fechar um negocio?",
+        question: "Qual o prazo médio para fechar um negócio?",
         answer:
-          "Em media, o processo leva de 30 a 60 dias, dependendo do tipo de financiamento e documentacao envolvida.",
+          "Em média, o processo leva de 30 a 60 dias, dependendo do tipo de financiamento e documentação envolvida.",
       },
     ],
   },
@@ -50,7 +50,7 @@ const faqCategories: FAQCategory[] = [
       {
         question: "Como solicitar financiamento?",
         answer:
-          "Apos escolher o imovel, apresentamos as melhores opcoes de financiamento bancario e consorcio, comparando taxas e prazos.",
+          "Após escolher o imóvel, apresentamos as melhores opções de financiamento bancário e consórcio, comparando taxas e prazos.",
       },
       {
         question: "Qual a taxa de juros atual?",
@@ -58,53 +58,53 @@ const faqCategories: FAQCategory[] = [
           "As taxas variam de 9% a 12% ao ano, dependendo do banco, perfil do comprador e prazo de pagamento.",
       },
       {
-        question: "Posso usar o FGRS para dar entrada?",
+        question: "Posso usar o FGTS para dar entrada?",
         answer:
-          "Sim! O FGTS pode ser utilizado para dar entrada no imovel, pagar parcelas ou amortizar o saldo devedor.",
+          "Sim! O FGTS pode ser utilizado para dar entrada no imóvel, pagar parcelas ou amortizar o saldo devedor.",
       },
     ],
   },
   {
     id: "documentacao",
-    label: "Documentacao",
+    label: "Documentação",
     count: 3,
     items: [
       {
         question: "Quais documentos para financiamento?",
         answer:
-          "Documentos pessoais (RG, CPF), comprovantes de renda, extrato do FGTS, declaracao de IR e documentos do imovel.",
+          "Documentos pessoais (RG, CPF), comprovantes de renda, extrato do FGTS, declaração de IR e documentos do imóvel.",
       },
       {
-        question: "Como obter certidoes negativas?",
+        question: "Como obter certidões negativas?",
         answer:
-          "Emitimos gratuitamente as certidoes de regularidade fiscal, trabalhista e civil necessarias para o negocio.",
+          "Emitimos gratuitamente as certidões de regularidade fiscal, trabalhista e civil necessárias para o negócio.",
       },
       {
-        question: "O que e a matricula do imovel?",
+        question: "O que é a matrícula do imóvel?",
         answer:
-          "A matricula e um documento que comprova a propriedade do imovel, emitido pelo cartorio de registro de imoveis.",
+          "A matrícula é um documento que comprova a propriedade do imóvel, emitido pelo cartório de registro de imóveis.",
       },
     ],
   },
   {
     id: "locacao",
-    label: "Locacao",
+    label: "Locação",
     count: 3,
     items: [
       {
-        question: "Como alugar um imovel?",
+        question: "Como alugar um imóvel?",
         answer:
-          "Escolha o imovel, envie sua proposta, assine o contrato e realize o pagamento do sinal e primeira parcela.",
+          "Escolha o imóvel, envie sua proposta, assine o contrato e realize o pagamento do sinal e primeira parcela.",
       },
       {
-        question: "O que verificar no contrato de locacao?",
+        question: "O que verificar no contrato de locação?",
         answer:
-          "Verifique prazo, valor do aluguel, reajustes, multa rescisoria, responsabilidades por reparos e garantias exigidas.",
+          "Verifique prazo, valor do aluguel, reajustes, multa rescisória, responsabilidades por reparos e garantias exigidas.",
       },
       {
-        question: "Quais garantias sao aceitas?",
+        question: "Quais garantias são aceitas?",
         answer:
-          "Caucao, fiador ou seguro fianca locaticia. A maioria dos proprietarios aceita qualquer uma dessas opcoes.",
+          "Caução, fiador ou seguro fiança locatício. A maioria dos proprietários aceita qualquer uma dessas opções.",
       },
     ],
   },

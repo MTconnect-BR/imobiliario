@@ -55,7 +55,7 @@ export default function TermosDeServico() {
               </li>
               <li>
                 <strong>Agendamento de visitas:</strong> Sistema para agendar
-                visitas presenciais ou turis virtuais em 360 graus.
+                visitas presenciais ou tours virtuais em 360 graus.
               </li>
               <li>
                 <strong>Consultoria:</strong> Orientação especializada durante

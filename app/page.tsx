@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const typeFilters = [
-  { value: "all", label: "Todos os imoveis" },
+  { value: "all", label: "Todos os imóveis" },
   { value: "casa", label: "Casas" },
   { value: "apartamento", label: "Apartamentos" },
   { value: "terreno", label: "Terrenos" },
@@ -18,8 +18,8 @@ const typeFilters = [
 ];
 
 const priceRanges = [
-  { value: "all", label: "Qualquer preco" },
-  { value: "0-300000", label: "Ate R$ 300.000" },
+  { value: "all", label: "Qualquer preço" },
+  { value: "0-300000", label: "Até R$ 300.000" },
   { value: "300000-600000", label: "R$ 300.000 - R$ 600.000" },
   { value: "600000-1000000", label: "R$ 600.000 - R$ 1.000.000" },
   { value: "1000000-999999999", label: "Acima de R$ 1.000.000" },
@@ -44,11 +44,11 @@ export default function Home() {
       {/* Hero Section */}
       <section className="flex min-h-[80vh] flex-col items-center justify-center px-6 pt-32 text-center">
         <h1 className="max-w-4xl text-primary">
-          Encontre o imovel perfeito
+          Encontre o imóvel perfeito
         </h1>
         <p className="lead mt-6 max-w-2xl">
-          A plataforma completa para comprar, alugar e investir em imoveis.
-          Descubra oportunidades unicas com as melhores condicoes do mercado.
+          A plataforma completa para comprar, alugar e investir em imóveis.
+          Descubra oportunidades únicas com as melhores condições do mercado.
         </p>
 
         {/* Search Panel Card */}
@@ -58,7 +58,7 @@ export default function Home() {
               <TabsList variant="line" className="mb-6 w-full">
                 <TabsTrigger value="comprar">Comprar</TabsTrigger>
                 <TabsTrigger value="alugar">Alugar</TabsTrigger>
-                <TabsTrigger value="novo">Imovel novo</TabsTrigger>
+                <TabsTrigger value="novo">Imóvel novo</TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -83,7 +83,7 @@ export default function Home() {
             <div className="mb-6 grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-foreground">
-                  Tipo de imovel
+                  Tipo de imóvel
                 </label>
                 <select
                   value={type}
@@ -99,7 +99,7 @@ export default function Home() {
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-foreground">
-                  Faixa de preco
+                  Faixa de preço
                 </label>
                 <select
                   value={price}
@@ -134,9 +134,9 @@ export default function Home() {
             Por que nos <strong>escolher</strong>?
           </h2>
           <p className="mt-4 max-w-2xl text-charcoal/80">
-            Construimos nossa plataforma em torno de tres pilares: transparencia,
-            eficiencia e cuidado. Trabalhamos para que cada cliente encontre o
-            imovel ideal com confianca e seguranca.
+            Construímos nossa plataforma em torno de três pilares: transparência,
+            eficiência e cuidado. Trabalhamos para que cada cliente encontre o
+            imóvel ideal com confiança e segurança.
           </p>
 
           <div className="mt-12 grid gap-8 md:grid-cols-2">
@@ -146,8 +146,8 @@ export default function Home() {
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
                 Um consultor dedicado acompanha cada etapa da sua busca, da
-                primeira visita ao fechamento. Voce nunca e apenas mais um
-                numero.
+                primeira visita ao fechamento. Você nunca é apenas mais um
+                número.
               </p>
             </div>
             <div>
@@ -156,17 +156,17 @@ export default function Home() {
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
                 Nossa equipe conhece cada bairro, cada mercado e cada
-                oportunidade. Insights regionais que fazem a diferenca na sua
-                decisao.
+                oportunidade. Insights regionais que fazem a diferença na sua
+                decisão.
               </p>
             </div>
             <div>
               <h3 className="text-lg font-medium tracking-[-0.06em] text-charcoal">
-                Melhor Custo-Beneficio
+                Melhor Custo-Benefício
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
-                Padroes rigorosos de qualidade em todas as regioes, entregando
-                resultados comparaveis sem custos excessivos.
+                Padrões rigorosos de qualidade em todas as regiões, entregando
+                resultados comparáveis sem custos excessivos.
               </p>
             </div>
             <div>
@@ -175,16 +175,16 @@ export default function Home() {
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
                 Com parceiros em todo o Brasil, estamos alinhados com seu
-                horario e disponiveis quando voce precisar.
+                horário e disponíveis quando você precisar.
               </p>
             </div>
             <div className="md:col-span-2 md:max-w-md">
               <h3 className="text-lg font-medium tracking-[-0.06em] text-charcoal">
-                Transparencia Total
+                Transparência Total
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
-                Cada imovel e verificado por nossos especialistas. Documentacao,
-                historia e condicoes reais — sem surpresas.
+                Cada imóvel é verificado por nossos especialistas. Documentação,
+                história e condições reais — sem surpresas.
               </p>
             </div>
           </div>
@@ -194,7 +194,7 @@ export default function Home() {
       {/* CTA Section */}
       <section className="bg-primary px-6 py-20 text-primary-foreground">
         <div className="mx-auto max-w-3xl text-center">
-          <h2>Pronto para encontrar seu imovel?</h2>
+          <h2>Pronto para encontrar seu imóvel?</h2>
           <p className="mt-4 text-lg opacity-90">
             Cadastre-se gratuitamente e comece a explorar as melhores
             oportunidades do mercado.
@@ -213,13 +213,13 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="px-6 py-12 text-center text-sm text-muted-foreground">
-        <p className="mb-2">&copy; 2026 Imobiliario. Todos os direitos reservados.</p>
+        <p className="mb-2">&copy; 2026 Imobiliário. Todos os direitos reservados.</p>
         <div className="flex items-center justify-center gap-4">
           <Link href="/termos-de-servico" className="underline hover:text-foreground transition-colors">
-            Termos de Servico
+            Termos de Serviço
           </Link>
           <Link href="/politica-de-privacidade" className="underline hover:text-foreground transition-colors">
-            Politica de Privacidade
+            Política de Privacidade
           </Link>
         </div>
       </footer>
