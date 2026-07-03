@@ -310,7 +310,7 @@ export default function PropertyDetailPage() {
                 <h2 className="mb-4 text-xl font-medium tracking-[-0.06em]">
                   Descrição
                 </h2>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                   {property.description}
                 </p>
               </div>
