@@ -90,7 +90,7 @@ export default function Home() {
       {/* Carousel 1 — Por que escolher */}
       <section className="bg-primary px-6 py-20 text-primary-foreground">
         <div className="mx-auto max-w-6xl">
-          <Carousel opts={{ align: "start", loop: false, dragFree: true, containScroll: "trimSnaps", duration: 20 }}>
+          <Carousel opts={{ align: "start", loop: false, dragFree: false, containScroll: "trimSnaps", duration: 20 }}>
             <div className="mb-10 flex items-center justify-between">
               <h2 className="tracking-[-0.06em] text-white">
                 Por que escolher a <strong>Imobiliário</strong>?
@@ -207,7 +207,7 @@ export default function Home() {
       {/* Carousel 2 — Como funciona */}
       <section className="bg-[#8ed462] px-6 py-20">
         <div className="mx-auto max-w-6xl">
-          <Carousel opts={{ align: "start", loop: false, dragFree: true, containScroll: "trimSnaps", duration: 20 }}>
+          <Carousel opts={{ align: "start", loop: false, dragFree: false, containScroll: "trimSnaps", duration: 20 }}>
             <div className="mb-10 flex items-center justify-between">
               <h2 className="tracking-[-0.06em] text-charcoal">
                 Como funciona a <strong>Imobiliário</strong>?

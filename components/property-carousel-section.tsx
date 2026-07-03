@@ -49,7 +49,7 @@ export function PropertyCarouselSection({
 
       <div className="relative">
         <Carousel
-          opts={{ align: "start", loop: properties.length > 3 }}
+          opts={{ align: "start", loop: properties.length > 3, containScroll: "trimSnaps" }}
           className="w-full"
         >
           <CarouselContent className="-ml-4">

@@ -159,7 +159,7 @@ export default function PropertyDetailPage() {
       <section className="px-6 pb-8">
         <div className="mx-auto max-w-6xl">
           <div className="relative overflow-hidden rounded-[10px] bg-muted">
-            <Carousel setApi={setGalleryApi} className="w-full">
+            <Carousel setApi={setGalleryApi} opts={{ align: "start", loop: false, containScroll: "trimSnaps" }} className="w-full">
               <CarouselContent>
                 {galleryImages.map((img, i) => (
                   <CarouselItem key={i}>
