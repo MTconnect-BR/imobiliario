@@ -133,10 +133,11 @@ export function MindMarketMenu() {
                         className={`c-menu-desktop_dropdown ${expandedSubmenu === item.label ? "-active" : ""}`}
                       >
                         <ul className="c-menu-desktop_dropdown_list">
-                          {item.children.map((subItem) => (
+                          {item.children.map((subItem, i) => (
                             <li
                               key={subItem.label}
                               className="c-menu-desktop_dropdown_item"
+                              style={{ "--index": i } as React.CSSProperties}
                             >
                               <Link
                                 href={subItem.href}
