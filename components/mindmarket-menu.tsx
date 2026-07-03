@@ -73,8 +73,11 @@ export function MindMarketMenu() {
       document.documentElement.classList.add("has-menu-mobile-open");
       document.body.style.overflow = "hidden";
     } else {
-      document.documentElement.classList.remove("has-menu-mobile-open");
-      document.body.style.overflow = "";
+      const timer = setTimeout(() => {
+        document.documentElement.classList.remove("has-menu-mobile-open");
+        document.body.style.overflow = "";
+      }, 300);
+      return () => clearTimeout(timer);
     }
     return () => {
       document.documentElement.classList.remove("has-menu-mobile-open");

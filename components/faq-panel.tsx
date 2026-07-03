@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface FAQItem {
   question: string;
@@ -114,6 +114,7 @@ export function FAQPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const totalQuestions = faqCategories.reduce(
     (acc, cat) => acc + cat.items.length,
@@ -131,17 +132,27 @@ export function FAQPanel() {
     );
   };
 
+  const closePanel = () => {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => {
+      setIsOpen(false);
+      setActiveCategory(null);
+      setExpandedItems([]);
+    }, 300);
+  };
+
   useEffect(() => {
     const handlePanelToggle = (e: Event) => {
       const source = (e as CustomEvent).detail.source;
       if (source !== "faq") {
-        setIsOpen(false);
-        setActiveCategory(null);
-        setExpandedItems([]);
+        closePanel();
       }
     };
     window.addEventListener("panel:toggle", handlePanelToggle);
-    return () => window.removeEventListener("panel:toggle", handlePanelToggle);
+    return () => {
+      window.removeEventListener("panel:toggle", handlePanelToggle);
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
   }, []);
 
   return (
@@ -152,9 +163,12 @@ export function FAQPanel() {
         className="c-faq-panel_toggle"
         onClick={() => {
           const next = !isOpen;
-          setIsOpen(next);
           if (next) {
+            if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+            setIsOpen(true);
             window.dispatchEvent(new CustomEvent("panel:toggle", { detail: { source: "faq" } }));
+          } else {
+            closePanel();
           }
         }}
         aria-expanded={isOpen}
