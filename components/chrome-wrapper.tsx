@@ -14,7 +14,8 @@ const FAQPanel = dynamic(
 );
 
 const PageTransition = dynamic(
-  () => import("@/components/page-transition").then((m) => m.PageTransition)
+  () => import("@/components/page-transition").then((m) => m.PageTransition),
+  { ssr: false }
 );
 
 const HIDDEN_CHROME_ROUTES = ["/crm", "/auth"];
