@@ -1279,6 +1279,10 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+    .hero-card .hero-card-bg,
+    .hero-card .hero-card-content > * {
+        transition-duration: 0.6s !important;
+    }
 }
 
 /* Leaflet z-index — keep map below menu (100) and FAQ (90) */

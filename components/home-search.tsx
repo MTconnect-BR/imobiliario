@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,10 +30,24 @@ export function HomeSearch() {
   const [type, setType] = useState("all");
   const [price, setPrice] = useState("all");
   const [inView, setInView] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setInView(true), 100);
-    return () => clearTimeout(timer);
+    const el = cardRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   function handleSearch() {
@@ -45,7 +59,7 @@ export function HomeSearch() {
   }
 
   return (
-    <div className={`hero-card mt-10 w-full max-w-2xl ${inView ? "is-inview" : ""}`}>
+    <div ref={cardRef} className={`hero-card mt-10 w-full max-w-2xl ${inView ? "is-inview" : ""}`}>
       <div className="hero-card-bg hero-card-bg-white" />
       <div className="hero-card-bg hero-card-bg-primary" />
       <div className="hero-card-content relative z-10">

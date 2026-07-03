@@ -10,11 +10,12 @@ test.describe("Hero Card Animation", () => {
     await page.waitForSelector(".hero-card");
   });
 
-  test("should add is-inview class after mount", async ({ page }) => {
-    // Immediately after navigation, inView may not be set yet (100ms delay)
+  test("should add is-inview class via IntersectionObserver", async ({ page }) => {
+    // The hero card is in the viewport on page load, so IntersectionObserver
+    // with threshold: 0.2 should trigger immediately
     const heroCard = page.locator(".hero-card");
 
-    // Wait for the is-inview class to be applied (triggered after 100ms)
+    // Wait for the is-inview class to be applied (triggered by IntersectionObserver)
     await expect(heroCard).toHaveClass(/is-inview/, { timeout: 2000 });
   });
 
@@ -114,14 +115,8 @@ test.describe("Hero Card Animation", () => {
     // Content last child: 0.5s delay + 0.4s duration = 0.9s total
     // Overall max: ~1.1s
 
-    // Check immediately after page load - backgrounds should NOT be scaled yet
+    // The hero card is in the viewport, so IntersectionObserver triggers immediately
     const heroCard = page.locator(".hero-card");
-    const isInViewBefore = await heroCard.evaluate((el) =>
-      el.classList.contains("is-inview")
-    );
-
-    // Right after page load, is-inview may or may not be set depending on timing
-    // But the backgrounds should still be transitioning
 
     // Wait for full animation completion
     await page.waitForTimeout(1500);
