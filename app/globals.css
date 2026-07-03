@@ -1290,6 +1290,9 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
 }
 
 /* Carousel performance — GPU acceleration, no transition overhead */
+[data-slot="carousel-content"] {
+    touch-action: pan-y;
+}
 [data-slot="carousel-content"] > .flex {
     will-change: transform;
     transform: translate3d(0, 0, 0);
