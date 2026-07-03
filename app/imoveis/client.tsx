@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, Building2 } from "lucide-react";
+import { Search, Building2, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +15,7 @@ import {
   getAllProperties,
   getPropertyTypeLabel,
 } from "@/lib/properties";
+import { haversineDistance, geocode } from "@/lib/geolocation";
 import {
   Carousel,
   CarouselContent,
@@ -39,11 +40,19 @@ const priceRanges = [
   { value: "1000000-999999999", label: "Acima de R$ 1.000.000" },
 ];
 
+interface NearbyProperty {
+  property: Property;
+  distance: number;
+}
+
 export default function ImoveisPage() {
   const [allProperties, setAllProperties] = useState<Property[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [selectedPrice, setSelectedPrice] = useState("all");
+  const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
+  const [geocoding, setGeocoding] = useState(false);
+  const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const searchParams = useSearchParams();
 
@@ -93,6 +102,50 @@ export default function ImoveisPage() {
     });
   }, [allProperties, searchQuery, selectedType, selectedPrice]);
 
+  // Proximity search: geocode and find nearby properties when no exact match
+  useEffect(() => {
+    if (geocodeTimerRef.current) {
+      clearTimeout(geocodeTimerRef.current);
+    }
+
+    if (filteredProperties.length > 0 || !searchQuery) {
+      setNearbyProperties([]);
+      return;
+    }
+
+    geocodeTimerRef.current = setTimeout(async () => {
+      setGeocoding(true);
+      try {
+        const result = await geocode(searchQuery);
+        if (!result) {
+          setNearbyProperties([]);
+          return;
+        }
+
+        const propertiesWithDistance = allProperties
+          .filter((p) => p.lat != null && p.lng != null)
+          .map((p) => ({
+            property: p,
+            distance: haversineDistance(result.lat, result.lng, p.lat!, p.lng!),
+          }))
+          .sort((a, b) => a.distance - b.distance)
+          .slice(0, 12);
+
+        setNearbyProperties(propertiesWithDistance);
+      } catch {
+        setNearbyProperties([]);
+      } finally {
+        setGeocoding(false);
+      }
+    }, 500);
+
+    return () => {
+      if (geocodeTimerRef.current) {
+        clearTimeout(geocodeTimerRef.current);
+      }
+    };
+  }, [filteredProperties.length, searchQuery, allProperties]);
+
   const featuredProperties = useMemo(
     () => filteredProperties.slice(0, 10),
     [filteredProperties]
@@ -121,6 +174,7 @@ export default function ImoveisPage() {
     setSearchQuery("");
     setSelectedType("all");
     setSelectedPrice("all");
+    setNearbyProperties([]);
   }
 
   return (
@@ -220,6 +274,40 @@ export default function ImoveisPage() {
                   </Link>
                 )}
               </div>
+
+              {/* Nearby Properties */}
+              {nearbyProperties.length > 0 && (
+                <div className="mt-16 w-full">
+                  <div className="mb-8 text-center">
+                    <Badge variant="blue" className="mb-3 gap-1">
+                      <Navigation className="h-3 w-3" />
+                      Imóveis próximos
+                    </Badge>
+                    <h2 className="text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
+                      Não encontramos exatamente &ldquo;{searchQuery}&rdquo;
+                    </h2>
+                    <p className="mt-2 text-muted-foreground">
+                      Mas temos imóveis nessas proximidades:
+                    </p>
+                  </div>
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {nearbyProperties.map(({ property, distance }) => (
+                      <PropertyCatalogCard
+                        key={property.id}
+                        property={property}
+                        distance={distance}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {geocoding && (
+                <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-foreground" />
+                  Buscando imóveis nas proximidades...
+                </div>
+              )}
             </div>
           ) : (
             <>

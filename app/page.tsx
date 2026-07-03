@@ -42,7 +42,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="flex min-h-[80vh] flex-col items-center justify-center px-6 text-center">
+      <section className="flex min-h-[80vh] flex-col items-center justify-center px-6 pt-32 text-center">
         <h1 className="max-w-4xl text-primary">
           Encontre o imovel perfeito
         </h1>

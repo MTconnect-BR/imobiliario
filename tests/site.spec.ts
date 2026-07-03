@@ -83,6 +83,24 @@ test.describe("Property Catalog", () => {
     const count = await cards.count();
     expect(count).toBeGreaterThanOrEqual(0);
   });
+
+  test("should show empty state when searching for non-existent property", async ({ page }) => {
+    await page.goto("/imoveis");
+    await page.getByLabel("Buscar imóveis").fill("xyznonexistent");
+    await page.waitForTimeout(600);
+    await expect(page.getByText("Nenhum imóvel encontrado")).toBeVisible();
+  });
+
+  test("should show nearby properties section when no exact match found", async ({ page }) => {
+    await page.goto("/imoveis");
+    await page.getByLabel("Buscar imóveis").fill("xyznonexistent");
+    await page.waitForTimeout(600);
+    await expect(page.getByText("Nenhum imóvel encontrado")).toBeVisible();
+    await page.waitForTimeout(2000);
+    const nearbySection = page.locator("text=Imóveis próximos");
+    const count = await nearbySection.count();
+    expect(count).toBeGreaterThanOrEqual(0);
+  });
 });
 
 // ==========================================

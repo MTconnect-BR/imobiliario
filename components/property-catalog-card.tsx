@@ -9,7 +9,7 @@ import {
   getPropertyStatusLabel,
   formatPrice,
 } from "@/lib/properties";
-import { Bed, Bath, Maximize, MapPin } from "lucide-react";
+import { Bed, Bath, Maximize, MapPin, Navigation } from "lucide-react";
 
 function getStatusVariant(status: Property["status"]) {
   switch (status) {
@@ -37,9 +37,10 @@ function getTypeVariant(type: Property["type"]) {
 
 interface PropertyCatalogCardProps {
   property: Property;
+  distance?: number;
 }
 
-export function PropertyCatalogCard({ property }: PropertyCatalogCardProps) {
+export function PropertyCatalogCard({ property, distance }: PropertyCatalogCardProps) {
   return (
     <Link href={`/imoveis/${property.id}`}>
       <div className="group overflow-hidden rounded-[10px] border border-border bg-card transition-all duration-[0.4s] hover:shadow-md hover:scale-[1.02]">
@@ -69,6 +70,16 @@ export function PropertyCatalogCard({ property }: PropertyCatalogCardProps) {
               {getPropertyStatusLabel(property.status)}
             </Badge>
           </div>
+          {distance !== undefined && (
+            <div className="absolute bottom-3 left-3">
+              <Badge variant="blue" className="gap-1">
+                <Navigation className="h-3 w-3" />
+                {distance < 1
+                  ? `${Math.round(distance * 1000)} m`
+                  : `${distance.toFixed(1)} km`}
+              </Badge>
+            </div>
+          )}
         </div>
 
         {/* Content */}
