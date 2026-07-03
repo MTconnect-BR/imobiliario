@@ -116,7 +116,7 @@ export default function Home() {
                     O que nos <strong>diferencia</strong>?
                   </h3>
                   <div className="flex flex-1 items-center justify-center">
-                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-40 w-40" aria-hidden="true">
+                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-48 w-48" aria-hidden="true">
                       <path d="M64 15 Q64 21 69 21 Q64 21 64 27 Q64 21 59 21 Q64 21 64 15" fill="#8ed462"/>
                       <path d="M16 49 Q16 53 20 53 Q16 53 16 57 Q16 53 12 53 Q16 53 16 49" fill="#8ed462" opacity="0.6"/>
                       <path d="M26 24 L54 24 L66 38 L40 66 L14 38 Z" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -140,7 +140,7 @@ export default function Home() {
                     Vantagens da <strong>plataforma</strong>
                   </h3>
                   <div className="flex flex-1 items-center justify-center">
-                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-40 w-40" aria-hidden="true">
+                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-48 w-48" aria-hidden="true">
                       <path d="M15 15v45h50" stroke="#2c2e2a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.3"/>
                       <path d="M15 25h50M15 40h50M15 55h50" stroke="#2c2e2a" strokeWidth="0.8" strokeLinecap="round" opacity="0.15"/>
                       <path d="M25 15v45M40 15v45M55 15v45" stroke="#2c2e2a" strokeWidth="0.8" strokeLinecap="round" opacity="0.15"/>
@@ -168,7 +168,7 @@ export default function Home() {
                     Por que <strong>confiar</strong> na Imobiliário?
                   </h3>
                   <div className="flex flex-1 items-center justify-center">
-                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-40 w-40" aria-hidden="true">
+                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-48 w-48" aria-hidden="true">
                       <path d="M40 8L14 20v18c0 14.4 11.1 27.8 26 30 14.9-2.2 26-15.6 26-30V20L40 8z" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                       <path d="M40 14L18 24v14c0 11.5 9.4 22.2 22 24 12.6-1.8 22-12.5 22-24V24L40 14z" stroke="#2c2e2a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.15"/>
                       <path d="M30 40l6 6 14-14" stroke="#8ed462" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
@@ -188,7 +188,7 @@ export default function Home() {
                     <strong>Segurança</strong> Jurídica
                   </h3>
                   <div className="flex flex-1 items-center justify-center">
-                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-40 w-40" aria-hidden="true">
+                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-48 w-48" aria-hidden="true">
                       <rect x="16" y="8" width="36" height="48" rx="4" stroke="#2c2e2a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                       <path d="M24 20h20M24 28h16M24 36h12" stroke="#8ed462" strokeWidth="2" strokeLinecap="round"/>
                       <circle cx="52" cy="52" r="14" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round"/>
@@ -210,7 +210,7 @@ export default function Home() {
                     <strong>Financiamento</strong> Facilitado
                   </h3>
                   <div className="flex flex-1 items-center justify-center">
-                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-40 w-40" aria-hidden="true">
+                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-48 w-48" aria-hidden="true">
                       <circle cx="40" cy="40" r="28" stroke="#2c2e2a" stroke-width="2.5" stroke-linecap="round" opacity="0.15"/>
                       <circle cx="40" cy="40" r="22" stroke="#8ed462" stroke-width="2.5" stroke-linecap="round"/>
                       <path d="M40 18v44" stroke="#8ed462" stroke-width="2.5" stroke-linecap="round"/>
@@ -231,7 +231,7 @@ export default function Home() {
                     <strong>Suporte</strong> Pós-Venda
                   </h3>
                   <div className="flex flex-1 items-center justify-center">
-                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-40 w-40" aria-hidden="true">
+                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-48 w-48" aria-hidden="true">
                       <path d="M22 62c0-7 8-12 18-12s18 5 18 12" stroke="#2c2e2a" strokeWidth="2.5" strokeLinecap="round" opacity="0.8"/>
                       <circle cx="40" cy="30" r="9" stroke="#2c2e2a" strokeWidth="2.5" strokeLinecap="round" opacity="0.8"/>
                       <path d="M28 30a12 12 0 0 1 24 0" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round"/>
