@@ -1288,3 +1288,14 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
 .leaflet-pane {
     z-index: 1 !important;
 }
+
+/* Carousel performance — GPU acceleration, no transition overhead */
+[data-slot="carousel-content"] > .flex {
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+}
+[data-slot="carousel-item"],
+[data-slot="carousel-item"] > .flex {
+    transition: none !important;
+}
