@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Homepage", () => {
   test("should display hero heading", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("Encontre o imovel perfeito")).toBeVisible();
+    await expect(page.getByText("Encontre o imóvel perfeito")).toBeVisible();
   });
 
   test("should have search panel elements", async ({ page }) => {
@@ -26,9 +26,9 @@ test.describe("Homepage", () => {
     await expect(page).toHaveURL(/politica-de-privacidade/);
   });
 
-  test("should display email CTA section", async ({ page }) => {
+  test("should display carousel section with trust cards", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("Pronto para encontrar seu imovel?")).toBeVisible();
+    await expect(page.getByText("Pronto para encontrar seu imóvel?")).toBeVisible();
     await expect(page.getByPlaceholder("Digite seu email")).toBeVisible();
     await expect(page.getByRole("button", { name: "Cadastrar" })).toBeVisible();
   });

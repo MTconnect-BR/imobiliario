@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from "@/components/ui/carousel";
 
 const typeFilters = [
   { value: "all", label: "Todos os imóveis" },
@@ -191,23 +198,75 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Carousel Section */}
       <section className="bg-primary px-6 py-20 text-primary-foreground">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2>Pronto para encontrar seu imóvel?</h2>
-          <p className="mt-4 text-lg opacity-90">
-            Cadastre-se gratuitamente e comece a explorar as melhores
-            oportunidades do mercado.
-          </p>
-          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Input
-              placeholder="Digite seu email"
-              className="max-w-sm border-primary-foreground/20 bg-white/10 text-primary-foreground placeholder:text-primary-foreground/60"
-            />
-            <Button variant="green" size="lg">
-              Cadastrar
-            </Button>
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-10 flex items-center justify-between">
+            <h2 className="tracking-[-0.06em] text-white">
+              Por que escolher a <strong>Imobiliário</strong>?
+            </h2>
+            <div className="flex gap-2">
+              <CarouselPrevious
+                variant="outline"
+                size="icon"
+                className="relative inset-auto h-10 w-10 rounded-full border-green text-green hover:bg-green hover:text-charcoal disabled:opacity-40"
+              />
+              <CarouselNext
+                variant="outline"
+                size="icon"
+                className="relative inset-auto h-10 w-10 rounded-full border-green text-green hover:bg-green hover:text-charcoal disabled:opacity-40"
+              />
+            </div>
           </div>
+
+          <Carousel opts={{ align: "start", loop: false }}>
+            <CarouselContent>
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-[#f5f1e4] p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    O que nos <strong>diferencia</strong>?
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Atendimento personalizado do início ao fim. Um consultor
+                      dedicado acompanha cada etapa da sua busca, da primeira
+                      visita ao fechamento. Você nunca é apenas mais um número.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-[#f5f1e4] p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    Vantagens da <strong>plataforma</strong>
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Conhecimento local em cada bairro e mercado. Insights
+                      regionais que fazem a diferença na sua decisão. Cobertura
+                      nacional com parceiros em todo o Brasil.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+
+              <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <div className="flex h-full min-h-[400px] flex-col justify-between gap-4 rounded-[10px] bg-[#f5f1e4] p-8 sm:min-h-[500px]">
+                  <h3 className="text-xl font-medium tracking-[-0.06em] text-charcoal">
+                    Por que <strong>confiar</strong> na Imobiliário?
+                  </h3>
+                  <div>
+                    <p className="text-sm leading-relaxed text-charcoal/70">
+                      Transparência total: cada imóvel é verificado por nossos
+                      especialistas. Documentação, história e condições reais —
+                      sem surpresas. Padrões rigorosos de qualidade.
+                    </p>
+                  </div>
+                </div>
+              </CarouselItem>
+            </CarouselContent>
+          </Carousel>
         </div>
       </section>
 
