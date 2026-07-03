@@ -60,8 +60,8 @@ export function HomeSearch() {
 
   return (
     <div ref={cardRef} className={`hero-card mt-10 w-full max-w-2xl ${inView ? "is-inview" : ""}`}>
-      <div className="hero-card-bg hero-card-bg-white" />
       <div className="hero-card-bg hero-card-bg-primary" />
+      <div className="hero-card-bg hero-card-bg-white" />
       <div className="hero-card-content relative z-10">
         <Card className="w-full">
           <CardContent className="p-6">
