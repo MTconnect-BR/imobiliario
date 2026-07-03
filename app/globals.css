@@ -1302,3 +1302,44 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
 [data-slot="carousel-item"] > .flex {
     transition: none !important;
 }
+
+/* Hero card reveal animation — inspired by mindmarket.com */
+.hero-card {
+    position: relative;
+}
+.hero-card-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    transform: scale(0);
+    transition-property: transform;
+    transition-duration: 0.6s;
+    transition-timing-function: cubic-bezier(.17, .67, .3, 1.33);
+}
+.hero-card-bg-white {
+    background-color: white;
+    transition-delay: 0.2s;
+}
+.hero-card-bg-primary {
+    background-color: var(--color-primary);
+    inset: 1px;
+}
+.hero-card.is-inview .hero-card-bg {
+    transform: scale(1);
+}
+.hero-card-content > * {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition-property: transform, opacity;
+    transition-duration: 0.4s;
+    transition-timing-function: cubic-bezier(.455, .03, .515, .955);
+}
+.hero-card.is-inview .hero-card-content > * {
+    opacity: 1;
+    transform: translateY(0);
+}
+.hero-card.is-inview .hero-card-content > *:nth-child(1) { transition-delay: 0.3s; }
+.hero-card.is-inview .hero-card-content > *:nth-child(2) { transition-delay: 0.35s; }
+.hero-card.is-inview .hero-card-content > *:nth-child(3) { transition-delay: 0.4s; }
+.hero-card.is-inview .hero-card-content > *:nth-child(4) { transition-delay: 0.45s; }
+.hero-card.is-inview .hero-card-content > *:nth-child(5) { transition-delay: 0.5s; }
