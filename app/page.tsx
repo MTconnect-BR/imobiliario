@@ -117,10 +117,13 @@ export default function Home() {
                   </h3>
                   <div className="flex flex-1 items-center justify-center">
                     <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-40 w-40" aria-hidden="true">
-                      <path d="M40 12c-6.6 0-12 5.4-12 12 0 4.8 2.8 9 7 11v5h10v-5c4.2-2 7-6.2 7-11 0-6.6-5.4-12-12-12z" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M28 40c-5.5 0-10 4.5-10 10v8h44v-8c0-5.5-4.5-10-10-10H28z" stroke="#2c2e2a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
-                      <path d="M33 58v6M47 58v6M33 64h14" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      <circle cx="58" cy="18" r="6" stroke="#8ed462" strokeWidth="2" strokeLinecap="round" strokeDasharray="3 3"/>
+                      <path d="M64 15 Q64 21 69 21 Q64 21 64 27 Q64 21 59 21 Q64 21 64 15" fill="#8ed462"/>
+                      <path d="M16 49 Q16 53 20 53 Q16 53 16 57 Q16 53 12 53 Q16 53 16 49" fill="#8ed462" opacity="0.6"/>
+                      <path d="M26 24 L54 24 L66 38 L40 66 L14 38 Z" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M14 38 H66" stroke="#8ed462" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M26 24 L32 38 L40 24 L48 38 L54 24" stroke="#8ed462" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M32 38 L40 66 L48 38" stroke="#8ed462" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M40 24 V38" stroke="#2c2e2a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.25"/>
                     </svg>
                   </div>
                   <p className="text-sm leading-relaxed text-charcoal/70">
