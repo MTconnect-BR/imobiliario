@@ -203,10 +203,10 @@ export default function Home() {
                   </h3>
                   <div className="flex flex-1 items-center justify-center">
                     <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-40 w-40" aria-hidden="true">
-                      <circle cx="40" cy="40" r="28" stroke="#2c2e2a" strokeWidth="2.5" strokeLinecap="round" opacity="0.15"/>
-                      <circle cx="40" cy="40" r="22" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round"/>
-                      <path d="M40 16v48" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round"/>
-                      <path d="M50 20c-12 0-16 8-16 14s4 10 16 10c12 0 16 6 16 12s-4 14-16 14" stroke="#8ed462" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="40" cy="40" r="28" stroke="#2c2e2a" stroke-width="2.5" stroke-linecap="round" opacity="0.15"/>
+                      <circle cx="40" cy="40" r="22" stroke="#8ed462" stroke-width="2.5" stroke-linecap="round"/>
+                      <path d="M40 18v44" stroke="#8ed462" stroke-width="2.5" stroke-linecap="round"/>
+                      <path d="M47 29 C47 23, 33 23, 33 33 C33 39, 47 41, 47 47 C47 57, 33 57, 33 51" stroke="#8ed462" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                   </div>
                   <p className="text-sm leading-relaxed text-charcoal/70">
