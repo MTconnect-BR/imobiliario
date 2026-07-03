@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- Diamond outer contour -->
+  <path d="M40 6L14 40l26 28 26-28L40 6z" stroke="#2c2e2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Vertical center line -->
+  <line x1="40" y1="6" x2="40" y2="68" stroke="#2c2e2a" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Left facets -->
+  <path d="M40 6L20 30l-6 10" stroke="#2c2e2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+  <path d="M14 40l6 0" stroke="#2c2e2a" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <path d="M14 40L28 54l-2 14" stroke="#2c2e2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+  
+  <!-- Right facets -->
+  <path d="M40 6L60 30l6 10" stroke="#2c2e2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+  <path d="M66 40h-6" stroke="#2c2e2a" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <path d="M66 40L52 54l2 14" stroke="#2c2e2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+  
+  <!-- Top sparkle -->
+  <path d="M36 10l4 4 4-4-4-4z" stroke="#8ed462" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
