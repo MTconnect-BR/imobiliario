@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- Document background -->
+  <rect x="16" y="8" width="36" height="48" rx="4" stroke="#2c2e2a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Document lines -->
+  <line x1="24" y1="20" x2="44" y2="20" stroke="#8ed462" stroke-width="2" stroke-linecap="round"/>
+  <line x1="24" y1="28" x2="40" y2="28" stroke="#8ed462" stroke-width="2" stroke-linecap="round"/>
+  <line x1="24" y1="36" x2="36" y2="36" stroke="#8ed462" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Checkmark badge -->
+  <circle cx="52" cy="52" r="14" stroke="#8ed462" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M46 52l4 4 8-8" stroke="#8ed462" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Document footer -->
+  <path d="M22 56v8h28v-8" stroke="#2c2e2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+</svg>
