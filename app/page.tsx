@@ -201,7 +201,7 @@ export default function Home() {
       {/* Carousel Section */}
       <section className="bg-primary px-6 py-20 text-primary-foreground">
         <div className="mx-auto max-w-6xl">
-          <Carousel opts={{ align: "start", loop: false }}>
+          <Carousel opts={{ align: "start", loop: false, dragFree: true, containScroll: "trimSnaps", duration: 20 }}>
             <div className="mb-10 flex items-center justify-between">
               <h2 className="tracking-[-0.06em] text-white">
                 Por que escolher a <strong>Imobiliário</strong>?
