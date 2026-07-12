@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, Building2, Navigation } from "lucide-react";
+import { Search, Building2, Navigation, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,6 +47,8 @@ interface NearbyProperty {
 
 export default function ImoveisPage() {
   const [allProperties, setAllProperties] = useState<Property[]>([]);
+  const [reidoapeLoading, setReidoapeLoading] = useState(true);
+  const [reidoapeCount, setReidoapeCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [selectedPrice, setSelectedPrice] = useState("all");
@@ -66,10 +68,32 @@ export default function ImoveisPage() {
     if (p) setSelectedPrice(p);
   }, [searchParams]);
 
-  // Load properties on mount
-  useState(() => {
-    setAllProperties(getAllProperties());
-  });
+  // Load properties on mount: local + Rei do APê (first page)
+  useEffect(() => {
+    const local = getAllProperties();
+    setAllProperties(local);
+
+    async function fetchReidoape() {
+      try {
+        setReidoapeLoading(true);
+        const res = await fetch("/api/reidoape?limit=100&page=1");
+        if (!res.ok) return;
+        const data = await res.json();
+        const external: Property[] = data.properties ?? [];
+        setReidoapeCount(data.total ?? 0);
+        setAllProperties((prev) => {
+          const ids = new Set(prev.map((p) => p.id));
+          const newExternal = external.filter((p) => !ids.has(p.id));
+          return [...prev, ...newExternal];
+        });
+      } catch {
+        // silently fail — local properties still work
+      } finally {
+        setReidoapeLoading(false);
+      }
+    }
+    fetchReidoape();
+  }, []);
 
   const availableStates = useMemo(() => {
     const states = [...new Set(allProperties.map((p) => p.state))].sort();
@@ -187,6 +211,18 @@ export default function ImoveisPage() {
             Explore nosso catálogo completo de imóveis. Casas, apartamentos,
             terrenos e muito mais.
           </p>
+          <div className="mt-4 flex items-center justify-center gap-3 text-sm text-muted-foreground">
+            {reidoapeLoading ? (
+              <span className="flex items-center gap-1.5">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Carregando imóveis da Caixa...
+              </span>
+            ) : reidoapeCount > 0 ? (
+              <Badge variant="blue">
+                {reidoapeCount.toLocaleString("pt-BR")} imóveis da Caixa disponíveis
+              </Badge>
+            ) : null}
+          </div>
         </div>
       </section>
 

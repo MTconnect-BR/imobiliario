@@ -16,6 +16,8 @@ import {
   Building2,
   Calendar,
   ExternalLink,
+  FileText,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -241,6 +243,14 @@ export default function PropertyDetailPage() {
                 <Badge variant={statusVariant as "green" | "yellow" | "red"}>
                   {getPropertyStatusLabel(property.status)}
                 </Badge>
+                {property.source === "reidoape" && (
+                  <Badge variant="blue">Venda Direta Online - Caixa</Badge>
+                )}
+                {property.refCaixa && (
+                  <Badge variant="outline" className="text-muted-foreground">
+                    Ref: {property.refCaixa}
+                  </Badge>
+                )}
               </div>
 
               {/* Title */}
@@ -315,7 +325,56 @@ export default function PropertyDetailPage() {
                 </p>
               </div>
 
-              <Separator className="my-8" />
+              {/* Documents & Official Link (Rei do APê) */}
+              {property.source === "reidoape" && (
+                <>
+                  <Separator className="my-8" />
+                  <div>
+                    <h2 className="mb-4 text-xl font-medium tracking-[-0.06em]">
+                      Documentos e Links Oficiais
+                    </h2>
+                    <div className="space-y-3">
+                      {property.documents?.map((doc, i) => (
+                        <a
+                          key={i}
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 rounded-[10px] bg-card px-4 py-3 transition-colors hover:bg-accent"
+                        >
+                          <FileText className="h-5 w-5 text-primary" />
+                          <span className="flex-1 text-sm font-medium">{doc.label}</span>
+                          <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                        </a>
+                      ))}
+                      {property.officialUrl && (
+                        <a
+                          href={property.officialUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 rounded-[10px] bg-card px-4 py-3 transition-colors hover:bg-accent"
+                        >
+                          <Shield className="h-5 w-5 text-primary" />
+                          <span className="flex-1 text-sm font-medium">Página oficial no site da Caixa</span>
+                          <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                        </a>
+                      )}
+                    </div>
+                    {property.situacaoCaixa && (
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        Situação: <span className="font-medium text-foreground">{property.situacaoCaixa}</span>
+                      </p>
+                    )}
+                    {property.avaliacaoPrice && property.avaliacaoPrice > property.price && (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Valor de avaliação: <span className="font-medium text-foreground">
+                          {formatPrice(property.avaliacaoPrice)}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
 
               {/* Map */}
               {property.lat != null && property.lng != null && (
@@ -429,6 +488,19 @@ export default function PropertyDetailPage() {
                     Compartilhar
                   </Button>
 
+                  {property.officialUrl && (
+                    <Button
+                      variant="outline"
+                      className="mt-3 w-full"
+                      asChild
+                    >
+                      <a href={property.officialUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Ver no site da Caixa
+                      </a>
+                    </Button>
+                  )}
+
                   <Separator className="my-6" />
 
                   <div className="space-y-3 text-sm">
@@ -440,6 +512,14 @@ export default function PropertyDetailPage() {
                       <span className="text-muted-foreground">Preço</span>
                       <span className="font-medium">{formatPrice(property.price)}</span>
                     </div>
+                    {property.avaliacaoPrice && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Avaliação</span>
+                        <span className="font-medium text-muted-foreground line-through">
+                          {formatPrice(property.avaliacaoPrice)}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Área</span>
                       <span className="font-medium">{property.area} m²</span>
@@ -448,6 +528,12 @@ export default function PropertyDetailPage() {
                       <span className="text-muted-foreground">Quartos</span>
                       <span className="font-medium">{property.bedrooms}</span>
                     </div>
+                    {property.refCaixa && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Ref. Caixa</span>
+                        <span className="font-medium">{property.refCaixa}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

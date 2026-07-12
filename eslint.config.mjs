@@ -27,6 +27,6 @@ export default [
     },
   },
   {
-    ignores: ["node_modules/", ".next/", "dist/", "next-env.d.ts"],
+    ignores: ["node_modules/", ".next/", "dist/", "next-env.d.ts", "scripts/"],
   },
 ];
