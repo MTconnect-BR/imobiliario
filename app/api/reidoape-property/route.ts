@@ -51,24 +51,31 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const BATCH_SIZE = 10;
+    const MAX_BATCHES = 11;
     let found = null;
-    const maxPages = 10;
 
-    for (let page = 0; page < maxPages; page++) {
-      const res = await fetch(
-        `${REIDOAPE_API}?id_master=${REIDOAPE_ID_MASTER}&pagina=${page}`,
-        { headers: { "User-Agent": "Mozilla/5.0" } }
+    for (let batch = 0; batch < MAX_BATCHES && !found; batch++) {
+      const startPage = batch * BATCH_SIZE;
+      const pages = Array.from({ length: BATCH_SIZE }, (_, i) => startPage + i);
+      const results = await Promise.all(
+        pages.map((page) =>
+          fetch(`${REIDOAPE_API}?id_master=${REIDOAPE_ID_MASTER}&pagina=${page}`, {
+            headers: { "User-Agent": "Mozilla/5.0" },
+          })
+            .then((r) => (r.ok ? r.json() : { items: [] }))
+            .catch(() => ({ items: [] }))
+        )
       );
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      const data = await res.json();
-      const match = data.items?.find(
-        (i: { id: string }) => i.id === reidoapeId
-      );
-      if (match) {
-        found = match;
-        break;
+      for (const data of results) {
+        const items = data.items ?? [];
+        if (items.length === 0) break;
+        const match = items.find((i: { id: string }) => i.id === reidoapeId);
+        if (match) {
+          found = match;
+          break;
+        }
       }
-      if (!data.items || data.items.length === 0) break;
     }
 
     if (!found) {
