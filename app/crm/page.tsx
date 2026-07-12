@@ -36,6 +36,9 @@ export default function CRMPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [session, setSession] = useState<Omit<import("@/lib/auth").User, "password"> | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [filterType, setFilterType] = useState("all");
+  const [filterState, setFilterState] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   useEffect(() => {
     const s = getSession();
@@ -128,6 +131,17 @@ export default function CRMPage() {
 
   const columns = getPropertyColumns(handleEdit, handleDeleteClick);
 
+  const uniqueTypes = [...new Set(properties.map((p) => p.type))].sort();
+  const uniqueStates = [...new Set(properties.map((p) => p.state))].sort();
+  const uniqueStatuses = [...new Set(properties.map((p) => p.status))].sort();
+
+  const filteredProperties = properties.filter((p) => {
+    if (filterType !== "all" && p.type !== filterType) return false;
+    if (filterState !== "all" && p.state !== filterState) return false;
+    if (filterStatus !== "all" && p.status !== filterStatus) return false;
+    return true;
+  });
+
   return (
     <main className="min-h-screen bg-background pb-20">
       <div className="mx-auto max-w-7xl px-6 pt-8">
@@ -196,11 +210,60 @@ export default function CRMPage() {
           </div>
         </div>
 
+        {/* Filters */}
+        <div className="mb-6 flex flex-wrap gap-3">
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+          >
+            <option value="all">Todos os tipos</option>
+            {uniqueTypes.map((t) => (
+              <option key={t} value={t}>
+                {t === "casa" ? "Casa" : t === "apartamento" ? "Apartamento" : t === "terreno" ? "Terreno" : "Comercial"}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={filterState}
+            onChange={(e) => setFilterState(e.target.value)}
+            className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+          >
+            <option value="all">Todos os estados</option>
+            {uniqueStates.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+          >
+            <option value="all">Todos os status</option>
+            {uniqueStatuses.map((s) => (
+              <option key={s} value={s}>
+                {s === "disponivel" ? "Disponível" : s === "em_negociacao" ? "Em negociação" : "Vendido"}
+              </option>
+            ))}
+          </select>
+
+          {(filterType !== "all" || filterState !== "all" || filterStatus !== "all") && (
+            <button
+              onClick={() => { setFilterType("all"); setFilterState("all"); setFilterStatus("all"); }}
+              className="h-10 rounded-[10px] px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Limpar filtros
+            </button>
+          )}
+        </div>
+
         {/* DataTable */}
-        {properties.length > 0 ? (
+        {filteredProperties.length > 0 ? (
           <DataTable
             columns={columns}
-            data={properties}
+            data={filteredProperties}
             searchKey="title"
             searchPlaceholder="Buscar por título..."
           />
