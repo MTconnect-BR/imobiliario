@@ -19,10 +19,6 @@ import {
 import {
   Property,
   PropertyInput,
-  getAllProperties,
-  createProperty,
-  updateProperty,
-  deleteProperty,
 } from "@/lib/properties";
 import { getSession, logout } from "@/lib/auth";
 import { toast } from "sonner";
@@ -39,6 +35,7 @@ export default function CRMPage() {
   const [filterType, setFilterType] = useState("all");
   const [filterState, setFilterState] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const s = getSession();
@@ -50,30 +47,45 @@ export default function CRMPage() {
     }
   }, [router]);
 
-  const loadProperties = useCallback(() => {
-    setProperties(getAllProperties());
-  }, []);
-
   const loadExternalProperties = useCallback(async () => {
     try {
-      const res = await fetch("/api/reidoape?page=0");
-      if (!res.ok) return;
-      const data = await res.json();
-      const external: Property[] = data.properties ?? [];
-      setProperties((prev) => {
-        const ids = new Set(prev.map((p) => p.id));
-        const newExternal = external.filter((p) => !ids.has(p.id));
-        return [...prev, ...newExternal];
+      setLoading(true);
+      const allExternal: Property[] = [];
+      const firstRes = await fetch("/api/reidoape?page=0");
+      if (!firstRes.ok) return;
+      const firstData = await firstRes.json();
+      allExternal.push(...(firstData.properties ?? []));
+
+      const totalPages = Math.ceil((firstData.total ?? 0) / (firstData.perPage ?? 24));
+      const pagesToFetch = Math.min(totalPages, 10);
+
+      for (let p = 1; p < pagesToFetch; p++) {
+        const res = await fetch(`/api/reidoape?page=${p}`);
+        if (!res.ok) continue;
+        const data = await res.json();
+        allExternal.push(...(data.properties ?? []));
+      }
+
+      const externalIds = new Set<string>();
+      const uniqueExternal = allExternal.filter((p) => {
+        if (externalIds.has(p.id)) return false;
+        externalIds.add(p.id);
+        return true;
       });
+
+      setProperties(uniqueExternal);
     } catch {
       // silently fail
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadProperties();
-    loadExternalProperties();
-  }, [loadProperties, loadExternalProperties]);
+    if (authChecked) {
+      loadExternalProperties();
+    }
+  }, [authChecked, loadExternalProperties]);
 
   function handleCreate() {
     setEditingProperty(null);
@@ -92,9 +104,8 @@ export default function CRMPage() {
 
   function confirmDelete() {
     if (deletingProperty) {
-      deleteProperty(deletingProperty.id);
-      loadProperties();
-      toast.success("Imóvel excluído com sucesso!");
+      setProperties((prev) => prev.filter((p) => p.id !== deletingProperty.id));
+      toast.success("Imóvel removido com sucesso!");
     }
     setDeleteDialogOpen(false);
     setDeletingProperty(null);
@@ -102,13 +113,23 @@ export default function CRMPage() {
 
   function handleSave(data: PropertyInput) {
     if (editingProperty) {
-      updateProperty(editingProperty.id, data);
+      setProperties((prev) =>
+        prev.map((p) =>
+          p.id === editingProperty.id ? { ...p, ...data, updatedAt: new Date().toISOString() } : p
+        )
+      );
       toast.success("Imóvel atualizado com sucesso!");
     } else {
-      createProperty(data);
+      const now = new Date().toISOString();
+      const newProperty: Property = {
+        ...data,
+        id: `local-${Date.now()}`,
+        createdAt: now,
+        updatedAt: now,
+      };
+      setProperties((prev) => [newProperty, ...prev]);
       toast.success("Imóvel publicado com sucesso!");
     }
-    loadProperties();
   }
 
   function handleLogout() {
@@ -145,7 +166,6 @@ export default function CRMPage() {
   return (
     <main className="min-h-screen bg-background pb-20">
       <div className="mx-auto max-w-7xl px-6 pt-8">
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-primary tracking-[-0.06em]">
@@ -182,35 +202,33 @@ export default function CRMPage() {
           </div>
         </div>
 
-        {/* Stats */}
         <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-[10px] border border-border bg-card p-4 transition-all duration-[0.4s] hover:shadow-md">
             <p className="text-xs text-muted-foreground">Total</p>
             <p className="mt-1 text-2xl font-medium tracking-[-0.06em]">
-              {properties.length}
+              {loading ? "..." : properties.length}
             </p>
           </div>
           <div className="rounded-[10px] border border-border bg-card p-4 transition-all duration-[0.4s] hover:shadow-md">
             <p className="text-xs text-muted-foreground">Disponíveis</p>
             <p className="mt-1 text-2xl font-medium tracking-[-0.06em] text-[#8ed462]">
-              {properties.filter((p) => p.status === "disponivel").length}
+              {loading ? "..." : properties.filter((p) => p.status === "disponivel").length}
             </p>
           </div>
           <div className="rounded-[10px] border border-border bg-card p-4 transition-all duration-[0.4s] hover:shadow-md">
             <p className="text-xs text-muted-foreground">Em negociação</p>
             <p className="mt-1 text-2xl font-medium tracking-[-0.06em] text-[#f5e211]">
-              {properties.filter((p) => p.status === "em_negociacao").length}
+              {loading ? "..." : properties.filter((p) => p.status === "em_negociacao").length}
             </p>
           </div>
           <div className="rounded-[10px] border border-border bg-card p-4 transition-all duration-[0.4s] hover:shadow-md">
             <p className="text-xs text-muted-foreground">Vendidos</p>
             <p className="mt-1 text-2xl font-medium tracking-[-0.06em] text-[#ff705d]">
-              {properties.filter((p) => p.status === "vendido").length}
+              {loading ? "..." : properties.filter((p) => p.status === "vendido").length}
             </p>
           </div>
         </div>
 
-        {/* Filters */}
         <div className="mb-6 flex flex-wrap gap-3">
           <select
             value={filterType}
@@ -259,7 +277,6 @@ export default function CRMPage() {
           )}
         </div>
 
-        {/* DataTable */}
         {filteredProperties.length > 0 ? (
           <DataTable
             columns={columns}
@@ -271,24 +288,27 @@ export default function CRMPage() {
           <div className="flex flex-col items-center justify-center rounded-[10px] border border-border bg-card py-20">
             <Building2 className="mb-4 h-12 w-12 text-muted-foreground/50" />
             <h2 className="text-lg font-medium tracking-[-0.06em]">
-              Nenhum imóvel cadastrado
+              {loading ? "Carregando imóveis..." : "Nenhum imóvel encontrado"}
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Comece publicando seu primeiro imóvel.
-            </p>
-            <Button
-              variant="green"
-              className="mt-6"
-              onClick={handleCreate}
-            >
-              <Plus className="h-4 w-4" />
-              Publicar Imóvel
-            </Button>
+            {!loading && (
+              <>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Comece publicando seu primeiro imóvel.
+                </p>
+                <Button
+                  variant="green"
+                  className="mt-6"
+                  onClick={handleCreate}
+                >
+                  <Plus className="h-4 w-4" />
+                  Publicar Imóvel
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
 
-      {/* Property Form Sheet */}
       <PropertyForm
         open={formOpen}
         onOpenChange={setFormOpen}
@@ -296,7 +316,6 @@ export default function CRMPage() {
         onSave={handleSave}
       />
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

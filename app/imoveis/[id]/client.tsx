@@ -42,11 +42,9 @@ import { PropertyCarouselSection } from "@/components/property-carousel-section"
 import { PropertyMap } from "@/components/property-map";
 import {
   Property,
-  getPropertyById,
   getPropertyTypeLabel,
   getPropertyStatusLabel,
   formatPrice,
-  getRelatedProperties,
 } from "@/lib/properties";
 
 export default function PropertyDetailPage() {
@@ -62,12 +60,6 @@ export default function PropertyDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    const found = getPropertyById(id);
-    if (found) {
-      setProperty(found);
-      setRelatedProperties(getRelatedProperties(found));
-      return;
-    }
 
     if (id.startsWith("reidoape-")) {
       async function fetchExternal() {

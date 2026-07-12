@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 
     for (let page = 0; page < maxPages; page++) {
       const res = await fetch(
-        `${REIDOAPE_API}?id_master=${REIDOAPE_ID_MASTER}&page=${page}`,
+        `${REIDOAPE_API}?id_master=${REIDOAPE_ID_MASTER}&pagina=${page}`,
         { headers: { "User-Agent": "Mozilla/5.0" } }
       );
       if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -77,20 +77,9 @@ export async function GET(request: NextRequest) {
 
     const item = found;
 
-    const stateMap: Record<string, string> = {
-      AC: "Acre", AL: "Alagoas", AP: "Amapá", AM: "Amazonas",
-      BA: "Bahia", CE: "Ceará", DF: "Distrito Federal", ES: "Espírito Santo",
-      GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", MS: "Mato Grosso do Sul",
-      MG: "Minas Gerais", PA: "Pará", PB: "Paraíba", PR: "Paraná",
-      PE: "Pernambuco", PI: "Piauí", RJ: "Rio de Janeiro", RN: "Rio Grande do Norte",
-      RS: "Rio Grande do Sul", RO: "Rondônia", RR: "Roraima", SC: "Santa Catarina",
-      SP: "São Paulo", SE: "Sergipe", TO: "Tocantins",
-    };
-
     const cityState = item.cidade.split(",").map((s: string) => s.trim());
     const city = cityState[0] ?? item.cidade;
     const stateShort = item.estado;
-    const stateFull = stateMap[stateShort] ?? stateShort;
 
     const enderecoRaw = cleanHtml(item.enderecoPermissao ?? "").replace(/^Endereço:\s*/i, "").trim();
     const numeroRaw = cleanHtml(item.numeroPermissao ?? "").replace(/^\|\s*Número:\s*/i, "").trim();
@@ -112,6 +101,8 @@ export async function GET(request: NextRequest) {
       Sala: "comercial", Prédio: "comercial", Chácara: "casa", Fazenda: "casa",
       Sítio: "casa", Kitnet: "apartamento", Flat: "apartamento",
       Cobertura: "apartamento", Andar: "apartamento",
+      Galpão: "comercial", "Grupo de Salas Comerciais": "comercial",
+      "Imóvel Comercial": "comercial", Sobrado: "casa",
     };
 
     const images = (item.fotos?.length > 0 ? item.fotos : [item.foto]).filter(Boolean);
@@ -148,7 +139,7 @@ export async function GET(request: NextRequest) {
       addressNumber: numeroRaw,
       neighborhood: item.bairro || "",
       city,
-      state: stateFull,
+      state: stateShort,
       cep: "",
       description,
       imageUrl: images[0] ?? "",

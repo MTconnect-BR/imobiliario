@@ -1,24 +1,49 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { Search, Store } from "lucide-react";
+import { Search, Store, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Property, getAllProperties, getPropertyTypeLabel } from "@/lib/properties";
+import { Property, getPropertyTypeLabel } from "@/lib/properties";
 import { PropertyCarouselSection } from "@/components/property-carousel-section";
 
 const TYPE = "comercial";
+const API_TYPES = ["Loja", "Sala", "Prédio", "Galpão", "Imóvel Comercial", "Grupo de Salas Comerciais"];
 
 export default function ComerciaisPage() {
   const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedState, setSelectedState] = useState("all");
 
-  useState(() => {
-    setProperties(
-      getAllProperties().filter((p) => p.type === TYPE)
-    );
-  });
+  useEffect(() => {
+    async function fetchProperties() {
+      try {
+        setLoading(true);
+        const allProperties: Property[] = [];
+
+        for (const apiType of API_TYPES) {
+          const firstRes = await fetch(`/api/reidoape?page=0&categoria_nome=${encodeURIComponent(apiType)}`);
+          if (!firstRes.ok) continue;
+          const firstData = await firstRes.json();
+          allProperties.push(...(firstData.properties ?? []));
+        }
+
+        const ids = new Set<string>();
+        const unique = allProperties.filter((p) => {
+          if (ids.has(p.id)) return false;
+          ids.add(p.id);
+          return true;
+        });
+        setProperties(unique);
+      } catch {
+        // silently fail
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProperties();
+  }, []);
 
   const states = useMemo(() => {
     return [...new Set(properties.map((p) => p.state))].sort();
@@ -91,7 +116,12 @@ export default function ComerciaisPage() {
 
       <section className="px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="mb-4 h-8 w-8 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground">Carregando imóveis comerciais...</p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Store className="mb-4 h-16 w-16 text-muted-foreground/30" />
               <h2 className="text-xl font-medium tracking-[-0.06em]">

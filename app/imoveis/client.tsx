@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, Building2, Navigation, Loader2 } from "lucide-react";
+import { Search, Building2, Navigation, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +12,6 @@ import { PropertyCarouselSection } from "@/components/property-carousel-section"
 import {
   Property,
   PropertyType,
-  getAllProperties,
   getPropertyTypeLabel,
 } from "@/lib/properties";
 import { haversineDistance, geocode } from "@/lib/geolocation";
@@ -48,6 +47,22 @@ const bedroomFilters: { value: string; label: string }[] = [
   { value: "4", label: "4+" },
 ];
 
+const bathroomFilters: { value: string; label: string }[] = [
+  { value: "all", label: "Qualquer" },
+  { value: "1", label: "1+" },
+  { value: "2", label: "2+" },
+  { value: "3", label: "3+" },
+  { value: "4", label: "4+" },
+];
+
+const parkingFilters: { value: string; label: string }[] = [
+  { value: "all", label: "Qualquer" },
+  { value: "1", label: "1+" },
+  { value: "2", label: "2+" },
+  { value: "3", label: "3+" },
+  { value: "4", label: "4+" },
+];
+
 const priceRanges = [
   { value: "all", label: "Qualquer preço" },
   { value: "0-100000", label: "Até R$ 100.000" },
@@ -56,6 +71,13 @@ const priceRanges = [
   { value: "300000-500000", label: "R$ 300.000 - R$ 500.000" },
   { value: "500000-1000000", label: "R$ 500.000 - R$ 1.000.000" },
   { value: "1000000-999999999", label: "Acima de R$ 1.000.000" },
+];
+
+const sortOptions = [
+  { value: "recentes", label: "Mais recentes" },
+  { value: "menor_valor", label: "Menor preço" },
+  { value: "maior_valor", label: "Maior preço" },
+  { value: "maior_desconto", label: "Maior desconto" },
 ];
 
 interface NearbyProperty {
@@ -71,28 +93,31 @@ export default function ImoveisPage() {
   const [selectedType, setSelectedType] = useState("all");
   const [selectedState, setSelectedState] = useState("all");
   const [selectedBedrooms, setSelectedBedrooms] = useState("all");
+  const [selectedBathrooms, setSelectedBathrooms] = useState("all");
+  const [selectedParking, setSelectedParking] = useState("all");
   const [selectedPrice, setSelectedPrice] = useState("all");
+  const [selectedSort, setSelectedSort] = useState("recentes");
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
   const [geocoding, setGeocoding] = useState(false);
   const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const searchParams = useSearchParams();
 
-  // Initialize filters from URL query params (e.g. from homepage search)
   useEffect(() => {
     const s = searchParams.get("search");
     const t = searchParams.get("type");
     const p = searchParams.get("price");
+    const st = searchParams.get("state");
+    const b = searchParams.get("bedrooms");
     if (s) setSearchQuery(s);
     if (t) setSelectedType(t);
     if (p) setSelectedPrice(p);
+    if (st) setSelectedState(st);
+    if (b) setSelectedBedrooms(b);
   }, [searchParams]);
 
-  // Load properties on mount: local + external (multiple pages)
   useEffect(() => {
-    const local = getAllProperties();
-    setAllProperties(local);
-
     async function fetchAllExternal() {
       try {
         setReidoapeLoading(true);
@@ -112,13 +137,16 @@ export default function ImoveisPage() {
           allExternal.push(...(data.properties ?? []));
         }
 
-        setAllProperties((prev) => {
-          const ids = new Set(prev.map((p) => p.id));
-          const newExternal = allExternal.filter((p) => !ids.has(p.id));
-          return [...prev, ...newExternal];
+        const externalIds = new Set<string>();
+        const uniqueExternal = allExternal.filter((p) => {
+          if (externalIds.has(p.id)) return false;
+          externalIds.add(p.id);
+          return true;
         });
+
+        setAllProperties(uniqueExternal);
       } catch {
-        // silently fail — local properties still work
+        // silently fail
       } finally {
         setReidoapeLoading(false);
       }
@@ -126,37 +154,37 @@ export default function ImoveisPage() {
     fetchAllExternal();
   }, []);
 
-  const availableStates = useMemo(() => {
-    const states = [...new Set(allProperties.map((p) => p.state))].sort();
-    return states;
-  }, [allProperties]);
-
   const filteredProperties = useMemo(() => {
     return allProperties.filter((p) => {
-      // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesSearch =
           p.title.toLowerCase().includes(query) ||
           p.address.toLowerCase().includes(query) ||
           p.neighborhood.toLowerCase().includes(query) ||
-          p.city.toLowerCase().includes(query);
+          p.city.toLowerCase().includes(query) ||
+          (p.refCaixa && p.refCaixa.toLowerCase().includes(query));
         if (!matchesSearch) return false;
       }
 
-      // Type filter
       if (selectedType !== "all" && p.type !== selectedType) return false;
-
-      // State filter
       if (selectedState !== "all" && p.state !== selectedState) return false;
 
-      // Bedrooms filter
       if (selectedBedrooms !== "all") {
-        const minBedrooms = parseInt(selectedBedrooms, 10);
-        if (p.bedrooms < minBedrooms) return false;
+        const min = parseInt(selectedBedrooms, 10);
+        if (p.bedrooms < min) return false;
       }
 
-      // Price filter
+      if (selectedBathrooms !== "all") {
+        const min = parseInt(selectedBathrooms, 10);
+        if (p.bathrooms < min) return false;
+      }
+
+      if (selectedParking !== "all") {
+        const min = parseInt(selectedParking, 10);
+        if (p.parkingSpaces < min) return false;
+      }
+
       if (selectedPrice !== "all") {
         const [min, max] = selectedPrice.split("-").map(Number);
         if (p.price < min || p.price > max) return false;
@@ -164,9 +192,28 @@ export default function ImoveisPage() {
 
       return true;
     });
-  }, [allProperties, searchQuery, selectedType, selectedState, selectedBedrooms, selectedPrice]);
+  }, [allProperties, searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice]);
 
-  // Proximity search: geocode and find nearby properties when no exact match
+  const sortedProperties = useMemo(() => {
+    const sorted = [...filteredProperties];
+    switch (selectedSort) {
+      case "menor_valor":
+        sorted.sort((a, b) => a.price - b.price);
+        break;
+      case "maior_valor":
+        sorted.sort((a, b) => b.price - a.price);
+        break;
+      case "maior_desconto":
+        sorted.sort((a, b) => (b.descontoPct ?? 0) - (a.descontoPct ?? 0));
+        break;
+      case "recentes":
+      default:
+        sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+    }
+    return sorted;
+  }, [filteredProperties, selectedSort]);
+
   useEffect(() => {
     if (geocodeTimerRef.current) {
       clearTimeout(geocodeTimerRef.current);
@@ -211,41 +258,69 @@ export default function ImoveisPage() {
   }, [filteredProperties.length, searchQuery, allProperties]);
 
   const featuredProperties = useMemo(
-    () => filteredProperties.slice(0, 10),
-    [filteredProperties]
+    () => sortedProperties.slice(0, 10),
+    [sortedProperties]
   );
 
-  const propertiesByType = useMemo(() => {
+  const featuredIds = useMemo(
+    () => new Set(featuredProperties.map((p) => p.id)),
+    [featuredProperties]
+  );
+
+  const remainingByType = useMemo(() => {
     const types: PropertyType[] = ["casa", "apartamento", "terreno", "comercial"];
     return types.map((type) => ({
       type,
       label: getPropertyTypeLabel(type),
-      properties: filteredProperties.filter((p) => p.type === type),
+      properties: sortedProperties.filter(
+        (p) => p.type === type && !featuredIds.has(p.id)
+      ),
     }));
-  }, [filteredProperties]);
+  }, [sortedProperties, featuredIds]);
 
-  const propertiesByState = useMemo(() => {
-    return availableStates.map((state) => ({
-      state,
-      properties: filteredProperties.filter((p) => p.state === state),
-    }));
-  }, [filteredProperties, availableStates]);
+  const remainingByState = useMemo(() => {
+    const stateMap: Record<string, string> = {
+      PR: "Paraná",
+      RJ: "Rio de Janeiro",
+      SC: "Santa Catarina",
+      SP: "São Paulo",
+    };
+    const stateCounts = new Map<string, number>();
+    for (const p of sortedProperties) {
+      if (!featuredIds.has(p.id)) {
+        stateCounts.set(p.state, (stateCounts.get(p.state) ?? 0) + 1);
+      }
+    }
+    return Array.from(stateCounts.entries())
+      .filter(([, count]) => count > 0)
+      .sort((a, b) => b[1] - a[1])
+      .map(([state]) => ({
+        state,
+        label: stateMap[state] ?? state,
+        properties: sortedProperties.filter(
+          (p) => p.state === state && !featuredIds.has(p.id)
+        ),
+      }));
+  }, [sortedProperties, featuredIds]);
 
   const hasFilters =
-    searchQuery || selectedType !== "all" || selectedState !== "all" || selectedBedrooms !== "all" || selectedPrice !== "all";
+    searchQuery || selectedType !== "all" || selectedState !== "all" ||
+    selectedBedrooms !== "all" || selectedBathrooms !== "all" ||
+    selectedParking !== "all" || selectedPrice !== "all";
 
   function clearFilters() {
     setSearchQuery("");
     setSelectedType("all");
     setSelectedState("all");
     setSelectedBedrooms("all");
+    setSelectedBathrooms("all");
+    setSelectedParking("all");
     setSelectedPrice("all");
     setNearbyProperties([]);
   }
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero */}
       <section className="px-6 pb-8 pt-32">
         <div className="mx-auto max-w-6xl text-center">
           <h1 className="text-primary">Encontre o imóvel perfeito</h1>
@@ -268,16 +343,14 @@ export default function ImoveisPage() {
         </div>
       </section>
 
-      {/* Filters */}
       <section className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-4">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            {/* Search */}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Buscar por título, endereço, bairro..."
+                placeholder="Buscar por título, endereço, bairro, ref..."
                 aria-label="Buscar imóveis"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -285,7 +358,6 @@ export default function ImoveisPage() {
               />
             </div>
 
-            {/* Type filter */}
             <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo">
               {typeFilters.map((filter) => (
                 <button
@@ -303,7 +375,6 @@ export default function ImoveisPage() {
               ))}
             </div>
 
-            {/* Price filter */}
             <select
               value={selectedPrice}
               onChange={(e) => setSelectedPrice(e.target.value)}
@@ -317,7 +388,6 @@ export default function ImoveisPage() {
               ))}
             </select>
 
-            {/* State filter */}
             <select
               value={selectedState}
               onChange={(e) => setSelectedState(e.target.value)}
@@ -331,7 +401,6 @@ export default function ImoveisPage() {
               ))}
             </select>
 
-            {/* Bedrooms filter */}
             <select
               value={selectedBedrooms}
               onChange={(e) => setSelectedBedrooms(e.target.value)}
@@ -345,20 +414,84 @@ export default function ImoveisPage() {
               ))}
             </select>
 
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className={`flex items-center gap-2 h-10 rounded-[10px] px-4 text-sm font-medium transition-all duration-[0.4s] ${
+                showAdvanced
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground border border-border hover:bg-muted"
+              }`}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Filtros
+            </button>
+
             {hasFilters && (
               <Button variant="ghost" size="sm" onClick={clearFilters}>
-                Limpar filtros
+                <X className="h-4 w-4 mr-1" />
+                Limpar
               </Button>
             )}
           </div>
+
+          {showAdvanced && (
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 border-t border-border pt-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  Banheiros
+                </label>
+                <select
+                  value={selectedBathrooms}
+                  onChange={(e) => setSelectedBathrooms(e.target.value)}
+                  className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+                >
+                  {bathroomFilters.map((b) => (
+                    <option key={b.value} value={b.value}>
+                      {b.label === "Qualquer" ? `Banheiros: ${b.label}` : `${b.label} banheiros`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  Vagas
+                </label>
+                <select
+                  value={selectedParking}
+                  onChange={(e) => setSelectedParking(e.target.value)}
+                  className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+                >
+                  {parkingFilters.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label === "Qualquer" ? `Vagas: ${p.label}` : `${p.label} vagas`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  Ordenar por
+                </label>
+                <select
+                  value={selectedSort}
+                  onChange={(e) => setSelectedSort(e.target.value)}
+                  className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+                >
+                  {sortOptions.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Content */}
       <section className="px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          {filteredProperties.length === 0 ? (
-            /* Empty State */
+          {sortedProperties.length === 0 && !reidoapeLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Building2 className="mb-4 h-16 w-16 text-muted-foreground/30" />
               <h2 className="text-xl font-medium tracking-[-0.06em]">
@@ -381,7 +514,6 @@ export default function ImoveisPage() {
                 )}
               </div>
 
-              {/* Nearby Properties */}
               {nearbyProperties.length > 0 && (
                 <div className="mt-16 w-full">
                   <div className="mb-8 text-center">
@@ -417,22 +549,20 @@ export default function ImoveisPage() {
             </div>
           ) : (
             <>
-              {/* Featured Carousel */}
               <PropertyCarouselSection
                 title="Destaques"
                 subtitle="Imóveis mais recentes"
                 properties={featuredProperties}
               />
 
-              {/* By Type - Tabs */}
-              {propertiesByType.some((g) => g.properties.length > 0) && (
+              {remainingByType.some((g) => g.properties.length > 0) && (
                 <section className="py-8">
                   <h2 className="mb-6 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
                     Por Tipo
                   </h2>
-                  <Tabs defaultValue="casa">
+                  <Tabs defaultValue={remainingByType.find((g) => g.properties.length > 0)?.type ?? "casa"}>
                     <TabsList className="mb-6">
-                      {propertiesByType
+                      {remainingByType
                         .filter((g) => g.properties.length > 0)
                         .map((group) => (
                           <TabsTrigger key={group.type} value={group.type}>
@@ -444,13 +574,13 @@ export default function ImoveisPage() {
                         ))}
                     </TabsList>
 
-                    {propertiesByType
+                    {remainingByType
                       .filter((g) => g.properties.length > 0)
                       .map((group) => (
                         <TabsContent key={group.type} value={group.type}>
                           <div className="relative">
                             <Carousel
-                              opts={{ align: "start", loop: group.properties.length > 3, containScroll: "trimSnaps" }}
+                              opts={{ align: "start", loop: false, containScroll: "trimSnaps" }}
                               className="w-full"
                             >
                               <CarouselContent>
@@ -473,8 +603,7 @@ export default function ImoveisPage() {
                 </section>
               )}
 
-              {/* By State */}
-              {propertiesByState.length > 0 && (
+              {remainingByState.length > 0 && (
                 <section className="py-8">
                   <h2 className="mb-2 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
                     Por Estado
@@ -482,10 +611,10 @@ export default function ImoveisPage() {
                   <p className="mb-6 text-sm text-muted-foreground">
                     Imóveis organizados por região
                   </p>
-                  {propertiesByState.map((group) => (
+                  {remainingByState.map((group) => (
                     <PropertyCarouselSection
                       key={group.state}
-                      title={group.state}
+                      title={group.label}
                       properties={group.properties}
                     />
                   ))}

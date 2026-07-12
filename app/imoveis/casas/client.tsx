@@ -1,24 +1,56 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { Search, Home } from "lucide-react";
+import { Search, Home, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PropertyCarouselSection } from "@/components/property-carousel-section";
-import { Property, getAllProperties, getPropertyTypeLabel } from "@/lib/properties";
+import { Property, getPropertyTypeLabel } from "@/lib/properties";
 
 const TYPE = "casa";
+const API_TYPE = "Casa";
 
 export default function CasasPage() {
   const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedState, setSelectedState] = useState("all");
 
-  useState(() => {
-    setProperties(
-      getAllProperties().filter((p) => p.type === TYPE)
-    );
-  });
+  useEffect(() => {
+    async function fetchProperties() {
+      try {
+        setLoading(true);
+        const allProperties: Property[] = [];
+        const firstRes = await fetch(`/api/reidoape?page=0&categoria_nome=${encodeURIComponent(API_TYPE)}`);
+        if (!firstRes.ok) throw new Error("Failed");
+        const firstData = await firstRes.json();
+        allProperties.push(...(firstData.properties ?? []));
+
+        const totalPages = Math.ceil((firstData.total ?? 0) / (firstData.perPage ?? 24));
+        const pagesToFetch = Math.min(totalPages, 10);
+
+        for (let p = 1; p < pagesToFetch; p++) {
+          const res = await fetch(`/api/reidoape?page=${p}&categoria_nome=${encodeURIComponent(API_TYPE)}`);
+          if (!res.ok) continue;
+          const data = await res.json();
+          allProperties.push(...(data.properties ?? []));
+        }
+
+        const ids = new Set<string>();
+        const unique = allProperties.filter((p) => {
+          if (ids.has(p.id)) return false;
+          ids.add(p.id);
+          return true;
+        });
+        setProperties(unique);
+      } catch {
+        // silently fail
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProperties();
+  }, []);
 
   const states = useMemo(() => {
     return [...new Set(properties.map((p) => p.state))].sort();
@@ -50,7 +82,6 @@ export default function CasasPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero */}
       <section className="px-6 pb-8 pt-32">
         <div className="mx-auto max-w-6xl text-center">
           <h1 className="text-primary">{getPropertyTypeLabel(TYPE)}s</h1>
@@ -60,7 +91,6 @@ export default function CasasPage() {
         </div>
       </section>
 
-      {/* Filters */}
       <section className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur px-6 py-4">
         <div className="mx-auto max-w-6xl flex flex-col gap-4 md:flex-row md:items-center">
           <div className="relative flex-1">
@@ -91,10 +121,14 @@ export default function CasasPage() {
         </div>
       </section>
 
-      {/* Content */}
       <section className="px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="mb-4 h-8 w-8 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground">Carregando casas...</p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Home className="mb-4 h-16 w-16 text-muted-foreground/30" />
               <h2 className="text-xl font-medium tracking-[-0.06em]">

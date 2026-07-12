@@ -103,20 +103,9 @@ function stripHtml(html: string): string {
 }
 
 function mapItemToProperty(item: ReiDoApeItem): Property {
-  const stateMap: Record<string, string> = {
-    AC: "Acre", AL: "Alagoas", AP: "Amapá", AM: "Amazonas",
-    BA: "Bahia", CE: "Ceará", DF: "Distrito Federal", ES: "Espírito Santo",
-    GO: "Goiás", MA: "Maranhão", MT: "Mato Grosso", MS: "Mato Grosso do Sul",
-    MG: "Minas Gerais", PA: "Pará", PB: "Paraíba", PR: "Paraná",
-    PE: "Pernambuco", PI: "Piauí", RJ: "Rio de Janeiro", RN: "Rio Grande do Norte",
-    RS: "Rio Grande do Sul", RO: "Rondônia", RR: "Roraima", SC: "Santa Catarina",
-    SP: "São Paulo", SE: "Sergipe", TO: "Tocantins",
-  };
-
   const cityState = item.cidade.split(",").map(s => s.trim());
   const city = cityState[0] ?? item.cidade;
   const stateShort = item.estado;
-  const stateFull = stateMap[stateShort] ?? stateShort;
 
   const enderecoRaw = stripHtml(item.enderecoPermissao ?? "").replace(/^Endereço:\s*/i, "").trim();
   const numeroRaw = stripHtml(item.numeroPermissao ?? "").replace(/^\|\s*Número:\s*/i, "").trim();
@@ -149,6 +138,10 @@ function mapItemToProperty(item: ReiDoApeItem): Property {
     Flat: "apartamento",
     Cobertura: "apartamento",
     Andar: "apartamento",
+    Galpão: "comercial",
+    "Grupo de Salas Comerciais": "comercial",
+    "Imóvel Comercial": "comercial",
+    Sobrado: "casa",
   };
 
   const images = (item.fotos?.length > 0 ? item.fotos : [item.foto]).filter(Boolean);
@@ -185,7 +178,7 @@ function mapItemToProperty(item: ReiDoApeItem): Property {
     addressNumber: numeroRaw,
     neighborhood: item.bairro || "",
     city,
-    state: stateFull,
+    state: stateShort,
     cep: "",
     description,
     imageUrl: images[0] ?? "",
@@ -211,20 +204,28 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   const page = Math.max(0, parseInt(searchParams.get("page") ?? "0", 10));
-  const type = searchParams.get("type") ?? "";
-  const state = searchParams.get("state") ?? "";
-  const city = searchParams.get("city") ?? "";
-  const q = searchParams.get("q") ?? "";
 
   const params = new URLSearchParams({
     id_master: REIDOAPE_ID_MASTER,
-    page: page.toString(),
+    pagina: page.toString(),
   });
 
-  if (type) params.set("categoria", type);
-  if (state) params.set("estado", state);
-  if (city) params.set("cidade", city);
-  if (q) params.set("q", q);
+  const passthrough = [
+    "estado", "cidade", "bairro", "categoria_nome", "busca",
+    "referencia", "financiamento", "caixa_fgts", "caixa_pagamento",
+    "caixa_condominio", "caixa_tributos", "preco_minimo", "preco_maximo",
+    "quartos_min", "banheiros_min", "vagas_min", "ordena", "tipo_imovel",
+  ];
+
+  for (const key of passthrough) {
+    const val = searchParams.get(key);
+    if (val) params.set(key, val);
+  }
+
+  const estadoImovel = searchParams.getAll("estado_imovel[]");
+  for (const val of estadoImovel) {
+    params.append("estado_imovel[]", val);
+  }
 
   try {
     const res = await fetch(`${REIDOAPE_API}?${params}`, {
