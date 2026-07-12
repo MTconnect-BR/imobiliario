@@ -66,6 +66,26 @@ export default function PropertyDetailPage() {
     if (found) {
       setProperty(found);
       setRelatedProperties(getRelatedProperties(found));
+      return;
+    }
+
+    if (id.startsWith("reidoape-")) {
+      async function fetchExternal() {
+        try {
+          const res = await fetch(`/api/reidoape-property?id=${id.replace("reidoape-", "")}`);
+          if (!res.ok) throw new Error("Not found");
+          const data = await res.json();
+          if (data.property) {
+            setProperty(data.property);
+            setRelatedProperties([]);
+          } else {
+            setNotFound(true);
+          }
+        } catch {
+          setNotFound(true);
+        }
+      }
+      fetchExternal();
     } else {
       setNotFound(true);
     }

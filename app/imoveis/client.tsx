@@ -32,11 +32,29 @@ const typeFilters: { value: string; label: string }[] = [
   { value: "comercial", label: "Comerciais" },
 ];
 
+const stateFilters: { value: string; label: string }[] = [
+  { value: "all", label: "Todos os estados" },
+  { value: "PR", label: "Paraná" },
+  { value: "RJ", label: "Rio de Janeiro" },
+  { value: "SC", label: "Santa Catarina" },
+  { value: "SP", label: "São Paulo" },
+];
+
+const bedroomFilters: { value: string; label: string }[] = [
+  { value: "all", label: "Qualquer" },
+  { value: "1", label: "1+" },
+  { value: "2", label: "2+" },
+  { value: "3", label: "3+" },
+  { value: "4", label: "4+" },
+];
+
 const priceRanges = [
   { value: "all", label: "Qualquer preço" },
-  { value: "0-300000", label: "Até R$ 300.000" },
-  { value: "300000-600000", label: "R$ 300.000 - R$ 600.000" },
-  { value: "600000-1000000", label: "R$ 600.000 - R$ 1.000.000" },
+  { value: "0-100000", label: "Até R$ 100.000" },
+  { value: "100000-200000", label: "R$ 100.000 - R$ 200.000" },
+  { value: "200000-300000", label: "R$ 200.000 - R$ 300.000" },
+  { value: "300000-500000", label: "R$ 300.000 - R$ 500.000" },
+  { value: "500000-1000000", label: "R$ 500.000 - R$ 1.000.000" },
   { value: "1000000-999999999", label: "Acima de R$ 1.000.000" },
 ];
 
@@ -51,6 +69,8 @@ export default function ImoveisPage() {
   const [reidoapeCount, setReidoapeCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
+  const [selectedState, setSelectedState] = useState("all");
+  const [selectedBedrooms, setSelectedBedrooms] = useState("all");
   const [selectedPrice, setSelectedPrice] = useState("all");
   const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
   const [geocoding, setGeocoding] = useState(false);
@@ -127,6 +147,15 @@ export default function ImoveisPage() {
       // Type filter
       if (selectedType !== "all" && p.type !== selectedType) return false;
 
+      // State filter
+      if (selectedState !== "all" && p.state !== selectedState) return false;
+
+      // Bedrooms filter
+      if (selectedBedrooms !== "all") {
+        const minBedrooms = parseInt(selectedBedrooms, 10);
+        if (p.bedrooms < minBedrooms) return false;
+      }
+
       // Price filter
       if (selectedPrice !== "all") {
         const [min, max] = selectedPrice.split("-").map(Number);
@@ -135,7 +164,7 @@ export default function ImoveisPage() {
 
       return true;
     });
-  }, [allProperties, searchQuery, selectedType, selectedPrice]);
+  }, [allProperties, searchQuery, selectedType, selectedState, selectedBedrooms, selectedPrice]);
 
   // Proximity search: geocode and find nearby properties when no exact match
   useEffect(() => {
@@ -203,11 +232,13 @@ export default function ImoveisPage() {
   }, [filteredProperties, availableStates]);
 
   const hasFilters =
-    searchQuery || selectedType !== "all" || selectedPrice !== "all";
+    searchQuery || selectedType !== "all" || selectedState !== "all" || selectedBedrooms !== "all" || selectedPrice !== "all";
 
   function clearFilters() {
     setSearchQuery("");
     setSelectedType("all");
+    setSelectedState("all");
+    setSelectedBedrooms("all");
     setSelectedPrice("all");
     setNearbyProperties([]);
   }
@@ -282,6 +313,34 @@ export default function ImoveisPage() {
               {priceRanges.map((range) => (
                 <option key={range.value} value={range.value}>
                   {range.label}
+                </option>
+              ))}
+            </select>
+
+            {/* State filter */}
+            <select
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+              aria-label="Filtrar por estado"
+              className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
+            >
+              {stateFilters.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+
+            {/* Bedrooms filter */}
+            <select
+              value={selectedBedrooms}
+              onChange={(e) => setSelectedBedrooms(e.target.value)}
+              aria-label="Filtrar por dormitórios"
+              className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
+            >
+              {bedroomFilters.map((b) => (
+                <option key={b.value} value={b.value}>
+                  {b.label === "Qualquer" ? `Dormitórios: ${b.label}` : `${b.label} dormitórios`}
                 </option>
               ))}
             </select>
