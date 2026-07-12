@@ -16,6 +16,14 @@ const typeFilters = [
   { value: "comercial", label: "Comerciais" },
 ];
 
+const stateFilters = [
+  { value: "all", label: "Todos os estados" },
+  { value: "PR", label: "Paraná" },
+  { value: "RJ", label: "Rio de Janeiro" },
+  { value: "SC", label: "Santa Catarina" },
+  { value: "SP", label: "São Paulo" },
+];
+
 const priceRanges = [
   { value: "all", label: "Qualquer preço" },
   { value: "0-100000", label: "Até R$ 100.000" },
@@ -26,11 +34,21 @@ const priceRanges = [
   { value: "1000000-999999999", label: "Acima de R$ 1.000.000" },
 ];
 
+const bedroomFilters = [
+  { value: "all", label: "Qualquer" },
+  { value: "1", label: "1+" },
+  { value: "2", label: "2+" },
+  { value: "3", label: "3+" },
+  { value: "4", label: "4+" },
+];
+
 export function HomeSearch() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");
+  const [state, setState] = useState("all");
   const [price, setPrice] = useState("all");
+  const [bedrooms, setBedrooms] = useState("all");
   const [inView, setInView] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -56,7 +74,9 @@ export function HomeSearch() {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
     if (type !== "all") params.set("type", type);
+    if (state !== "all") params.set("state", state);
     if (price !== "all") params.set("price", price);
+    if (bedrooms !== "all") params.set("bedrooms", bedrooms);
     router.push(`/imoveis?${params.toString()}`);
   }
 
@@ -120,6 +140,38 @@ export function HomeSearch() {
                   {priceRanges.map((r) => (
                     <option key={r.value} value={r.value}>
                       {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">
+                  Estado
+                </label>
+                <select
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  className="h-10 w-full rounded-[10px] border border-input bg-transparent px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none cursor-pointer"
+                >
+                  {stateFilters.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">
+                  Dormitórios
+                </label>
+                <select
+                  value={bedrooms}
+                  onChange={(e) => setBedrooms(e.target.value)}
+                  className="h-10 w-full rounded-[10px] border border-input bg-transparent px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none cursor-pointer"
+                >
+                  {bedroomFilters.map((b) => (
+                    <option key={b.value} value={b.value}>
+                      {b.label === "Qualquer" ? "Qualquer" : `${b.label} dormitórios`}
                     </option>
                   ))}
                 </select>
