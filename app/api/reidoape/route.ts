@@ -204,10 +204,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   const page = Math.max(0, parseInt(searchParams.get("page") ?? "0", 10));
+  const limite = Math.min(100, Math.max(1, parseInt(searchParams.get("limite") ?? "24", 10)));
 
   const params = new URLSearchParams({
     id_master: REIDOAPE_ID_MASTER,
     pagina: page.toString(),
+    limite: limite.toString(),
   });
 
   const passthrough = [

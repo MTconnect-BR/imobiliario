@@ -80,6 +80,9 @@ const sortOptions = [
   { value: "maior_desconto", label: "Maior desconto" },
 ];
 
+const PAGE_SIZE = 100;
+const MAX_PAGES = 3;
+
 interface NearbyProperty {
   property: Property;
   distance: number;
@@ -121,24 +124,31 @@ export default function ImoveisPage() {
     async function fetchAllExternal() {
       try {
         setReidoapeLoading(true);
-        const firstRes = await fetch("/api/reidoape?page=0");
+        const firstRes = await fetch(`/api/reidoape?page=0&limite=${PAGE_SIZE}`);
         if (!firstRes.ok) throw new Error("First page failed");
         const firstData = await firstRes.json();
-        const allExternal: Property[] = firstData.properties ?? [];
+        const firstProperties: Property[] = firstData.properties ?? [];
         setReidoapeCount(firstData.total ?? 0);
 
-        const totalPages = Math.ceil((firstData.total ?? 0) / (firstData.perPage ?? 24));
-        const pagesToFetch = Math.min(totalPages, 10);
+        const totalPages = Math.ceil((firstData.total ?? 0) / (firstData.perPage ?? PAGE_SIZE));
+        const pagesToFetch = Math.min(totalPages, MAX_PAGES);
 
-        for (let p = 1; p < pagesToFetch; p++) {
-          const res = await fetch(`/api/reidoape?page=${p}`);
-          if (!res.ok) continue;
-          const data = await res.json();
-          allExternal.push(...(data.properties ?? []));
+        if (pagesToFetch > 1) {
+          const remainingPages = Array.from({ length: pagesToFetch - 1 }, (_, i) => i + 1);
+          const results = await Promise.all(
+            remainingPages.map((p) =>
+              fetch(`/api/reidoape?page=${p}&limite=${PAGE_SIZE}`)
+                .then((r) => (r.ok ? r.json() : { properties: [] }))
+                .catch(() => ({ properties: [] }))
+            )
+          );
+          for (const data of results) {
+            firstProperties.push(...(data.properties ?? []));
+          }
         }
 
         const externalIds = new Set<string>();
-        const uniqueExternal = allExternal.filter((p) => {
+        const uniqueExternal = firstProperties.filter((p) => {
           if (externalIds.has(p.id)) return false;
           externalIds.add(p.id);
           return true;
@@ -278,6 +288,16 @@ export default function ImoveisPage() {
     }));
   }, [sortedProperties, featuredIds]);
 
+  const stateCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of sortedProperties) {
+      counts.set(p.state, (counts.get(p.state) ?? 0) + 1);
+    }
+    return counts;
+  }, [sortedProperties]);
+
+  const hasMultipleStates = stateCounts.size > 1;
+
   const remainingByState = useMemo(() => {
     const stateMap: Record<string, string> = {
       PR: "Paraná",
@@ -285,12 +305,6 @@ export default function ImoveisPage() {
       SC: "Santa Catarina",
       SP: "São Paulo",
     };
-    const stateCounts = new Map<string, number>();
-    for (const p of sortedProperties) {
-      if (!featuredIds.has(p.id)) {
-        stateCounts.set(p.state, (stateCounts.get(p.state) ?? 0) + 1);
-      }
-    }
     return Array.from(stateCounts.entries())
       .filter(([, count]) => count > 0)
       .sort((a, b) => b[1] - a[1])
@@ -299,6 +313,26 @@ export default function ImoveisPage() {
         label: stateMap[state] ?? state,
         properties: sortedProperties.filter(
           (p) => p.state === state && !featuredIds.has(p.id)
+        ),
+      }));
+  }, [sortedProperties, featuredIds, stateCounts]);
+
+  const remainingByCity = useMemo(() => {
+    const cityCounts = new Map<string, number>();
+    for (const p of sortedProperties) {
+      if (!featuredIds.has(p.id)) {
+        cityCounts.set(p.city, (cityCounts.get(p.city) ?? 0) + 1);
+      }
+    }
+    return Array.from(cityCounts.entries())
+      .filter(([, count]) => count >= 2)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([city]) => ({
+        city,
+        label: city,
+        properties: sortedProperties.filter(
+          (p) => p.city === city && !featuredIds.has(p.id)
         ),
       }));
   }, [sortedProperties, featuredIds]);
@@ -321,7 +355,7 @@ export default function ImoveisPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="px-6 pb-8 pt-32">
+      <section className="px-6 pb-6 pt-28 md:pt-32">
         <div className="mx-auto max-w-6xl text-center">
           <h1 className="text-primary">Encontre o imóvel perfeito</h1>
           <p className="lead mt-4 text-muted-foreground">
@@ -343,9 +377,9 @@ export default function ImoveisPage() {
         </div>
       </section>
 
-      <section className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-4">
+      <section className="sticky top-20 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-3 md:top-0 md:py-4">
         <div className="mx-auto max-w-6xl">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -375,69 +409,74 @@ export default function ImoveisPage() {
               ))}
             </div>
 
-            <select
-              value={selectedPrice}
-              onChange={(e) => setSelectedPrice(e.target.value)}
-              aria-label="Filtrar por faixa de preço"
-              className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
-            >
-              {priceRanges.map((range) => (
-                <option key={range.value} value={range.value}>
-                  {range.label}
-                </option>
-              ))}
-            </select>
+            <div className="flex flex-wrap gap-2">
+              <select
+                value={selectedPrice}
+                onChange={(e) => setSelectedPrice(e.target.value)}
+                aria-label="Filtrar por faixa de preço"
+                className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
+              >
+                {priceRanges.map((range) => (
+                  <option key={range.value} value={range.value}>
+                    {range.label}
+                  </option>
+                ))}
+              </select>
 
-            <select
-              value={selectedState}
-              onChange={(e) => setSelectedState(e.target.value)}
-              aria-label="Filtrar por estado"
-              className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
-            >
-              {stateFilters.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
+              <select
+                value={selectedState}
+                onChange={(e) => setSelectedState(e.target.value)}
+                aria-label="Filtrar por estado"
+                className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
+              >
+                {stateFilters.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
 
-            <select
-              value={selectedBedrooms}
-              onChange={(e) => setSelectedBedrooms(e.target.value)}
-              aria-label="Filtrar por dormitórios"
-              className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
-            >
-              {bedroomFilters.map((b) => (
-                <option key={b.value} value={b.value}>
-                  {b.label === "Qualquer" ? `Dormitórios: ${b.label}` : `${b.label} dormitórios`}
-                </option>
-              ))}
-            </select>
+              <select
+                value={selectedBedrooms}
+                onChange={(e) => setSelectedBedrooms(e.target.value)}
+                aria-label="Filtrar por dormitórios"
+                className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
+              >
+                {bedroomFilters.map((b) => (
+                  <option key={b.value} value={b.value}>
+                    {b.label === "Qualquer" ? `Dormitórios: ${b.label}` : `${b.label} dormitórios`}
+                  </option>
+                ))}
+              </select>
 
-            <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className={`flex items-center gap-2 h-10 rounded-[10px] px-4 text-sm font-medium transition-all duration-[0.4s] ${
-                showAdvanced
-                  ? "bg-foreground text-background"
-                  : "bg-card text-foreground border border-border hover:bg-muted"
-              }`}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              Filtros
-            </button>
+              <button
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className={`flex items-center gap-2 h-10 rounded-[10px] px-4 text-sm font-medium transition-all duration-[0.4s] ${
+                  showAdvanced
+                    ? "bg-foreground text-background"
+                    : "bg-card text-foreground border border-border hover:bg-muted"
+                }`}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Filtros
+              </button>
 
-            {hasFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters}>
-                <X className="h-4 w-4 mr-1" />
-                Limpar
-              </Button>
-            )}
+              {hasFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="flex items-center gap-1 h-10 rounded-[10px] px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                  Limpar
+                </button>
+              )}
+            </div>
           </div>
 
           {showAdvanced && (
-            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 border-t border-border pt-4">
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 border-t border-border pt-3">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
                   Banheiros
                 </label>
                 <select
@@ -453,7 +492,7 @@ export default function ImoveisPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
                   Vagas
                 </label>
                 <select
@@ -469,7 +508,7 @@ export default function ImoveisPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
                   Ordenar por
                 </label>
                 <select
@@ -603,7 +642,7 @@ export default function ImoveisPage() {
                 </section>
               )}
 
-              {remainingByState.length > 0 && (
+              {hasMultipleStates && remainingByState.length > 0 && (
                 <section className="py-8">
                   <h2 className="mb-2 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
                     Por Estado
@@ -614,6 +653,24 @@ export default function ImoveisPage() {
                   {remainingByState.map((group) => (
                     <PropertyCarouselSection
                       key={group.state}
+                      title={group.label}
+                      properties={group.properties}
+                    />
+                  ))}
+                </section>
+              )}
+
+              {!hasMultipleStates && remainingByCity.length > 0 && (
+                <section className="py-8">
+                  <h2 className="mb-2 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
+                    Por Cidade
+                  </h2>
+                  <p className="mb-6 text-sm text-muted-foreground">
+                    Imóveis organizados por cidade
+                  </p>
+                  {remainingByCity.map((group) => (
+                    <PropertyCarouselSection
+                      key={group.city}
                       title={group.label}
                       properties={group.properties}
                     />
