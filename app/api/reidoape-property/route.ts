@@ -24,10 +24,15 @@ function parsePrice(text: string): number {
 }
 
 function parseArea(text: string): number {
-  const cleaned = cleanHtml(text).replace(/\./g, "").replace(",", ".");
-  const match = cleaned.match(/([\d.]+)\s*m/);
-  if (!match) return 0;
-  const num = parseFloat(match[1]);
+  const cleaned = cleanHtml(text).trim();
+  if (!cleaned) return 0;
+  const normalized = cleaned.replace(/\./g, "").replace(",", ".");
+  const match = normalized.match(/([\d.]+)\s*m/);
+  if (match) {
+    const num = parseFloat(match[1]);
+    return isNaN(num) ? 0 : num;
+  }
+  const num = parseFloat(normalized);
   return isNaN(num) ? 0 : num;
 }
 
@@ -46,21 +51,31 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const res = await fetch(
-      `${REIDOAPE_API}?id_master=${REIDOAPE_ID_MASTER}&page=0`,
-      { headers: { "User-Agent": "Mozilla/5.0" } }
-    );
+    let found = null;
+    const maxPages = 10;
 
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
-    const data = await res.json();
+    for (let page = 0; page < maxPages; page++) {
+      const res = await fetch(
+        `${REIDOAPE_API}?id_master=${REIDOAPE_ID_MASTER}&page=${page}`,
+        { headers: { "User-Agent": "Mozilla/5.0" } }
+      );
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      const data = await res.json();
+      const match = data.items?.find(
+        (i: { id: string }) => i.id === reidoapeId
+      );
+      if (match) {
+        found = match;
+        break;
+      }
+      if (!data.items || data.items.length === 0) break;
+    }
 
-    const item = data.items?.find(
-      (i: { id: string }) => i.id === reidoapeId
-    );
-
-    if (!item) {
+    if (!found) {
       return NextResponse.json({ property: null }, { status: 404 });
     }
+
+    const item = found;
 
     const stateMap: Record<string, string> = {
       AC: "Acre", AL: "Alagoas", AP: "Amapá", AM: "Amazonas",

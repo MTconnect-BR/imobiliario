@@ -80,10 +80,15 @@ function parsePrice(text: string): number {
 }
 
 function parseArea(text: string): number {
-  const cleaned = cleanHtml(text).replace(/\./g, "").replace(",", ".");
-  const match = cleaned.match(/([\d.]+)\s*m/);
-  if (!match) return 0;
-  const num = parseFloat(match[1]);
+  const cleaned = cleanHtml(text).trim();
+  if (!cleaned) return 0;
+  const normalized = cleaned.replace(/\./g, "").replace(",", ".");
+  const match = normalized.match(/([\d.]+)\s*m/);
+  if (match) {
+    const num = parseFloat(match[1]);
+    return isNaN(num) ? 0 : num;
+  }
+  const num = parseFloat(normalized);
   return isNaN(num) ? 0 : num;
 }
 
