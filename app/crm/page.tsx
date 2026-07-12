@@ -51,9 +51,26 @@ export default function CRMPage() {
     setProperties(getAllProperties());
   }, []);
 
+  const loadExternalProperties = useCallback(async () => {
+    try {
+      const res = await fetch("/api/reidoape?page=0");
+      if (!res.ok) return;
+      const data = await res.json();
+      const external: Property[] = data.properties ?? [];
+      setProperties((prev) => {
+        const ids = new Set(prev.map((p) => p.id));
+        const newExternal = external.filter((p) => !ids.has(p.id));
+        return [...prev, ...newExternal];
+      });
+    } catch {
+      // silently fail
+    }
+  }, []);
+
   useEffect(() => {
     loadProperties();
-  }, [loadProperties]);
+    loadExternalProperties();
+  }, [loadProperties, loadExternalProperties]);
 
   function handleCreate() {
     setEditingProperty(null);

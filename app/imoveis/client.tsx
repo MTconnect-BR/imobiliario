@@ -68,22 +68,33 @@ export default function ImoveisPage() {
     if (p) setSelectedPrice(p);
   }, [searchParams]);
 
-  // Load properties on mount: local + Rei do APê (first page)
+  // Load properties on mount: local + external (multiple pages)
   useEffect(() => {
     const local = getAllProperties();
     setAllProperties(local);
 
-    async function fetchReidoape() {
+    async function fetchAllExternal() {
       try {
         setReidoapeLoading(true);
-        const res = await fetch("/api/reidoape?limit=100&page=1");
-        if (!res.ok) return;
-        const data = await res.json();
-        const external: Property[] = data.properties ?? [];
-        setReidoapeCount(data.total ?? 0);
+        const firstRes = await fetch("/api/reidoape?page=0");
+        if (!firstRes.ok) throw new Error("First page failed");
+        const firstData = await firstRes.json();
+        const allExternal: Property[] = firstData.properties ?? [];
+        setReidoapeCount(firstData.total ?? 0);
+
+        const totalPages = Math.ceil((firstData.total ?? 0) / (firstData.perPage ?? 24));
+        const pagesToFetch = Math.min(totalPages, 10);
+
+        for (let p = 1; p < pagesToFetch; p++) {
+          const res = await fetch(`/api/reidoape?page=${p}`);
+          if (!res.ok) continue;
+          const data = await res.json();
+          allExternal.push(...(data.properties ?? []));
+        }
+
         setAllProperties((prev) => {
           const ids = new Set(prev.map((p) => p.id));
-          const newExternal = external.filter((p) => !ids.has(p.id));
+          const newExternal = allExternal.filter((p) => !ids.has(p.id));
           return [...prev, ...newExternal];
         });
       } catch {
@@ -92,7 +103,7 @@ export default function ImoveisPage() {
         setReidoapeLoading(false);
       }
     }
-    fetchReidoape();
+    fetchAllExternal();
   }, []);
 
   const availableStates = useMemo(() => {
