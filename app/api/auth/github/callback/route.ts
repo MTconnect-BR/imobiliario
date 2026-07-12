@@ -53,7 +53,7 @@ async function checkOrgMembership(
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
-  const redirectBase = process.env.NEXT_PUBLIC_APP_URL || "https://imobiliario-nu.vercel.app";
+  const redirectBase = process.env.NEXT_PUBLIC_APP_URL || "https://imobiliario-one.vercel.app";
 
   if (!code) {
     return NextResponse.redirect(

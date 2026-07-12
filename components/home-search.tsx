@@ -18,9 +18,11 @@ const typeFilters = [
 
 const priceRanges = [
   { value: "all", label: "Qualquer preço" },
-  { value: "0-300000", label: "Até R$ 300.000" },
-  { value: "300000-600000", label: "R$ 300.000 - R$ 600.000" },
-  { value: "600000-1000000", label: "R$ 600.000 - R$ 1.000.000" },
+  { value: "0-100000", label: "Até R$ 100.000" },
+  { value: "100000-200000", label: "R$ 100.000 - R$ 200.000" },
+  { value: "200000-300000", label: "R$ 200.000 - R$ 300.000" },
+  { value: "300000-500000", label: "R$ 300.000 - R$ 500.000" },
+  { value: "500000-1000000", label: "R$ 500.000 - R$ 1.000.000" },
   { value: "1000000-999999999", label: "Acima de R$ 1.000.000" },
 ];
 
