@@ -38,7 +38,6 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { PropertyCarouselSection } from "@/components/property-carousel-section";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
 import { PropertyDetailSkeleton } from "@/components/skeletons";
 import { PropertyMap } from "@/components/property-map";
@@ -66,6 +65,7 @@ export default function PropertyDetailPage() {
 
     async function fetchProperty() {
       try {
+        setLoading(true);
         const res = await fetch(`/api/reidoape-property?id=${id}`);
         if (!res.ok) throw new Error("Not found");
         const data = await res.json();
@@ -74,16 +74,13 @@ export default function PropertyDetailPage() {
 
           const prop = data.property;
           const similarRes = await fetch(
-            `/api/reidoape?page=0&limite=20&state=${prop.state}`
+            `/api/properties?type=${prop.type}&state=${prop.state}&limit=20`
           );
           if (similarRes.ok) {
             const similarData = await similarRes.json();
             const similar: Property[] = (similarData.properties ?? [])
               .filter((p: Property) => p.id !== prop.id)
               .sort((a: Property, b: Property) => {
-                const aType = a.type === prop.type ? 1 : 0;
-                const bType = b.type === prop.type ? 1 : 0;
-                if (bType !== aType) return bType - aType;
                 const aCity = a.city === prop.city ? 1 : 0;
                 const bCity = b.city === prop.city ? 1 : 0;
                 return bCity - aCity;
@@ -209,6 +206,7 @@ export default function PropertyDetailPage() {
                         height={675}
                         priority={i === 0}
                         className="h-full w-full object-cover"
+                        unoptimized
                       />
                     </div>
                   </CarouselItem>
@@ -259,6 +257,7 @@ export default function PropertyDetailPage() {
                     height={64}
                     loading="lazy"
                     className="h-full w-full object-cover"
+                    unoptimized
                   />
                 </button>
               ))}
@@ -279,8 +278,8 @@ export default function PropertyDetailPage() {
                 <Badge variant={statusVariant as "green" | "yellow" | "red"}>
                   {getPropertyStatusLabel(property.status)}
                 </Badge>
-                {property.source === "reidoape" && (
-                  <Badge variant="blue">Venda Direta Online - Caixa</Badge>
+                {property.modalidade && (
+                  <Badge variant="blue">{property.modalidade}</Badge>
                 )}
                 {property.refCaixa && (
                   <Badge variant="outline" className="text-muted-foreground">
@@ -307,6 +306,16 @@ export default function PropertyDetailPage() {
                 <span className="text-3xl font-medium tracking-[-0.06em] text-primary">
                   {formatPrice(property.price)}
                 </span>
+                {property.avaliacaoPrice && property.avaliacaoPrice > property.price && (
+                  <span className="ml-3 text-sm text-muted-foreground line-through">
+                    {formatPrice(property.avaliacaoPrice)}
+                  </span>
+                )}
+                {property.descontoPct && property.descontoPct > 0 && (
+                  <Badge variant="green" className="ml-2">
+                    -{property.descontoPct}%
+                  </Badge>
+                )}
               </div>
 
               <Separator className="my-8" />
@@ -361,8 +370,8 @@ export default function PropertyDetailPage() {
                 </p>
               </div>
 
-              {/* Documents & Official Link (Rei do APê) */}
-              {property.source === "reidoape" && (
+              {/* Documents & Official Link */}
+              {((property.documents && property.documents.length > 0) || property.officialUrl) && (
                 <>
                   <Separator className="my-8" />
                   <div>
@@ -396,25 +405,13 @@ export default function PropertyDetailPage() {
                         </a>
                       )}
                     </div>
-                    {property.situacaoCaixa && (
-                      <p className="mt-3 text-sm text-muted-foreground">
-                        Situação: <span className="font-medium text-foreground">{property.situacaoCaixa}</span>
-                      </p>
-                    )}
-                    {property.avaliacaoPrice && property.avaliacaoPrice > property.price && (
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Valor de avaliação: <span className="font-medium text-foreground">
-                          {formatPrice(property.avaliacaoPrice)}
-                        </span>
-                      </p>
-                    )}
                   </div>
                 </>
               )}
 
               {/* Map */}
               {property.lat != null && property.lng != null && (
-                <div>
+                <div className="mt-8">
                   <h2 className="mb-4 text-xl font-medium tracking-[-0.06em]">
                     Localização
                   </h2>
@@ -456,6 +453,18 @@ export default function PropertyDetailPage() {
                       {getPropertyStatusLabel(property.status)}
                     </Badge>
                   </div>
+                  {property.modalidade && (
+                    <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3">
+                      <span className="text-sm text-muted-foreground">Modalidade</span>
+                      <span className="text-sm font-medium">{property.modalidade}</span>
+                    </div>
+                  )}
+                  {property.tipo_origem && (
+                    <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3">
+                      <span className="text-sm text-muted-foreground">Origem</span>
+                      <span className="text-sm font-medium capitalize">{property.tipo_origem}</span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3">
                     <span className="text-sm text-muted-foreground">Área</span>
                     <span className="text-sm font-medium">{property.area} m²</span>
@@ -486,7 +495,13 @@ export default function PropertyDetailPage() {
                     <span className="text-sm text-muted-foreground">Estado</span>
                     <span className="text-sm font-medium">{property.state}</span>
                   </div>
-                  <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3 sm:col-span-2">
+                  {property.refCaixa && (
+                    <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3">
+                      <span className="text-sm text-muted-foreground">Ref. Caixa</span>
+                      <span className="text-sm font-medium">{property.refCaixa}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3">
                     <span className="text-sm text-muted-foreground">Publicado em</span>
                     <span className="flex items-center gap-1.5 text-sm font-medium">
                       <Calendar className="h-3.5 w-3.5" />
@@ -588,7 +603,7 @@ export default function PropertyDetailPage() {
             <p className="mb-6 text-sm text-muted-foreground">
               Outros {getPropertyTypeLabel(property.type).toLowerCase()}s em {property.city}
             </p>
-            <div className="space-y-4">
+            <div className="space-y-6">
               {relatedProperties.map((rp) => (
                 <PropertyCatalogCard key={rp.id} property={rp} horizontal />
               ))}
