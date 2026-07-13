@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
+import { SiteFooter } from "@/components/site-footer";
 
 const MindMarketMenu = dynamic(
   () => import("@/components/mindmarket-menu").then((m) => m.MindMarketMenu),
@@ -30,6 +31,7 @@ export function ChromeWrapper({ children }: { children: React.ReactNode }) {
       {!hideChrome && <MindMarketMenu />}
       {hideChrome ? children : <PageTransition>{children}</PageTransition>}
       {!hideChrome && <FAQPanel />}
+      {!hideChrome && <SiteFooter />}
     </>
   );
 }
