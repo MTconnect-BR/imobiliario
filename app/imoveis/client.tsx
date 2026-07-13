@@ -6,7 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { Search, Building2, Navigation, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
+import { PropertyGridSkeleton, FiltersSkeleton } from "@/components/skeletons";
 import { Property } from "@/lib/properties";
 import { haversineDistance, geocode } from "@/lib/geolocation";
 
@@ -543,7 +545,15 @@ export default function ImoveisPage() {
 
       <section className="px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          {displayedProperties.length === 0 && !reidoapeLoading ? (
+          {reidoapeLoading ? (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <PropertyGridSkeleton count={isMobile ? 8 : 12} />
+            </div>
+          ) : displayedProperties.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Building2 className="mb-4 h-16 w-16 text-muted-foreground/30" />
               <h2 className="text-xl font-medium tracking-[-0.06em]">

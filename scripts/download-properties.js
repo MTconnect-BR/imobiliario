@@ -203,13 +203,22 @@ async function main() {
 
   const properties = allItems.map(mapItem);
 
+  const uniqueMap = new Map();
+  for (const p of properties) {
+    uniqueMap.set(p.id, p);
+  }
+  const uniqueProperties = Array.from(uniqueMap.values());
+
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 
-  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(properties, null, 2));
+  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(uniqueProperties, null, 2));
   console.log(
-    `\nSalvo ${properties.length} imóveis em ${OUTPUT_FILE}`
+    `\nSalvo ${uniqueProperties.length} imóveis únicos em ${OUTPUT_FILE}`
+  );
+  console.log(
+    `Removidos ${properties.length - uniqueProperties.length} duplicatas`
   );
   console.log(
     `Tamanho: ${(fs.statSync(OUTPUT_FILE).size / 1024 / 1024).toFixed(2)} MB`

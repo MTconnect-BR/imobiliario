@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/carousel";
 import { PropertyCarouselSection } from "@/components/property-carousel-section";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
+import { PropertyDetailSkeleton } from "@/components/skeletons";
 import { PropertyMap } from "@/components/property-map";
 import {
   Property,
@@ -55,6 +56,7 @@ export default function PropertyDetailPage() {
   const [property, setProperty] = useState<Property | null>(null);
   const [relatedProperties, setRelatedProperties] = useState<Property[]>([]);
   const [notFound, setNotFound] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [galleryApi, setGalleryApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [totalSlides, setTotalSlides] = useState(0);
@@ -94,6 +96,8 @@ export default function PropertyDetailPage() {
         }
       } catch {
         setNotFound(true);
+      } finally {
+        setLoading(false);
       }
     }
     fetchProperty();
@@ -134,6 +138,10 @@ export default function PropertyDetailPage() {
         </div>
       </main>
     );
+  }
+
+  if (loading) {
+    return <PropertyDetailSkeleton />;
   }
 
   if (!property) {
@@ -580,9 +588,9 @@ export default function PropertyDetailPage() {
             <p className="mb-6 text-sm text-muted-foreground">
               Outros {getPropertyTypeLabel(property.type).toLowerCase()}s em {property.city}
             </p>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div className="space-y-4">
               {relatedProperties.map((rp) => (
-                <PropertyCatalogCard key={rp.id} property={rp} />
+                <PropertyCatalogCard key={rp.id} property={rp} horizontal />
               ))}
             </div>
             <div className="mt-6 text-center">
