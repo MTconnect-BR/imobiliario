@@ -1,259 +1,135 @@
 import { NextRequest, NextResponse } from "next/server";
-import { type Property, type PropertyType } from "@/lib/properties";
+import { readFile } from "fs/promises";
+import { join } from "path";
+import { type Property } from "@/lib/properties";
 
-const REIDOAPE_API = "https://reidoape.com.br/api";
-const REIDOAPE_ID_MASTER = "90821645";
+let cachedProperties: Property[] | null = null;
 
-interface ReiDoApeMeta {
-  total: number;
-  pagina: number;
-  limite: number;
-  ordena: string;
-}
-
-interface ReiDoApePreco {
-  tipo: string;
-  valor: string;
-  label: string;
-  destaque: boolean;
-  riscado: boolean;
-}
-
-interface ReiDoApeItem {
-  id: string;
-  categoria: string;
-  categoria_nome: string;
-  transacao: string;
-  tipo: string;
-  referencia_plain: string;
-  ref_caixa: string;
-  valor_venda1: string;
-  valor_avaliacao_txt: string;
-  desconto_pct: string;
-  cidade: string;
-  estado: string;
-  bairro: string;
-  enderecoPermissao: string;
-  numeroPermissao: string;
-  quartos_txt: string;
-  banheiros_txt: string;
-  vagas_txt: string;
-  area_m2: string;
-  area_total_caixa: string;
-  estado_imovel_txt: string;
-  situacao_caixa: string;
-  titulo_plain: string;
-  descricao_html: string;
-  foto: string;
-  fotos: string[];
-  coordenadas: string;
-  map_lat: number | null;
-  map_lon: number | null;
-  map_geocode_queries: string[];
-  precos: ReiDoApePreco[];
-  link: string;
-}
-
-interface ReiDoApeApiResponse {
-  meta: ReiDoApeMeta;
-  items: ReiDoApeItem[];
-}
-
-function cleanHtml(html: string): string {
-  return html
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&#\d+;/g, "")
-    .trim();
-}
-
-function parsePrice(text: string): number {
-  const cleaned = cleanHtml(text);
-  const match = cleaned.match(/R\$\s*([\d.,]+)/);
-  if (!match) return 0;
-  const numStr = match[1].replace(/\./g, "").replace(",", ".");
-  const num = parseFloat(numStr);
-  return isNaN(num) ? 0 : Math.round(num);
-}
-
-function parseArea(text: string): number {
-  const cleaned = cleanHtml(text).trim();
-  if (!cleaned) return 0;
-  const normalized = cleaned.replace(/\./g, "").replace(",", ".");
-  const match = normalized.match(/([\d.]+)\s*m/);
-  if (match) {
-    const num = parseFloat(match[1]);
-    return isNaN(num) ? 0 : num;
+async function loadProperties(): Promise<Property[]> {
+  if (cachedProperties) return cachedProperties;
+  try {
+    const filePath = join(process.cwd(), "data", "all-properties.json");
+    const data = await readFile(filePath, "utf-8");
+    cachedProperties = JSON.parse(data) as Property[];
+    return cachedProperties;
+  } catch {
+    return [];
   }
-  const num = parseFloat(normalized);
-  return isNaN(num) ? 0 : num;
-}
-
-function parseNumber(text: string): number {
-  const cleaned = cleanHtml(text);
-  const num = parseInt(cleaned, 10);
-  return isNaN(num) ? 0 : num;
-}
-
-function stripHtml(html: string): string {
-  return cleanHtml(html);
-}
-
-function mapItemToProperty(item: ReiDoApeItem): Property {
-  const cityState = item.cidade.split(",").map(s => s.trim());
-  const city = cityState[0] ?? item.cidade;
-  const stateShort = item.estado;
-
-  const enderecoRaw = stripHtml(item.enderecoPermissao ?? "").replace(/^Endereço:\s*/i, "").trim();
-  const numeroRaw = stripHtml(item.numeroPermissao ?? "").replace(/^\|\s*Número:\s*/i, "").trim();
-
-  const price = parsePrice(item.valor_venda1 ?? "");
-  const avaliacao = parsePrice(item.valor_avaliacao_txt ?? "");
-  const desconto = parseInt(item.desconto_pct ?? "0", 10) || undefined;
-
-  const area = parseArea(item.area_m2 ?? "") || parseArea(item.area_total_caixa ?? "");
-  const quartos = parseNumber(item.quartos_txt ?? "0");
-  const banheiros = parseNumber(item.banheiros_txt ?? "0");
-  const vagas = parseNumber(item.vagas_txt ?? "0");
-
-  const matriculaUrl = `https://venda-imoveis.caixa.gov.br/editais/matricula/${item.estado}/${item.ref_caixa}.pdf`;
-  const officialUrl = `https://venda-imoveis.caixa.gov.br/sistema/detalhe-imovel.asp?hdnimovel=${item.ref_caixa}`;
-
-  const typeMap: Record<string, PropertyType> = {
-    Apartamento: "apartamento",
-    Casa: "casa",
-    Terreno: "terreno",
-    "Terreno / Lote": "terreno",
-    Comercial: "comercial",
-    Loja: "comercial",
-    Sala: "comercial",
-    Prédio: "comercial",
-    Chácara: "casa",
-    Fazenda: "casa",
-    Sítio: "casa",
-    Kitnet: "apartamento",
-    Flat: "apartamento",
-    Cobertura: "apartamento",
-    Andar: "apartamento",
-    Galpão: "comercial",
-    "Grupo de Salas Comerciais": "comercial",
-    "Imóvel Comercial": "comercial",
-    Sobrado: "casa",
-  };
-
-  const images = (item.fotos?.length > 0 ? item.fotos : [item.foto]).filter(Boolean);
-
-  let lat: number | undefined;
-  let lng: number | undefined;
-  if (item.map_lat && item.map_lon) {
-    lat = item.map_lat;
-    lng = item.map_lon;
-  } else if (item.coordenadas) {
-    const parts = item.coordenadas.match(/-?\d+\.\d+/g);
-    if (parts?.length === 2) {
-      lat = parseFloat(parts[0]);
-      lng = parseFloat(parts[1]);
-    }
-  }
-
-  const situacao = item.situacao_caixa || item.estado_imovel_txt || "";
-  const description = item.descricao_html
-    ? stripHtml(item.descricao_html)
-    : item.titulo_plain || `Imóvel ${item.categoria_nome}\n\nRef: ${item.referencia_plain}`;
-
-  return {
-    id: `reidoape-${item.id}`,
-    title: item.titulo_plain || `Imóvel ${item.categoria_nome} - ${item.bairro}, ${item.cidade}`,
-    type: typeMap[item.categoria] ?? "casa",
-    status: "disponivel",
-    price,
-    area,
-    bedrooms: quartos,
-    bathrooms: banheiros,
-    parkingSpaces: vagas,
-    address: enderecoRaw,
-    addressNumber: numeroRaw,
-    neighborhood: item.bairro || "",
-    city,
-    state: stateShort,
-    cep: "",
-    description,
-    imageUrl: images[0] ?? "",
-    images,
-    lat,
-    lng,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    source: "reidoape",
-    refCaixa: item.ref_caixa,
-    reidoapeId: item.id,
-    avaliacaoPrice: avaliacao || undefined,
-    descontoPct: desconto,
-    situacaoCaixa: situacao,
-    documents: [
-      { label: "Matrícula do Imóvel", url: matriculaUrl },
-    ],
-    officialUrl,
-  };
 }
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   const page = Math.max(0, parseInt(searchParams.get("page") ?? "0", 10));
-  const limite = Math.min(100, Math.max(1, parseInt(searchParams.get("limite") ?? "24", 10)));
+  const limite = Math.min(
+    100,
+    Math.max(1, parseInt(searchParams.get("limite") ?? "24", 10))
+  );
 
-  const params = new URLSearchParams({
-    id_master: REIDOAPE_ID_MASTER,
-    pagina: page.toString(),
-    limite: limite.toString(),
-  });
+  const search = searchParams.get("search") ?? searchParams.get("busca") ?? "";
+  const type = searchParams.get("type") ?? "";
+  const state = searchParams.get("state") ?? searchParams.get("estado") ?? "";
+  const priceMin = parseInt(searchParams.get("preco_minimo") ?? "0", 10);
+  const priceMax = parseInt(
+    searchParams.get("preco_maximo") ?? "999999999",
+    10
+  );
+  const bedrooms = parseInt(searchParams.get("quartos_min") ?? "0", 10);
+  const bathrooms = parseInt(searchParams.get("banheiros_min") ?? "0", 10);
+  const parking = parseInt(searchParams.get("vagas_min") ?? "0", 10);
+  const neighborhood = searchParams.get("bairro") ?? "";
+  const reference = searchParams.get("referencia") ?? "";
+  const sort = searchParams.get("ordena") ?? "recentes";
 
-  const passthrough = [
-    "estado", "cidade", "bairro", "categoria_nome", "busca",
-    "referencia", "financiamento", "caixa_fgts", "caixa_pagamento",
-    "caixa_condominio", "caixa_tributos", "preco_minimo", "preco_maximo",
-    "quartos_min", "banheiros_min", "vagas_min", "ordena", "tipo_imovel",
-  ];
+  let properties = await loadProperties();
 
-  for (const key of passthrough) {
-    const val = searchParams.get(key);
-    if (val) params.set(key, val);
-  }
-
-  const estadoImovel = searchParams.getAll("estado_imovel[]");
-  for (const val of estadoImovel) {
-    params.append("estado_imovel[]", val);
-  }
-
-  try {
-    const res = await fetch(`${REIDOAPE_API}?${params}`, {
-      headers: { "User-Agent": "Mozilla/5.0" },
-      next: { revalidate: 300 },
-    });
-
-    if (!res.ok) {
-      throw new Error(`External API error: ${res.status}`);
-    }
-
-    const data: ReiDoApeApiResponse = await res.json();
-
-    const transformed = data.items.map(mapItemToProperty);
-
-    return NextResponse.json({
-      total: data.meta.total,
-      page: data.meta.pagina,
-      perPage: data.meta.limite,
-      properties: transformed,
-    });
-  } catch (error) {
-    console.error("API route error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch properties" },
-      { status: 502 }
+  if (search) {
+    const q = search.toLowerCase();
+    properties = properties.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.address.toLowerCase().includes(q) ||
+        p.neighborhood.toLowerCase().includes(q) ||
+        p.city.toLowerCase().includes(q) ||
+        (p.refCaixa && p.refCaixa.toLowerCase().includes(q))
     );
   }
+
+  if (type && type !== "all") {
+    properties = properties.filter((p) => p.type === type);
+  }
+
+  if (state && state !== "all") {
+    properties = properties.filter((p) => p.state === state);
+  }
+
+  if (priceMin > 0) {
+    properties = properties.filter((p) => p.price >= priceMin);
+  }
+
+  if (priceMax < 999999999) {
+    properties = properties.filter((p) => p.price <= priceMax);
+  }
+
+  if (bedrooms > 0) {
+    properties = properties.filter((p) => p.bedrooms >= bedrooms);
+  }
+
+  if (bathrooms > 0) {
+    properties = properties.filter((p) => p.bathrooms >= bathrooms);
+  }
+
+  if (parking > 0) {
+    properties = properties.filter((p) => p.parkingSpaces >= parking);
+  }
+
+  if (neighborhood) {
+    const nq = neighborhood.toLowerCase();
+    properties = properties.filter(
+      (p) =>
+        p.neighborhood.toLowerCase().includes(nq) ||
+        p.city.toLowerCase().includes(nq)
+    );
+  }
+
+  if (reference) {
+    const rq = reference.toLowerCase();
+    properties = properties.filter(
+      (p) =>
+        p.refCaixa?.toLowerCase().includes(rq) ||
+        p.id.toLowerCase().includes(rq)
+    );
+  }
+
+  switch (sort) {
+    case "menor_valor":
+      properties.sort((a, b) => a.price - b.price);
+      break;
+    case "maior_valor":
+      properties.sort((a, b) => b.price - a.price);
+      break;
+    case "maior_desconto":
+      properties.sort(
+        (a, b) => (b.descontoPct ?? 0) - (a.descontoPct ?? 0)
+      );
+      break;
+    case "recentes":
+    default:
+      properties.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      break;
+  }
+
+  const total = properties.length;
+  const start = page * limite;
+  const paged = properties.slice(start, start + limite);
+
+  return NextResponse.json({
+    total,
+    page,
+    perPage: limite,
+    properties: paged,
+  });
 }
