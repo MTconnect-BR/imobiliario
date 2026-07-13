@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Search, Home, Loader2 } from "lucide-react";
+import { Search, Home, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
@@ -10,8 +10,19 @@ import { PropertyGridSkeleton } from "@/components/skeletons";
 import { Property } from "@/lib/properties";
 
 const TYPE = "casa";
-const API_TYPE = "Casa";
 const LOAD_BATCH = 12;
+
+const modalidadeFilters: { value: string; label: string }[] = [
+  { value: "all", label: "Qualquer modalidade" },
+  { value: "Novo", label: "Novo" },
+  { value: "Venda Direta Online", label: "Venda Direta Online" },
+];
+
+const origemFilters: { value: string; label: string }[] = [
+  { value: "all", label: "Qualquer origem" },
+  { value: "caixa", label: "Caixa" },
+  { value: "particular", label: "Particular" },
+];
 
 export default function CasasPage() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -19,7 +30,11 @@ export default function CasasPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [draftSearch, setDraftSearch] = useState("");
   const [selectedState, setSelectedState] = useState("all");
+  const [selectedModalidade, setSelectedModalidade] = useState("all");
+  const [selectedOrigem, setSelectedOrigem] = useState("all");
+  const [selectedRefCaixa, setSelectedRefCaixa] = useState("");
   const [displayCount, setDisplayCount] = useState(LOAD_BATCH);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,14 +66,21 @@ export default function CasasPage() {
           !p.title.toLowerCase().includes(q) &&
           !p.address.toLowerCase().includes(q) &&
           !p.neighborhood.toLowerCase().includes(q) &&
-          !p.city.toLowerCase().includes(q)
+          !p.city.toLowerCase().includes(q) &&
+          !p.refCaixa?.toLowerCase().includes(q)
         )
           return false;
       }
       if (selectedState !== "all" && p.state !== selectedState) return false;
+      if (selectedModalidade !== "all" && p.modalidade !== selectedModalidade) return false;
+      if (selectedOrigem !== "all" && p.tipo_origem !== selectedOrigem) return false;
+      if (selectedRefCaixa) {
+        const r = selectedRefCaixa.toLowerCase();
+        if (!p.refCaixa?.toLowerCase().includes(r)) return false;
+      }
       return true;
     });
-  }, [properties, searchQuery, selectedState]);
+  }, [properties, searchQuery, selectedState, selectedModalidade, selectedOrigem, selectedRefCaixa]);
 
   const displayed = useMemo(
     () => filtered.slice(0, displayCount),
@@ -67,7 +89,7 @@ export default function CasasPage() {
 
   useEffect(() => {
     setDisplayCount(LOAD_BATCH);
-  }, [searchQuery, selectedState]);
+  }, [searchQuery, selectedState, selectedModalidade, selectedOrigem, selectedRefCaixa]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -88,7 +110,7 @@ export default function CasasPage() {
     if (e.key === "Enter") setSearchQuery(draftSearch);
   }
 
-  const hasFilters = searchQuery || selectedState !== "all";
+  const hasFilters = searchQuery || selectedState !== "all" || selectedModalidade !== "all" || selectedOrigem !== "all" || selectedRefCaixa;
 
   return (
     <main className="min-h-screen bg-background">
@@ -108,7 +130,7 @@ export default function CasasPage() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Buscar por título, endereço, bairro..."
+                placeholder="Buscar por título, endereço, bairro, ref..."
                 aria-label="Buscar casas"
                 value={draftSearch}
                 onChange={(e) => setDraftSearch(e.target.value)}
@@ -134,15 +156,26 @@ export default function CasasPage() {
               ))}
             </select>
 
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="rounded-[10px] px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border hover:bg-muted transition-all duration-[0.4s]"
+            >
+              {showAdvanced ? "Ocultar avançados" : "Mais filtros"}
+            </button>
+
             {hasFilters && (
               <button
                 onClick={() => {
                   setDraftSearch("");
                   setSearchQuery("");
                   setSelectedState("all");
+                  setSelectedModalidade("all");
+                  setSelectedOrigem("all");
+                  setSelectedRefCaixa("");
                 }}
                 className="flex items-center gap-1 h-10 rounded-[10px] px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
+                <X className="h-4 w-4" />
                 Limpar
               </button>
             )}
@@ -151,6 +184,44 @@ export default function CasasPage() {
               <Button variant="outline" size="sm">Ver todos os imóveis</Button>
             </Link>
           </div>
+
+          {showAdvanced && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <select
+                value={selectedModalidade}
+                onChange={(e) => setSelectedModalidade(e.target.value)}
+                aria-label="Filtrar por modalidade"
+                className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+              >
+                {modalidadeFilters.map((m) => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+
+              <select
+                value={selectedOrigem}
+                onChange={(e) => setSelectedOrigem(e.target.value)}
+                aria-label="Filtrar por origem"
+                className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+              >
+                {origemFilters.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="REF / Código Caixa"
+                  aria-label="Buscar por referência"
+                  value={selectedRefCaixa}
+                  onChange={(e) => setSelectedRefCaixa(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="h-10 w-48 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s]"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

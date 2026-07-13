@@ -17,6 +17,7 @@ const typeFilters: { value: string; label: string }[] = [
   { value: "casa", label: "Casas" },
   { value: "apartamento", label: "Apartamentos" },
   { value: "terreno", label: "Terrenos" },
+  { value: "comercial", label: "Comerciais" },
 ];
 
 const stateFilters: { value: string; label: string }[] = [
@@ -61,6 +62,18 @@ const priceRanges = [
   { value: "1000000-999999999", label: "Acima de R$ 1.000.000" },
 ];
 
+const modalidadeFilters: { value: string; label: string }[] = [
+  { value: "all", label: "Qualquer modalidade" },
+  { value: "Novo", label: "Novo" },
+  { value: "Venda Direta Online", label: "Venda Direta Online" },
+];
+
+const origemFilters: { value: string; label: string }[] = [
+  { value: "all", label: "Qualquer origem" },
+  { value: "caixa", label: "Caixa" },
+  { value: "particular", label: "Particular" },
+];
+
 const LOAD_BATCH_DESKTOP = 12;
 const LOAD_BATCH_MOBILE = 8;
 
@@ -69,22 +82,15 @@ interface NearbyProperty {
   distance: number;
 }
 
-interface CountsData {
-  total: number;
-  byType: Record<string, number>;
-  byState: Record<string, number>;
-  byCity: Record<string, number>;
-}
-
 export default function ImoveisPage() {
   const [allProperties, setAllProperties] = useState<Property[]>([]);
-  const [reidoapeLoading, setReidoapeLoading] = useState(true);
-  const [reidoapeCount, setReidoapeCount] = useState(0);
-  const [counts, setCounts] = useState<CountsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
   const [displayCount, setDisplayCount] = useState(LOAD_BATCH_DESKTOP);
   const [isMobile, setIsMobile] = useState(false);
   const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
   const [geocoding, setGeocoding] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -95,6 +101,9 @@ export default function ImoveisPage() {
   const [draftBathrooms, setDraftBathrooms] = useState("all");
   const [draftParking, setDraftParking] = useState("all");
   const [draftPrice, setDraftPrice] = useState("all");
+  const [draftModalidade, setDraftModalidade] = useState("all");
+  const [draftOrigem, setDraftOrigem] = useState("all");
+  const [draftRefCaixa, setDraftRefCaixa] = useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
@@ -103,6 +112,9 @@ export default function ImoveisPage() {
   const [selectedBathrooms, setSelectedBathrooms] = useState("all");
   const [selectedParking, setSelectedParking] = useState("all");
   const [selectedPrice, setSelectedPrice] = useState("all");
+  const [selectedModalidade, setSelectedModalidade] = useState("all");
+  const [selectedOrigem, setSelectedOrigem] = useState("all");
+  const [selectedRefCaixa, setSelectedRefCaixa] = useState("");
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -127,51 +139,24 @@ export default function ImoveisPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    fetch("/api/counts")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (data) setCounts(data); })
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
     async function fetchAllProperties() {
       try {
-        setReidoapeLoading(true);
-        const firstRes = await fetch(`/api/properties?page=0&limit=100`);
-        if (!firstRes.ok) throw new Error("First page failed");
-        const firstData = await firstRes.json();
-        const totalCount: number = firstData.total ?? 0;
-        setReidoapeCount(totalCount);
-        const allProps: Property[] = firstData.properties ?? [];
-
-        const totalPages = Math.ceil(totalCount / 100);
-        if (totalPages > 1) {
-          const remaining = Array.from({ length: totalPages - 1 }, (_, i) => i + 1);
-          const batchSize = 20;
-          for (let i = 0; i < remaining.length; i += batchSize) {
-            const batch = remaining.slice(i, i + batchSize);
-            const results = await Promise.all(
-              batch.map((p) =>
-                fetch(`/api/properties?page=${p}&limit=100`)
-                  .then((r) => (r.ok ? r.json() : { properties: [] }))
-                  .catch(() => ({ properties: [] }))
-              )
-            );
-            for (const data of results) {
-              allProps.push(...(data.properties ?? []));
-            }
-          }
-        }
+        setLoading(true);
+        const res = await fetch(`/api/properties?limit=10000`);
+        if (!res.ok) throw new Error("Failed");
+        const data = await res.json();
+        const properties: Property[] = data.properties ?? [];
+        setTotalCount(data.total ?? properties.length);
 
         const uniqueMap = new Map<string, Property>();
-        for (const p of allProps) {
+        for (const p of properties) {
           uniqueMap.set(p.id, p);
         }
         setAllProperties(Array.from(uniqueMap.values()));
       } catch {
         // silently fail
       } finally {
-        setReidoapeLoading(false);
+        setLoading(false);
       }
     }
     fetchAllProperties();
@@ -213,9 +198,16 @@ export default function ImoveisPage() {
         if (p.price < min || p.price > max) return false;
       }
 
+      if (selectedModalidade !== "all" && p.modalidade !== selectedModalidade) return false;
+      if (selectedOrigem !== "all" && p.tipo_origem !== selectedOrigem) return false;
+      if (selectedRefCaixa) {
+        const r = selectedRefCaixa.toLowerCase();
+        if (!p.refCaixa?.toLowerCase().includes(r)) return false;
+      }
+
       return true;
     });
-  }, [allProperties, searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice]);
+  }, [allProperties, searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, selectedModalidade, selectedOrigem, selectedRefCaixa]);
 
   const sortedProperties = useMemo(() => {
     return [...filteredProperties].sort(
@@ -230,7 +222,7 @@ export default function ImoveisPage() {
 
   useEffect(() => {
     setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
-  }, [searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, isMobile]);
+  }, [searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, selectedModalidade, selectedOrigem, selectedRefCaixa, isMobile]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -299,6 +291,9 @@ export default function ImoveisPage() {
     setSelectedBathrooms(draftBathrooms);
     setSelectedParking(draftParking);
     setSelectedPrice(draftPrice);
+    setSelectedModalidade(draftModalidade);
+    setSelectedOrigem(draftOrigem);
+    setSelectedRefCaixa(draftRefCaixa);
   }
 
   function handleSearchKeyDown(e: React.KeyboardEvent) {
@@ -310,7 +305,8 @@ export default function ImoveisPage() {
   const hasAppliedFilters =
     searchQuery || selectedType !== "all" || selectedState !== "all" ||
     selectedBedrooms !== "all" || selectedBathrooms !== "all" ||
-    selectedParking !== "all" || selectedPrice !== "all";
+    selectedParking !== "all" || selectedPrice !== "all" ||
+    selectedModalidade !== "all" || selectedOrigem !== "all" || selectedRefCaixa;
 
   function clearAllFilters() {
     setDraftSearch("");
@@ -320,6 +316,9 @@ export default function ImoveisPage() {
     setDraftBathrooms("all");
     setDraftParking("all");
     setDraftPrice("all");
+    setDraftModalidade("all");
+    setDraftOrigem("all");
+    setDraftRefCaixa("");
     setSearchQuery("");
     setSelectedType("all");
     setSelectedState("all");
@@ -327,6 +326,9 @@ export default function ImoveisPage() {
     setSelectedBathrooms("all");
     setSelectedParking("all");
     setSelectedPrice("all");
+    setSelectedModalidade("all");
+    setSelectedOrigem("all");
+    setSelectedRefCaixa("");
     setNearbyProperties([]);
   }
 
@@ -347,14 +349,14 @@ export default function ImoveisPage() {
             terrenos e muito mais.
           </p>
           <div className="mt-4 flex items-center justify-center gap-3 text-sm text-muted-foreground">
-            {reidoapeLoading ? (
+            {loading ? (
               <span className="flex items-center gap-1.5">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Carregando imóveis da Caixa...
+                Carregando imóveis...
               </span>
-            ) : reidoapeCount > 0 ? (
+            ) : totalCount > 0 ? (
               <Badge variant="blue">
-                {reidoapeCount.toLocaleString("pt-BR")} imóveis da Caixa disponíveis
+                {totalCount.toLocaleString("pt-BR")} imóveis disponíveis
               </Badge>
             ) : null}
           </div>
@@ -488,6 +490,13 @@ export default function ImoveisPage() {
               ))}
             </select>
 
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="rounded-[10px] px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border hover:bg-muted transition-all duration-[0.4s]"
+            >
+              {showAdvanced ? "Ocultar avançados" : "Mais filtros"}
+            </button>
+
             {hasAppliedFilters && (
               <button
                 onClick={clearAllFilters}
@@ -498,12 +507,58 @@ export default function ImoveisPage() {
               </button>
             )}
           </div>
+
+          {showAdvanced && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <select
+                value={draftModalidade}
+                onChange={(e) => {
+                  setDraftModalidade(e.target.value);
+                  setSelectedModalidade(e.target.value);
+                  setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                }}
+                aria-label="Filtrar por modalidade"
+                className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+              >
+                {modalidadeFilters.map((m) => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+
+              <select
+                value={draftOrigem}
+                onChange={(e) => {
+                  setDraftOrigem(e.target.value);
+                  setSelectedOrigem(e.target.value);
+                  setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                }}
+                aria-label="Filtrar por origem"
+                className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+              >
+                {origemFilters.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="REF / Código Caixa"
+                  aria-label="Buscar por referência"
+                  value={draftRefCaixa}
+                  onChange={(e) => setDraftRefCaixa(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  className="h-10 w-48 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s]"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
       <section className="px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          {reidoapeLoading ? (
+          {loading ? (
             <div className="space-y-6">
               <div className="space-y-2">
                 <Skeleton className="h-8 w-48" />

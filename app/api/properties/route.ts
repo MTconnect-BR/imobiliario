@@ -27,11 +27,15 @@ export async function GET(request: Request) {
     const type = searchParams.get("type") ?? undefined;
     const state = searchParams.get("state") ?? undefined;
     const city = searchParams.get("city") ?? undefined;
+    const neighborhood = searchParams.get("neighborhood") ?? undefined;
     const bedrooms = searchParams.get("bedrooms") ?? undefined;
     const bathrooms = searchParams.get("bathrooms") ?? undefined;
     const parking = searchParams.get("parking") ?? undefined;
     const minPrice = searchParams.get("minPrice") ?? undefined;
     const maxPrice = searchParams.get("maxPrice") ?? undefined;
+    const modalidade = searchParams.get("modalidade") ?? undefined;
+    const tipoOrigem = searchParams.get("tipoOrigem") ?? undefined;
+    const refCaixa = searchParams.get("refCaixa") ?? undefined;
     const search = searchParams.get("search")?.toLowerCase() ?? undefined;
 
     const allProperties = await loadProperties(type);
@@ -40,6 +44,10 @@ export async function GET(request: Request) {
 
     if (state) filtered = filtered.filter((p) => p.state === state);
     if (city) filtered = filtered.filter((p) => p.city.toLowerCase() === city.toLowerCase());
+    if (neighborhood) {
+      const n = neighborhood.toLowerCase();
+      filtered = filtered.filter((p) => p.neighborhood?.toLowerCase().includes(n));
+    }
     if (bedrooms) {
       const min = parseInt(bedrooms, 10);
       if (!isNaN(min)) filtered = filtered.filter((p) => p.bedrooms >= min);
@@ -59,6 +67,16 @@ export async function GET(request: Request) {
     if (maxPrice) {
       const max = parseInt(maxPrice, 10);
       if (!isNaN(max)) filtered = filtered.filter((p) => p.price <= max);
+    }
+    if (modalidade) {
+      filtered = filtered.filter((p) => p.modalidade === modalidade);
+    }
+    if (tipoOrigem) {
+      filtered = filtered.filter((p) => p.tipo_origem === tipoOrigem);
+    }
+    if (refCaixa) {
+      const r = refCaixa.toLowerCase();
+      filtered = filtered.filter((p) => p.refCaixa?.toLowerCase().includes(r));
     }
     if (search) {
       filtered = filtered.filter(

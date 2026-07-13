@@ -37,6 +37,9 @@ export interface Property {
   situacaoCaixa?: string;
   documents?: PropertyDocument[];
   officialUrl?: string;
+  modalidade?: string;
+  tipo_origem?: string;
+  categoria?: string;
 }
 
 export type PropertyInput = Omit<Property, "id" | "createdAt" | "updatedAt">;
