@@ -122,11 +122,26 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
     const st = searchParams.get("state");
     const b = searchParams.get("bedrooms");
     const pg = searchParams.get("page");
-    if (s) { setDraftSearch(s); setSearchQuery(s); }
-    if (t) { setDraftType(t); setSelectedType(t); }
-    if (p) { setDraftPrice(p); setSelectedPrice(p); }
-    if (st) { setDraftState(st); setSelectedState(st); }
-    if (b) { setDraftBedrooms(b); setSelectedBedrooms(b); }
+    if (s) {
+      setDraftSearch(s);
+      setSearchQuery(s);
+    }
+    if (t) {
+      setDraftType(t);
+      setSelectedType(t);
+    }
+    if (p) {
+      setDraftPrice(p);
+      setSelectedPrice(p);
+    }
+    if (st) {
+      setDraftState(st);
+      setSelectedState(st);
+    }
+    if (b) {
+      setDraftBedrooms(b);
+      setSelectedBedrooms(b);
+    }
     if (pg) setCurrentPage(parseInt(pg, 10) || 1);
   }, [searchParams]);
 
@@ -175,11 +190,23 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
 
       return true;
     });
-  }, [allProperties, searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, selectedModalidade, selectedOrigem, selectedRefCaixa]);
+  }, [
+    allProperties,
+    searchQuery,
+    selectedType,
+    selectedState,
+    selectedBedrooms,
+    selectedBathrooms,
+    selectedParking,
+    selectedPrice,
+    selectedModalidade,
+    selectedOrigem,
+    selectedRefCaixa,
+  ]);
 
   const sortedProperties = useMemo(() => {
     return [...filteredProperties].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
   }, [filteredProperties]);
 
@@ -191,7 +218,18 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, selectedModalidade, selectedOrigem, selectedRefCaixa]);
+  }, [
+    searchQuery,
+    selectedType,
+    selectedState,
+    selectedBedrooms,
+    selectedBathrooms,
+    selectedParking,
+    selectedPrice,
+    selectedModalidade,
+    selectedOrigem,
+    selectedRefCaixa,
+  ]);
 
   useEffect(() => {
     if (filteredProperties.length > 0 || !searchQuery) {
@@ -255,10 +293,16 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
   }
 
   const hasAppliedFilters =
-    searchQuery || selectedType !== "all" || selectedState !== "all" ||
-    selectedBedrooms !== "all" || selectedBathrooms !== "all" ||
-    selectedParking !== "all" || selectedPrice !== "all" ||
-    selectedModalidade !== "all" || selectedOrigem !== "all" || selectedRefCaixa;
+    searchQuery ||
+    selectedType !== "all" ||
+    selectedState !== "all" ||
+    selectedBedrooms !== "all" ||
+    selectedBathrooms !== "all" ||
+    selectedParking !== "all" ||
+    selectedPrice !== "all" ||
+    selectedModalidade !== "all" ||
+    selectedOrigem !== "all" ||
+    selectedRefCaixa;
 
   function clearAllFilters() {
     setDraftSearch("");
@@ -326,7 +370,7 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
             >
               {p}
             </Button>
-          )
+          ),
         )}
         <Button
           variant="outline"
@@ -343,14 +387,13 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="flex min-h-[50vh] flex-col items-center justify-center px-6 pb-6 pt-32 text-center md:pt-40 bg-[#1a1b19]">
+      <section className="flex min-h-[50vh] flex-col items-center justify-center px-6 pb-6 pt-32 text-center md:pt-40">
         <div className="mx-auto max-w-6xl text-center">
-          <h1 className="text-white">Encontre o imóvel perfeito</h1>
-          <p className="lead mt-4 text-white/70">
-            Explore nosso catálogo completo de imóveis. Casas, apartamentos,
-            terrenos e muito mais.
+          <h1>Encontre o imóvel perfeito</h1>
+          <p className="lead mt-4 text-muted-foreground">
+            Explore nosso catálogo completo de imóveis. Casas, apartamentos, terrenos e muito mais.
           </p>
-          <div className="mt-4 flex items-center justify-center gap-3 text-sm text-white/70">
+          <div className="mt-4 flex items-center justify-center gap-3 text-sm text-muted-foreground">
             <Badge variant="blue">
               {allProperties.length.toLocaleString("pt-BR")} imóveis disponíveis
             </Badge>
@@ -358,7 +401,7 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
         </div>
       </section>
 
-      <section className="border-b border-border bg-[#2d2d2d]">
+      <section className="border-b border-border bg-background">
         <div className="mx-auto max-w-6xl px-6 py-4">
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -370,7 +413,7 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
                 value={draftSearch}
                 onChange={(e) => setDraftSearch(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
-                className="h-10 w-full rounded-[10px] border border-white/20 bg-white/10 pl-10 pr-4 py-2 text-sm font-medium tracking-[-0.04em] text-white placeholder:text-white/50 focus-visible:border-white/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/20 transition-all duration-[0.4s]"
+                className="h-10 w-full rounded-[10px] border border-border bg-card pl-10 pr-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s]"
               />
             </div>
             <Button onClick={applyFilters} className="h-10 rounded-[10px] px-6">
@@ -391,8 +434,8 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
                   aria-pressed={draftType === filter.value}
                   className={`rounded-[10px] px-4 py-2 text-sm font-medium transition-all duration-[0.4s] ${
                     draftType === filter.value
-                      ? "bg-white text-[#2d2d2d]"
-                      : "bg-white/10 text-white border border-white/20 hover:bg-white/20"
+                      ? "bg-foreground text-background"
+                      : "bg-card text-foreground border border-border hover:bg-muted"
                   }`}
                 >
                   {filter.label}
@@ -408,10 +451,10 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
                 setCurrentPage(1);
               }}
               aria-label="Filtrar por faixa de preço"
-              className="h-10 rounded-[10px] border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium tracking-[-0.04em] text-white focus-visible:border-white/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/20 cursor-pointer"
+              className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
             >
               {priceRanges.map((range) => (
-                <option key={range.value} value={range.value} className="bg-[#2d2d2d] text-white">
+                <option key={range.value} value={range.value} className="bg-card text-foreground">
                   {range.label}
                 </option>
               ))}
@@ -425,10 +468,10 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
                 setCurrentPage(1);
               }}
               aria-label="Filtrar por estado"
-              className="h-10 rounded-[10px] border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium tracking-[-0.04em] text-white focus-visible:border-white/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/20 cursor-pointer"
+              className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
             >
               {stateFilters.map((s) => (
-                <option key={s.value} value={s.value} className="bg-[#2d2d2d] text-white">
+                <option key={s.value} value={s.value} className="bg-card text-foreground">
                   {s.label}
                 </option>
               ))}
@@ -442,10 +485,10 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
                 setCurrentPage(1);
               }}
               aria-label="Filtrar por dormitórios"
-              className="h-10 rounded-[10px] border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium tracking-[-0.04em] text-white focus-visible:border-white/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/20 cursor-pointer"
+              className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
             >
               {bedroomFilters.map((b) => (
-                <option key={b.value} value={b.value} className="bg-[#2d2d2d] text-white">
+                <option key={b.value} value={b.value} className="bg-card text-foreground">
                   {b.label === "Qualquer" ? `Dormitórios: ${b.label}` : `${b.label} dormitórios`}
                 </option>
               ))}
@@ -459,10 +502,10 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
                 setCurrentPage(1);
               }}
               aria-label="Filtrar por banheiros"
-              className="h-10 rounded-[10px] border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium tracking-[-0.04em] text-white focus-visible:border-white/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/20 cursor-pointer"
+              className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
             >
               {bathroomFilters.map((b) => (
-                <option key={b.value} value={b.value} className="bg-[#2d2d2d] text-white">
+                <option key={b.value} value={b.value} className="bg-card text-foreground">
                   {b.label === "Qualquer" ? `Banheiros: ${b.label}` : `${b.label} banheiros`}
                 </option>
               ))}
@@ -476,10 +519,10 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
                 setCurrentPage(1);
               }}
               aria-label="Filtrar por vagas"
-              className="h-10 rounded-[10px] border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium tracking-[-0.04em] text-white focus-visible:border-white/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/20 cursor-pointer"
+              className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
             >
               {parkingFilters.map((p) => (
-                <option key={p.value} value={p.value} className="bg-[#2d2d2d] text-white">
+                <option key={p.value} value={p.value} className="bg-card text-foreground">
                   {p.label === "Qualquer" ? `Vagas: ${p.label}` : `${p.label} vagas`}
                 </option>
               ))}
@@ -487,7 +530,7 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
 
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="rounded-[10px] px-4 py-2 text-sm font-medium text-white/70 hover:text-white border border-white/20 hover:bg-white/10 transition-all duration-[0.4s]"
+              className="rounded-[10px] px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border hover:bg-muted transition-all duration-[0.4s]"
             >
               {showAdvanced ? "Ocultar avançados" : "Mais filtros"}
             </button>
@@ -495,7 +538,7 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
             {hasAppliedFilters && (
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-1 h-10 rounded-[10px] px-3 text-sm font-medium text-white/70 hover:text-white transition-colors"
+                className="flex items-center gap-1 h-10 rounded-[10px] px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-4 w-4" />
                 Limpar
@@ -513,10 +556,12 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
                   setCurrentPage(1);
                 }}
                 aria-label="Filtrar por modalidade"
-                className="h-10 rounded-[10px] border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium tracking-[-0.04em] text-white focus-visible:border-white/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/20 cursor-pointer"
+                className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
               >
                 {modalidadeFilters.map((m) => (
-                  <option key={m.value} value={m.value} className="bg-[#2d2d2d] text-white">{m.label}</option>
+                  <option key={m.value} value={m.value} className="bg-card text-foreground">
+                    {m.label}
+                  </option>
                 ))}
               </select>
 
@@ -528,10 +573,12 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
                   setCurrentPage(1);
                 }}
                 aria-label="Filtrar por origem"
-                className="h-10 rounded-[10px] border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium tracking-[-0.04em] text-white focus-visible:border-white/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/20 cursor-pointer"
+                className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
               >
                 {origemFilters.map((o) => (
-                  <option key={o.value} value={o.value} className="bg-[#2d2d2d] text-white">{o.label}</option>
+                  <option key={o.value} value={o.value} className="bg-card text-foreground">
+                    {o.label}
+                  </option>
                 ))}
               </select>
 
@@ -543,7 +590,7 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
                   value={draftRefCaixa}
                   onChange={(e) => setDraftRefCaixa(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
-                  className="h-10 w-48 rounded-[10px] border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium tracking-[-0.04em] text-white placeholder:text-white/50 focus-visible:border-white/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/20 transition-all duration-[0.4s]"
+                  className="h-10 w-48 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s]"
                 />
               </div>
             </div>
@@ -556,9 +603,7 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
           {paginatedProperties.length === 0 && nearbyProperties.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Building2 className="mb-4 h-16 w-16 text-muted-foreground/30" />
-              <h2 className="text-xl font-medium tracking-[-0.06em]">
-                Nenhum imóvel encontrado
-              </h2>
+              <h2 className="text-xl font-medium tracking-[-0.06em]">Nenhum imóvel encontrado</h2>
               <p className="mt-2 text-center text-muted-foreground">
                 {hasAppliedFilters
                   ? "Tente ajustar os filtros ou limpar a busca."
@@ -586,7 +631,10 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
                   <p className="mt-1 text-sm text-muted-foreground">
                     {sortedProperties.length.toLocaleString("pt-BR")} imóveis encontrados
                     {totalPages > 1 && (
-                      <> — Página {currentPage} de {totalPages}</>
+                      <>
+                        {" "}
+                        — Página {currentPage} de {totalPages}
+                      </>
                     )}
                   </p>
                 </div>
