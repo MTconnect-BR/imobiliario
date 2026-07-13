@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   }
 
   const properties = await loadProperties();
-  const fullId = `reidoape-${reidoapeId}`;
+  const fullId = `imovel-${reidoapeId}`;
   const property = properties.find((p) => p.id === fullId);
 
   if (!property) {
