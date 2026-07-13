@@ -68,7 +68,26 @@ export default function PropertyDetailPage() {
         const data = await res.json();
         if (data.property) {
           setProperty(data.property);
-          setRelatedProperties([]);
+
+          const prop = data.property;
+          const similarRes = await fetch(
+            `/api/reidoape?page=0&limite=20&state=${prop.state}`
+          );
+          if (similarRes.ok) {
+            const similarData = await similarRes.json();
+            const similar: Property[] = (similarData.properties ?? [])
+              .filter((p: Property) => p.id !== prop.id)
+              .sort((a: Property, b: Property) => {
+                const aType = a.type === prop.type ? 1 : 0;
+                const bType = b.type === prop.type ? 1 : 0;
+                if (bType !== aType) return bType - aType;
+                const aCity = a.city === prop.city ? 1 : 0;
+                const bCity = b.city === prop.city ? 1 : 0;
+                return bCity - aCity;
+              })
+              .slice(0, 5);
+            setRelatedProperties(similar);
+          }
         } else {
           setNotFound(true);
         }
@@ -554,12 +573,24 @@ export default function PropertyDetailPage() {
       {relatedProperties.length > 0 && (
         <section className="px-6 py-8">
           <div className="mx-auto max-w-6xl">
-            <PropertyCarouselSection
-              title="Imóveis Relacionados"
-              subtitle={`Outros ${getPropertyTypeLabel(property.type).toLowerCase()}s em ${property.city}`}
-              properties={relatedProperties}
-              viewAllHref={`/imoveis/${property.type === "casa" ? "casas" : property.type === "apartamento" ? "apartamentos" : property.type === "terreno" ? "terrenos" : "comerciais"}`}
-            />
+            <h2 className="mb-2 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
+              Imóveis Semelhantes
+            </h2>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Outros {getPropertyTypeLabel(property.type).toLowerCase()}s em {property.city}
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {relatedProperties.map((rp) => (
+                <PropertyCatalogCard key={rp.id} property={rp} />
+              ))}
+            </div>
+            <div className="mt-6 text-center">
+              <Link
+                href={`/imoveis?type=${property.type}&state=${property.state}`}
+              >
+                <Button variant="outline">Ver mais imóveis</Button>
+              </Link>
+            </div>
           </div>
         </section>
       )}
