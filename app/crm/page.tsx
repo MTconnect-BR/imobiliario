@@ -248,7 +248,7 @@ export default function CRMPage() {
           </div>
           <div className="rounded-[10px] border border-border bg-card p-4 transition-all duration-[0.4s] hover:shadow-md">
             <p className="text-xs text-muted-foreground">Vendidos</p>
-            <p className="mt-1 text-2xl font-medium tracking-[-0.06em] text-[#ff705d]">
+            <p className="mt-1 text-2xl font-medium tracking-[-0.06em] text-[#dc2626]">
               {loading ? "..." : properties.filter((p) => p.status === "vendido").length}
             </p>
           </div>
