@@ -383,12 +383,8 @@ export async function waitForFullLoad(): Promise<void> {
 export async function getPropertyById(id: string): Promise<Property | null> {
   const reidoapeId = id.startsWith("imovel-") ? id.slice(7) : id;
 
-  const cached = getRawItemById(reidoapeId);
-  if (cached) return rawItemToProperty(cached);
-
-  if (cache) {
-    const item = cache.map.get(reidoapeId);
-    if (item) return rawItemToProperty(item);
+  if (cache?.map.has(reidoapeId)) {
+    return rawItemToProperty(cache.map.get(reidoapeId)!);
   }
 
   const startTime = Date.now();
@@ -402,6 +398,22 @@ export async function getPropertyById(id: string): Promise<Property | null> {
     if (item.id === reidoapeId) return rawItemToProperty(item);
   }
 
+  if (!cache) {
+    cache = {
+      map: new Map(),
+      totalPages,
+      pagesLoaded: 1,
+      loadingPromise: null,
+      timestamp: Date.now(),
+      stale: false,
+    };
+  }
+  for (const item of firstPage.items ?? []) {
+    if (!cache.map.has(item.id)) cache.map.set(item.id, item);
+  }
+  cache.pagesLoaded = 1;
+  cache.totalPages = totalPages;
+
   const BATCH = 10;
   for (let batchStart = 1; batchStart < totalPages; batchStart += BATCH) {
     if (Date.now() - startTime > TIMEOUT_MS) return null;
@@ -413,12 +425,14 @@ export async function getPropertyById(id: string): Promise<Property | null> {
     const results = await Promise.all(pages.map((p) => fetchPage(p)));
     for (const data of results) {
       for (const item of data.items ?? []) {
+        if (!cache.map.has(item.id)) cache.map.set(item.id, item);
         if (item.id === reidoapeId) return rawItemToProperty(item);
       }
     }
+    cache.pagesLoaded = batchEnd;
 
     if (batchEnd < totalPages) {
-      await new Promise((r) => setTimeout(r, 200));
+      await new Promise((r) => setTimeout(r, 100));
     }
   }
 
