@@ -1,27 +1,14 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Search, Building2, Navigation, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
-import { PropertyCarouselSection } from "@/components/property-carousel-section";
-import {
-  Property,
-  PropertyType,
-  getPropertyTypeLabel,
-} from "@/lib/properties";
+import { Property } from "@/lib/properties";
 import { haversineDistance, geocode } from "@/lib/geolocation";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 
 const typeFilters: { value: string; label: string }[] = [
   { value: "all", label: "Todos" },
@@ -80,8 +67,8 @@ const sortOptions = [
   { value: "maior_desconto", label: "Maior desconto" },
 ];
 
-const PAGE_SIZE = 10;
-const LOAD_BATCH = 10;
+const LOAD_BATCH_DESKTOP = 20;
+const LOAD_BATCH_MOBILE = 10;
 
 interface NearbyProperty {
   property: Property;
@@ -100,7 +87,8 @@ export default function ImoveisPage() {
   const [reidoapeLoading, setReidoapeLoading] = useState(true);
   const [reidoapeCount, setReidoapeCount] = useState(0);
   const [counts, setCounts] = useState<CountsData | null>(null);
-  const [displayCount, setDisplayCount] = useState(LOAD_BATCH);
+  const [displayCount, setDisplayCount] = useState(LOAD_BATCH_DESKTOP);
+  const [isMobile, setIsMobile] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [selectedState, setSelectedState] = useState("all");
@@ -116,6 +104,13 @@ export default function ImoveisPage() {
   const [geocoding, setGeocoding] = useState(false);
   const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const searchParams = useSearchParams();
 
@@ -259,8 +254,8 @@ export default function ImoveisPage() {
   );
 
   useEffect(() => {
-    setDisplayCount(LOAD_BATCH);
-  }, [searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, selectedSort, neighborhoodQuery, referenceQuery]);
+    setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+  }, [searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, selectedSort, neighborhoodQuery, referenceQuery, isMobile]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -268,14 +263,15 @@ export default function ImoveisPage() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && displayCount < sortedProperties.length) {
-          setDisplayCount((prev) => Math.min(prev + LOAD_BATCH, sortedProperties.length));
+          const batch = isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP;
+          setDisplayCount((prev) => Math.min(prev + batch, sortedProperties.length));
         }
       },
       { threshold: 0.1 }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [displayCount, sortedProperties.length]);
+  }, [displayCount, sortedProperties.length, isMobile]);
 
   useEffect(() => {
     if (geocodeTimerRef.current) {
@@ -320,77 +316,6 @@ export default function ImoveisPage() {
     };
   }, [filteredProperties.length, searchQuery, allProperties]);
 
-  const featuredProperties = useMemo(
-    () => displayedProperties.slice(0, 10),
-    [displayedProperties]
-  );
-
-  const featuredIds = useMemo(
-    () => new Set(featuredProperties.map((p) => p.id)),
-    [featuredProperties]
-  );
-
-  const remainingByType = useMemo(() => {
-    const types: PropertyType[] = ["casa", "apartamento", "terreno", "comercial"];
-    return types.map((type) => ({
-      type,
-      label: getPropertyTypeLabel(type),
-      count: counts?.byType[type] ?? 0,
-      properties: displayedProperties.filter(
-        (p) => p.type === type && !featuredIds.has(p.id)
-      ),
-    }));
-  }, [displayedProperties, featuredIds, counts]);
-
-  const stateCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const p of displayedProperties) {
-      counts.set(p.state, (counts.get(p.state) ?? 0) + 1);
-    }
-    return counts;
-  }, [displayedProperties]);
-
-  const hasMultipleStates = stateCounts.size > 1;
-
-  const remainingByState = useMemo(() => {
-    const stateMap: Record<string, string> = {
-      PR: "Paraná",
-      RJ: "Rio de Janeiro",
-      SC: "Santa Catarina",
-      SP: "São Paulo",
-    };
-    return Array.from(stateCounts.entries())
-      .filter(([, count]) => count > 0)
-      .sort((a, b) => b[1] - a[1])
-      .map(([state]) => ({
-        state,
-        label: stateMap[state] ?? state,
-        properties: displayedProperties.filter(
-          (p) => p.state === state && !featuredIds.has(p.id)
-        ),
-      }));
-  }, [displayedProperties, featuredIds, stateCounts]);
-
-  const remainingByCity = useMemo(() => {
-    const cityCounts = new Map<string, number>();
-    for (const p of displayedProperties) {
-      if (!featuredIds.has(p.id)) {
-        cityCounts.set(p.city, (cityCounts.get(p.city) ?? 0) + 1);
-      }
-    }
-    return Array.from(cityCounts.entries())
-      .filter(([, count]) => count >= 2)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([city]) => ({
-        city,
-        label: city,
-        properties: displayedProperties.filter(
-          (p) => p.city === city && !featuredIds.has(p.id)
-        ),
-      }));
-  }, [displayedProperties, featuredIds]);
-
   const hasFilters =
     searchQuery || selectedType !== "all" || selectedState !== "all" ||
     selectedBedrooms !== "all" || selectedBathrooms !== "all" ||
@@ -409,6 +334,13 @@ export default function ImoveisPage() {
     setReferenceQuery("");
     setNearbyProperties([]);
   }
+
+  const loadMore = useCallback(() => {
+    if (displayCount < sortedProperties.length) {
+      const batch = isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP;
+      setDisplayCount((prev) => Math.min(prev + batch, sortedProperties.length));
+    }
+  }, [displayCount, sortedProperties.length, isMobile]);
 
   return (
     <main className="min-h-screen bg-background">
@@ -648,7 +580,7 @@ export default function ImoveisPage() {
                       Mas temos imóveis nessas proximidades:
                     </p>
                   </div>
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                     {nearbyProperties.map(({ property, distance }) => (
                       <PropertyCatalogCard
                         key={property.id}
@@ -669,102 +601,38 @@ export default function ImoveisPage() {
             </div>
           ) : (
             <>
-              <PropertyCarouselSection
-                title="Destaques"
-                subtitle="Imóveis mais recentes"
-                properties={featuredProperties}
-              />
-
-              {remainingByType.some((g) => g.count > 0) && (
-                <section className="py-8">
-                  <h2 className="mb-6 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
-                    Por Tipo
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
+                    {hasFilters ? "Resultados" : "Imóveis"}
                   </h2>
-                  <Tabs defaultValue={remainingByType.find((g) => g.count > 0)?.type ?? "casa"}>
-                    <TabsList className="mb-6">
-                      {remainingByType
-                        .filter((g) => g.count > 0)
-                        .map((group) => (
-                          <TabsTrigger key={group.type} value={group.type}>
-                            {group.label}
-                            <Badge variant="secondary" className="ml-1.5">
-                              {group.count}
-                            </Badge>
-                          </TabsTrigger>
-                        ))}
-                    </TabsList>
-
-                    {remainingByType
-                      .filter((g) => g.count > 0)
-                      .map((group) => (
-                        <TabsContent key={group.type} value={group.type}>
-                          <div className="relative">
-                            <Carousel
-                              opts={{ align: "end", loop: false, containScroll: "trimSnaps" }}
-                              className="w-full"
-                            >
-                              <CarouselContent>
-                                {group.properties.map((property) => (
-                                  <CarouselItem
-                                    key={property.id}
-                                    className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4"
-                                  >
-                                    <PropertyCatalogCard property={property} />
-                                  </CarouselItem>
-                                ))}
-                              </CarouselContent>
-                              <CarouselPrevious className="-left-4 lg:-left-12" />
-                              <CarouselNext className="-right-4 lg:-right-12" />
-                            </Carousel>
-                          </div>
-                        </TabsContent>
-                      ))}
-                  </Tabs>
-                </section>
-              )}
-
-              {hasMultipleStates && remainingByState.length > 0 && (
-                <section className="py-8">
-                  <h2 className="mb-2 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
-                    Por Estado
-                  </h2>
-                  <p className="mb-6 text-sm text-muted-foreground">
-                    Imóveis organizados por região
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {sortedProperties.length.toLocaleString("pt-BR")} imóveis encontrados
                   </p>
-                  {remainingByState.map((group) => (
-                    <PropertyCarouselSection
-                      key={group.state}
-                      title={group.label}
-                      properties={group.properties}
-                    />
-                  ))}
-                </section>
-              )}
+                </div>
+              </div>
 
-              {!hasMultipleStates && remainingByCity.length > 0 && (
-                <section className="py-8">
-                  <h2 className="mb-2 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
-                    Por Cidade
-                  </h2>
-                  <p className="mb-6 text-sm text-muted-foreground">
-                    Imóveis organizados por cidade
-                  </p>
-                  {remainingByCity.map((group) => (
-                    <PropertyCarouselSection
-                      key={group.city}
-                      title={group.label}
-                      properties={group.properties}
-                    />
-                  ))}
-                </section>
-              )}
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                {displayedProperties.map((property) => (
+                  <PropertyCatalogCard key={property.id} property={property} />
+                ))}
+              </div>
 
               {displayCount < sortedProperties.length && (
-                <div ref={sentinelRef} className="flex justify-center py-8">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div ref={sentinelRef} className="flex justify-center py-10">
+                  <button
+                    onClick={loadMore}
+                    className="flex items-center gap-2 rounded-[10px] bg-card border border-border px-6 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                  >
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Carregando mais imóveis... ({displayCount}/{sortedProperties.length})
-                  </div>
+                    Carregar mais ({displayCount}/{sortedProperties.length})
+                  </button>
+                </div>
+              )}
+
+              {displayCount >= sortedProperties.length && sortedProperties.length > 0 && (
+                <div className="py-10 text-center text-sm text-muted-foreground">
+                  Todos os {sortedProperties.length.toLocaleString("pt-BR")} imóveis foram carregados
                 </div>
               )}
             </>
