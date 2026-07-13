@@ -39,6 +39,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { PropertyCarouselSection } from "@/components/property-carousel-section";
+import { PropertyCatalogCard } from "@/components/property-catalog-card";
 import { PropertyMap } from "@/components/property-map";
 import {
   Property,

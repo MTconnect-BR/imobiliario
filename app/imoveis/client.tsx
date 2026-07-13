@@ -80,18 +80,27 @@ const sortOptions = [
   { value: "maior_desconto", label: "Maior desconto" },
 ];
 
-const PAGE_SIZE = 100;
-const MAX_PAGES = 3;
+const PAGE_SIZE = 10;
+const LOAD_BATCH = 10;
 
 interface NearbyProperty {
   property: Property;
   distance: number;
 }
 
+interface CountsData {
+  total: number;
+  byType: Record<string, number>;
+  byState: Record<string, number>;
+  byCity: Record<string, number>;
+}
+
 export default function ImoveisPage() {
   const [allProperties, setAllProperties] = useState<Property[]>([]);
   const [reidoapeLoading, setReidoapeLoading] = useState(true);
   const [reidoapeCount, setReidoapeCount] = useState(0);
+  const [counts, setCounts] = useState<CountsData | null>(null);
+  const [displayCount, setDisplayCount] = useState(LOAD_BATCH);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [selectedState, setSelectedState] = useState("all");
@@ -106,6 +115,7 @@ export default function ImoveisPage() {
   const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
   const [geocoding, setGeocoding] = useState(false);
   const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const searchParams = useSearchParams();
 
@@ -123,47 +133,54 @@ export default function ImoveisPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    async function fetchAllExternal() {
+    fetch("/api/counts")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data) setCounts(data); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    async function fetchAllProperties() {
       try {
         setReidoapeLoading(true);
-        const firstRes = await fetch(`/api/reidoape?page=0&limite=${PAGE_SIZE}`);
+        const firstRes = await fetch(`/api/properties?page=0&limit=100`);
         if (!firstRes.ok) throw new Error("First page failed");
         const firstData = await firstRes.json();
-        const firstProperties: Property[] = firstData.properties ?? [];
-        setReidoapeCount(firstData.total ?? 0);
+        const totalCount: number = firstData.total ?? 0;
+        setReidoapeCount(totalCount);
+        const allProps: Property[] = firstData.properties ?? [];
 
-        const totalPages = Math.ceil((firstData.total ?? 0) / (firstData.perPage ?? PAGE_SIZE));
-        const pagesToFetch = Math.min(totalPages, MAX_PAGES);
-
-        if (pagesToFetch > 1) {
-          const remainingPages = Array.from({ length: pagesToFetch - 1 }, (_, i) => i + 1);
-          const results = await Promise.all(
-            remainingPages.map((p) =>
-              fetch(`/api/reidoape?page=${p}&limite=${PAGE_SIZE}`)
-                .then((r) => (r.ok ? r.json() : { properties: [] }))
-                .catch(() => ({ properties: [] }))
-            )
-          );
-          for (const data of results) {
-            firstProperties.push(...(data.properties ?? []));
+        const totalPages = Math.ceil(totalCount / 100);
+        if (totalPages > 1) {
+          const remaining = Array.from({ length: totalPages - 1 }, (_, i) => i + 1);
+          const batchSize = 20;
+          for (let i = 0; i < remaining.length; i += batchSize) {
+            const batch = remaining.slice(i, i + batchSize);
+            const results = await Promise.all(
+              batch.map((p) =>
+                fetch(`/api/properties?page=${p}&limit=100`)
+                  .then((r) => (r.ok ? r.json() : { properties: [] }))
+                  .catch(() => ({ properties: [] }))
+              )
+            );
+            for (const data of results) {
+              allProps.push(...(data.properties ?? []));
+            }
           }
         }
 
-        const externalIds = new Set<string>();
-        const uniqueExternal = firstProperties.filter((p) => {
-          if (externalIds.has(p.id)) return false;
-          externalIds.add(p.id);
-          return true;
-        });
-
-        setAllProperties(uniqueExternal);
+        const uniqueMap = new Map<string, Property>();
+        for (const p of allProps) {
+          uniqueMap.set(p.id, p);
+        }
+        setAllProperties(Array.from(uniqueMap.values()));
       } catch {
         // silently fail
       } finally {
         setReidoapeLoading(false);
       }
     }
-    fetchAllExternal();
+    fetchAllProperties();
   }, []);
 
   const filteredProperties = useMemo(() => {
@@ -236,6 +253,30 @@ export default function ImoveisPage() {
     return sorted;
   }, [filteredProperties, selectedSort]);
 
+  const displayedProperties = useMemo(
+    () => sortedProperties.slice(0, displayCount),
+    [sortedProperties, displayCount]
+  );
+
+  useEffect(() => {
+    setDisplayCount(LOAD_BATCH);
+  }, [searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, selectedSort, neighborhoodQuery, referenceQuery]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && displayCount < sortedProperties.length) {
+          setDisplayCount((prev) => Math.min(prev + LOAD_BATCH, sortedProperties.length));
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [displayCount, sortedProperties.length]);
+
   useEffect(() => {
     if (geocodeTimerRef.current) {
       clearTimeout(geocodeTimerRef.current);
@@ -280,8 +321,8 @@ export default function ImoveisPage() {
   }, [filteredProperties.length, searchQuery, allProperties]);
 
   const featuredProperties = useMemo(
-    () => sortedProperties.slice(0, 10),
-    [sortedProperties]
+    () => displayedProperties.slice(0, 10),
+    [displayedProperties]
   );
 
   const featuredIds = useMemo(
@@ -294,19 +335,20 @@ export default function ImoveisPage() {
     return types.map((type) => ({
       type,
       label: getPropertyTypeLabel(type),
-      properties: sortedProperties.filter(
+      count: counts?.byType[type] ?? 0,
+      properties: displayedProperties.filter(
         (p) => p.type === type && !featuredIds.has(p.id)
       ),
     }));
-  }, [sortedProperties, featuredIds]);
+  }, [displayedProperties, featuredIds, counts]);
 
   const stateCounts = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const p of sortedProperties) {
+    for (const p of displayedProperties) {
       counts.set(p.state, (counts.get(p.state) ?? 0) + 1);
     }
     return counts;
-  }, [sortedProperties]);
+  }, [displayedProperties]);
 
   const hasMultipleStates = stateCounts.size > 1;
 
@@ -323,15 +365,15 @@ export default function ImoveisPage() {
       .map(([state]) => ({
         state,
         label: stateMap[state] ?? state,
-        properties: sortedProperties.filter(
+        properties: displayedProperties.filter(
           (p) => p.state === state && !featuredIds.has(p.id)
         ),
       }));
-  }, [sortedProperties, featuredIds, stateCounts]);
+  }, [displayedProperties, featuredIds, stateCounts]);
 
   const remainingByCity = useMemo(() => {
     const cityCounts = new Map<string, number>();
-    for (const p of sortedProperties) {
+    for (const p of displayedProperties) {
       if (!featuredIds.has(p.id)) {
         cityCounts.set(p.city, (cityCounts.get(p.city) ?? 0) + 1);
       }
@@ -343,11 +385,11 @@ export default function ImoveisPage() {
       .map(([city]) => ({
         city,
         label: city,
-        properties: sortedProperties.filter(
+        properties: displayedProperties.filter(
           (p) => p.city === city && !featuredIds.has(p.id)
         ),
       }));
-  }, [sortedProperties, featuredIds]);
+  }, [displayedProperties, featuredIds]);
 
   const hasFilters =
     searchQuery || selectedType !== "all" || selectedState !== "all" ||
@@ -569,7 +611,7 @@ export default function ImoveisPage() {
 
       <section className="px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          {sortedProperties.length === 0 && !reidoapeLoading ? (
+          {displayedProperties.length === 0 && !reidoapeLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Building2 className="mb-4 h-16 w-16 text-muted-foreground/30" />
               <h2 className="text-xl font-medium tracking-[-0.06em]">
@@ -633,27 +675,27 @@ export default function ImoveisPage() {
                 properties={featuredProperties}
               />
 
-              {remainingByType.some((g) => g.properties.length > 0) && (
+              {remainingByType.some((g) => g.count > 0) && (
                 <section className="py-8">
                   <h2 className="mb-6 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
                     Por Tipo
                   </h2>
-                  <Tabs defaultValue={remainingByType.find((g) => g.properties.length > 0)?.type ?? "casa"}>
+                  <Tabs defaultValue={remainingByType.find((g) => g.count > 0)?.type ?? "casa"}>
                     <TabsList className="mb-6">
                       {remainingByType
-                        .filter((g) => g.properties.length > 0)
+                        .filter((g) => g.count > 0)
                         .map((group) => (
                           <TabsTrigger key={group.type} value={group.type}>
                             {group.label}
                             <Badge variant="secondary" className="ml-1.5">
-                              {group.properties.length}
+                              {group.count}
                             </Badge>
                           </TabsTrigger>
                         ))}
                     </TabsList>
 
                     {remainingByType
-                      .filter((g) => g.properties.length > 0)
+                      .filter((g) => g.count > 0)
                       .map((group) => (
                         <TabsContent key={group.type} value={group.type}>
                           <div className="relative">
@@ -715,6 +757,15 @@ export default function ImoveisPage() {
                     />
                   ))}
                 </section>
+              )}
+
+              {displayCount < sortedProperties.length && (
+                <div ref={sentinelRef} className="flex justify-center py-8">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Carregando mais imóveis... ({displayCount}/{sortedProperties.length})
+                  </div>
+                </div>
               )}
             </>
           )}
