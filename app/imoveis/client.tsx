@@ -700,7 +700,7 @@ export default function ImoveisPage() {
                         <TabsContent key={group.type} value={group.type}>
                           <div className="relative">
                             <Carousel
-                              opts={{ align: "start", loop: false, containScroll: "trimSnaps" }}
+                              opts={{ align: "end", loop: false, containScroll: "trimSnaps" }}
                               className="w-full"
                             >
                               <CarouselContent>
