@@ -67,8 +67,8 @@ const sortOptions = [
   { value: "maior_desconto", label: "Maior desconto" },
 ];
 
-const LOAD_BATCH_DESKTOP = 20;
-const LOAD_BATCH_MOBILE = 10;
+const LOAD_BATCH_DESKTOP = 12;
+const LOAD_BATCH_MOBILE = 8;
 
 interface NearbyProperty {
   property: Property;
