@@ -2,13 +2,11 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Search, Building2, Navigation, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Search, Building2, Navigation, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
-import { PropertyGridSkeleton } from "@/components/skeletons";
 import { Property } from "@/lib/properties";
 import { haversineDistance, geocode } from "@/lib/geolocation";
 
@@ -81,13 +79,14 @@ interface NearbyProperty {
   distance: number;
 }
 
-export default function ImoveisPage() {
-  const router = useRouter();
+interface ImoveisClientProps {
+  initialProperties: Property[];
+}
+
+export default function ImoveisClient({ initialProperties }: ImoveisClientProps) {
   const searchParams = useSearchParams();
 
-  const [allProperties, setAllProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
+  const allProperties = initialProperties;
   const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
   const [geocoding, setGeocoding] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -129,30 +128,6 @@ export default function ImoveisPage() {
     if (b) { setDraftBedrooms(b); setSelectedBedrooms(b); }
     if (pg) setCurrentPage(parseInt(pg, 10) || 1);
   }, [searchParams]);
-
-  useEffect(() => {
-    async function fetchAllProperties() {
-      try {
-        setLoading(true);
-        const res = await fetch(`/api/properties?limit=10000`);
-        if (!res.ok) throw new Error("Failed");
-        const data = await res.json();
-        const properties: Property[] = data.properties ?? [];
-        setTotalCount(data.total ?? properties.length);
-
-        const uniqueMap = new Map<string, Property>();
-        for (const p of properties) {
-          uniqueMap.set(p.id, p);
-        }
-        setAllProperties(Array.from(uniqueMap.values()));
-      } catch {
-        // silently fail
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchAllProperties();
-  }, []);
 
   const filteredProperties = useMemo(() => {
     return allProperties.filter((p) => {
@@ -364,7 +339,7 @@ export default function ImoveisPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="px-6 pb-6 pt-28 md:pt-32">
+      <section className="px-6 pb-6 pt-32 md:pt-40">
         <div className="mx-auto max-w-6xl text-center">
           <h1 className="text-primary">Encontre o imóvel perfeito</h1>
           <p className="lead mt-4 text-muted-foreground">
@@ -372,16 +347,9 @@ export default function ImoveisPage() {
             terrenos e muito mais.
           </p>
           <div className="mt-4 flex items-center justify-center gap-3 text-sm text-muted-foreground">
-            {loading ? (
-              <span className="flex items-center gap-1.5">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Carregando imóveis...
-              </span>
-            ) : totalCount > 0 ? (
-              <Badge variant="blue">
-                {totalCount.toLocaleString("pt-BR")} imóveis disponíveis
-              </Badge>
-            ) : null}
+            <Badge variant="blue">
+              {allProperties.length.toLocaleString("pt-BR")} imóveis disponíveis
+            </Badge>
           </div>
         </div>
       </section>
@@ -581,15 +549,7 @@ export default function ImoveisPage() {
 
       <section className="px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          {loading ? (
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-              <PropertyGridSkeleton count={10} />
-            </div>
-          ) : paginatedProperties.length === 0 && nearbyProperties.length === 0 ? (
+          {paginatedProperties.length === 0 && nearbyProperties.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Building2 className="mb-4 h-16 w-16 text-muted-foreground/30" />
               <h2 className="text-xl font-medium tracking-[-0.06em]">
@@ -628,7 +588,7 @@ export default function ImoveisPage() {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {paginatedProperties.map((property) => (
                   <PropertyCatalogCard key={property.id} property={property} horizontal />
                 ))}
@@ -665,7 +625,6 @@ export default function ImoveisPage() {
 
               {geocoding && (
                 <div className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
                   Buscando imóveis nas proximidades...
                 </div>
               )}

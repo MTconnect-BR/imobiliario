@@ -1,15 +1,12 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Search, Home, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Home, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
-import { PropertyGridSkeleton } from "@/components/skeletons";
 import { Property } from "@/lib/properties";
 
-const TYPE = "casa";
 const PER_PAGE = 20;
 
 const modalidadeFilters: { value: string; label: string }[] = [
@@ -24,9 +21,12 @@ const origemFilters: { value: string; label: string }[] = [
   { value: "particular", label: "Particular" },
 ];
 
-export default function CasasPage() {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
+interface CasasClientProps {
+  initialProperties: Property[];
+}
+
+export default function CasasClient({ initialProperties }: CasasClientProps) {
+  const allProperties = initialProperties;
   const [searchQuery, setSearchQuery] = useState("");
   const [draftSearch, setDraftSearch] = useState("");
   const [selectedState, setSelectedState] = useState("all");
@@ -36,29 +36,12 @@ export default function CasasPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  useEffect(() => {
-    async function fetchProperties() {
-      try {
-        setLoading(true);
-        const res = await fetch(`/api/properties?type=${TYPE}&limit=10000`);
-        if (!res.ok) throw new Error("Failed");
-        const data = await res.json();
-        setProperties(data.properties ?? []);
-      } catch {
-        // silently fail
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProperties();
-  }, []);
-
   const states = useMemo(() => {
-    return [...new Set(properties.map((p) => p.state))].sort();
-  }, [properties]);
+    return [...new Set(allProperties.map((p) => p.state))].sort();
+  }, [allProperties]);
 
   const filtered = useMemo(() => {
-    return properties.filter((p) => {
+    return allProperties.filter((p) => {
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (
@@ -79,17 +62,13 @@ export default function CasasPage() {
       }
       return true;
     });
-  }, [properties, searchQuery, selectedState, selectedModalidade, selectedOrigem, selectedRefCaixa]);
+  }, [allProperties, searchQuery, selectedState, selectedModalidade, selectedOrigem, selectedRefCaixa]);
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const paginated = useMemo(() => {
     const start = (currentPage - 1) * PER_PAGE;
     return filtered.slice(start, start + PER_PAGE);
   }, [filtered, currentPage]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, selectedState, selectedModalidade, selectedOrigem, selectedRefCaixa]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") setSearchQuery(draftSearch);
@@ -141,7 +120,7 @@ export default function CasasPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="px-6 pb-8 pt-32">
+      <section className="px-6 pb-8 pt-36 md:pt-40">
         <div className="mx-auto max-w-6xl text-center">
           <h1 className="text-primary">Casas</h1>
           <p className="lead mt-4 text-muted-foreground">
@@ -165,7 +144,7 @@ export default function CasasPage() {
                 className="h-10 w-full rounded-[10px] border border-border bg-card pl-10 pr-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s]"
               />
             </div>
-            <Button onClick={() => setSearchQuery(draftSearch)} className="h-10 rounded-[10px] px-6">
+            <Button onClick={() => { setSearchQuery(draftSearch); setCurrentPage(1); }} className="h-10 rounded-[10px] px-6">
               Buscar
             </Button>
           </div>
@@ -173,7 +152,7 @@ export default function CasasPage() {
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <select
               value={selectedState}
-              onChange={(e) => setSelectedState(e.target.value)}
+              onChange={(e) => { setSelectedState(e.target.value); setCurrentPage(1); }}
               aria-label="Filtrar por estado"
               className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
             >
@@ -253,12 +232,7 @@ export default function CasasPage() {
 
       <section className="px-6 py-8">
         <div className="mx-auto max-w-6xl">
-          {loading ? (
-            <div className="space-y-6">
-              <Skeleton className="h-8 w-48" />
-              <PropertyGridSkeleton count={10} />
-            </div>
-          ) : paginated.length === 0 ? (
+          {paginated.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Home className="mb-4 h-16 w-16 text-muted-foreground/30" />
               <h2 className="text-xl font-medium tracking-[-0.06em]">
@@ -287,7 +261,7 @@ export default function CasasPage() {
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {paginated.map((property) => (
                   <PropertyCatalogCard key={property.id} property={property} horizontal />
                 ))}

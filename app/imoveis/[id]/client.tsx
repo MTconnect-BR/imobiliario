@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,7 +12,7 @@ import {
   Share2,
   Phone,
   ArrowLeft,
-  Building2,
+
   Calendar,
   ExternalLink,
   FileText,
@@ -39,7 +38,6 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
-import { PropertyDetailSkeleton } from "@/components/skeletons";
 import { PropertyMap } from "@/components/property-map";
 import {
   Property,
@@ -48,57 +46,15 @@ import {
   formatPrice,
 } from "@/lib/properties";
 
-export default function PropertyDetailPage() {
-  const params = useParams();
-  const id = params?.id as string;
+interface PropertyDetailClientProps {
+  property: Property;
+  similarProperties: Property[];
+}
 
-  const [property, setProperty] = useState<Property | null>(null);
-  const [relatedProperties, setRelatedProperties] = useState<Property[]>([]);
-  const [notFound, setNotFound] = useState(false);
-  const [loading, setLoading] = useState(true);
+export default function PropertyDetailClient({ property, similarProperties }: PropertyDetailClientProps) {
   const [galleryApi, setGalleryApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [totalSlides, setTotalSlides] = useState(0);
-
-  useEffect(() => {
-    if (!id) return;
-
-    async function fetchProperty() {
-      try {
-        setLoading(true);
-        const res = await fetch(`/api/reidoape-property?id=${id}`);
-        if (!res.ok) throw new Error("Not found");
-        const data = await res.json();
-        if (data.property) {
-          setProperty(data.property);
-
-          const prop = data.property;
-          const similarRes = await fetch(
-            `/api/properties?type=${prop.type}&state=${prop.state}&limit=20`
-          );
-          if (similarRes.ok) {
-            const similarData = await similarRes.json();
-            const similar: Property[] = (similarData.properties ?? [])
-              .filter((p: Property) => p.id !== prop.id)
-              .sort((a: Property, b: Property) => {
-                const aCity = a.city === prop.city ? 1 : 0;
-                const bCity = b.city === prop.city ? 1 : 0;
-                return bCity - aCity;
-              })
-              .slice(0, 10);
-            setRelatedProperties(similar);
-          }
-        } else {
-          setNotFound(true);
-        }
-      } catch {
-        setNotFound(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProperty();
-  }, [id]);
 
   useEffect(() => {
     if (!galleryApi) return;
@@ -118,39 +74,6 @@ export default function PropertyDetailPage() {
     }
   }, [property]);
 
-  if (notFound) {
-    return (
-      <main className="min-h-screen bg-background">
-        <div className="flex flex-col items-center justify-center px-6 py-32">
-          <Building2 className="mb-4 h-16 w-16 text-muted-foreground/30" />
-          <h1 className="text-2xl font-medium tracking-[-0.06em]">
-            Imóvel não encontrado
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            O imóvel que você procura não existe ou foi removido.
-          </p>
-          <Link href="/imoveis" className="mt-6">
-            <Button variant="green">Ver todos os imóveis</Button>
-          </Link>
-        </div>
-      </main>
-    );
-  }
-
-  if (loading) {
-    return <PropertyDetailSkeleton />;
-  }
-
-  if (!property) {
-    return (
-      <main className="min-h-screen bg-background">
-        <div className="flex items-center justify-center px-6 py-32">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        </div>
-      </main>
-    );
-  }
-
   const statusVariant =
     property.status === "disponivel"
       ? "green"
@@ -166,7 +89,7 @@ export default function PropertyDetailPage() {
   return (
     <main className="min-h-screen bg-background">
       {/* Breadcrumb */}
-      <section className="px-6 pt-28 pb-4">
+      <section className="px-6 pt-36 pb-4 md:pt-40">
         <div className="mx-auto max-w-6xl">
           <Breadcrumb>
             <BreadcrumbList>
@@ -594,7 +517,7 @@ export default function PropertyDetailPage() {
       </section>
 
       {/* Related Properties */}
-      {relatedProperties.length > 0 && (
+      {similarProperties.length > 0 && (
         <section className="px-6 py-8">
           <div className="mx-auto max-w-6xl">
             <h2 className="mb-2 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
@@ -604,7 +527,7 @@ export default function PropertyDetailPage() {
               Outros {getPropertyTypeLabel(property.type).toLowerCase()}s em {property.city}
             </p>
             <div className="space-y-6">
-              {relatedProperties.map((rp) => (
+              {similarProperties.map((rp) => (
                 <PropertyCatalogCard key={rp.id} property={rp} horizontal />
               ))}
             </div>

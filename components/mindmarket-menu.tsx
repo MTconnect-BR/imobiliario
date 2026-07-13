@@ -25,14 +25,6 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
-    label: "Financiamento",
-    children: [
-      { label: "Simulação", href: "/financiamento/simulacao" },
-      { label: "Crédito Imobiliário", href: "/financiamento/credito" },
-      { label: "Consórcio", href: "/financiamento/consorcio" },
-    ],
-  },
-  {
     label: "Sobre",
     children: [
       { label: "A Empresa", href: "/sobre/empresa" },
@@ -324,29 +316,6 @@ export function MindMarketMenu() {
               </Link>
             </div>
           </div>
-          <Link
-            href="/contato"
-            className="c-menu-mobile_nav_contact"
-            onClick={closeMenu}
-          >
-            <span className="c-menu-mobile_nav_contact_label">
-              Fale Conosco
-            </span>
-            <div className="c-menu-mobile_nav_contact_icon">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </div>
-          </Link>
         </div>
       </div>
     </>
