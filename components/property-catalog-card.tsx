@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,7 @@ import {
   getPropertyStatusLabel,
   formatPrice,
 } from "@/lib/properties";
-import { Bed, Bath, Maximize, MapPin, Navigation } from "lucide-react";
+import { Bed, Bath, Maximize, MapPin, Navigation, ImageOff } from "lucide-react";
 
 function getStatusVariant(status: Property["status"]) {
   switch (status) {
@@ -41,23 +42,38 @@ interface PropertyCatalogCardProps {
 }
 
 export function PropertyCatalogCard({ property, distance }: PropertyCatalogCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
   return (
     <Link href={`/imoveis/${property.id}`}>
       <div className="group overflow-hidden rounded-[10px] border border-border bg-card transition-all duration-[0.4s] hover:shadow-md hover:scale-[1.02]">
         {/* Image */}
         <div className="relative aspect-[16/9] overflow-hidden bg-muted">
-          {property.imageUrl ? (
-            <Image
-              src={property.imageUrl}
-              alt={property.title}
-              width={600}
-              height={338}
-              loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-[0.4s] group-hover:scale-105"
-            />
+          {!imageError && property.imageUrl ? (
+            <>
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-muted">
+                  <div className="shimmer absolute inset-0" />
+                </div>
+              )}
+              <Image
+                src={property.imageUrl}
+                alt={property.title}
+                width={600}
+                height={338}
+                loading="lazy"
+                onLoad={() => setImageLoaded(true)}
+                onError={() => setImageError(true)}
+                className={`h-full w-full object-cover transition-all duration-[0.4s] group-hover:scale-105 ${
+                  imageLoaded ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            </>
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-4xl text-muted-foreground/30">
-              🏠
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground/40">
+              <ImageOff className="h-10 w-10" />
+              <span className="text-xs font-medium">Sem Imagem</span>
             </div>
           )}
           <div className="absolute left-3 top-3">

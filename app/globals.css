@@ -1347,3 +1347,19 @@ html.has-menu-mobile-open .c-menu-mobile_nav_contact_icon {
 .hero-card.is-inview .hero-card-content > *:nth-child(3) { transition-delay: 0.4s; }
 .hero-card.is-inview .hero-card-content > *:nth-child(4) { transition-delay: 0.45s; }
 .hero-card.is-inview .hero-card-content > *:nth-child(5) { transition-delay: 0.5s; }
+
+/* Shimmer animation for image loading */
+.shimmer {
+    background: linear-gradient(
+        90deg,
+        var(--color-muted) 25%,
+        var(--color-muted-foreground)/10 50%,
+        var(--color-muted) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

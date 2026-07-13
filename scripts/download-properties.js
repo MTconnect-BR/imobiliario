@@ -118,7 +118,7 @@ function mapItem(item) {
       `Imóvel ${item.categoria_nome}\n\nRef: ${item.referencia_plain}`;
 
   return {
-    id: `reidoape-${item.id}`,
+    id: `imovel-${item.id}`,
     title:
       item.titulo_plain ||
       `Imóvel ${item.categoria_nome} - ${item.bairro}, ${item.cidade}`,
