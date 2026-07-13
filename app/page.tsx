@@ -17,8 +17,8 @@ export default function Home() {
           Encontre o imóvel perfeito
         </h1>
         <p className="lead mt-6 max-w-2xl">
-          A plataforma completa para comprar, alugar e investir em imóveis.
-          Descubra oportunidades únicas com as melhores condições do mercado.
+          Imóveis da Caixa com as melhores condições.
+          Casas, apartamentos, terrenos e mais — tudo com transparência e segurança.
         </p>
         <HomeSearch />
       </section>

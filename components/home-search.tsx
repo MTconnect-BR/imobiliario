@@ -6,7 +6,6 @@ import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const typeFilters = [
   { value: "all", label: "Todos os imóveis" },
@@ -87,13 +86,11 @@ export function HomeSearch() {
       <div className="hero-card-content relative z-10">
         <Card className="w-full">
           <CardContent className="p-6">
-            <Tabs defaultValue="comprar">
-              <TabsList variant="line" className="mb-6 w-full">
-                <TabsTrigger value="comprar">Comprar</TabsTrigger>
-                <TabsTrigger value="alugar">Alugar</TabsTrigger>
-                <TabsTrigger value="novo">Imóvel novo</TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <div className="mb-6">
+              <label className="mb-1.5 block text-sm font-medium text-foreground">
+                Busque por imóvel da Caixa
+              </label>
+            </div>
 
             <div className="mb-4">
               <label className="mb-1.5 block text-sm font-medium text-foreground">
