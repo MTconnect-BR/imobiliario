@@ -163,10 +163,10 @@ export default function PropertyListClient({
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="flex min-h-[50vh] flex-col items-center justify-center px-6 pb-8 pt-36 text-center md:pt-40 bg-[#1a1b19]">
+      <section className="flex min-h-[50vh] flex-col items-center justify-center px-6 pb-8 pt-36 text-center md:pt-40">
         <div className="mx-auto max-w-6xl text-center">
-          <h1 className="text-white">{config.title}</h1>
-          <p className="lead mt-4 text-white/70">{config.subtitle}</p>
+          <h1>{config.title}</h1>
+          <p className="lead mt-4 text-muted-foreground">{config.subtitle}</p>
         </div>
       </section>
 

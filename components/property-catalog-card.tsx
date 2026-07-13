@@ -3,7 +3,16 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Navigation, Bed, Bath, Maximize, ImageOff, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  MapPin,
+  Navigation,
+  Bed,
+  Bath,
+  Maximize,
+  ImageOff,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import type { Property } from "@/lib/properties";
 import { formatPrice, getPropertyTypeLabel, getPropertyStatusLabel } from "@/lib/properties";
 import { Badge } from "@/components/ui/badge";
@@ -46,7 +55,8 @@ export function PropertyCatalogCard({ property, distance, horizontal }: Property
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const allImages = property.images?.length > 0 ? property.images : [property.imageUrl].filter(Boolean);
+  const allImages =
+    property.images?.length > 0 ? property.images : [property.imageUrl].filter(Boolean);
   const hasMultipleImages = allImages.length > 1;
 
   const handleImageClick = (e: React.MouseEvent, index: number) => {
@@ -105,7 +115,7 @@ export function PropertyCatalogCard({ property, distance, horizontal }: Property
   if (horizontal) {
     return (
       <>
-        <Link href={`/imoveis/${property.id}`}>
+        <Link href={`/imoveis/${property.id}`} className="block">
           <div className="group flex h-40 overflow-hidden rounded-[10px] border border-border bg-card transition-all duration-[0.4s] hover:shadow-md hover:scale-[1.01]">
             {/* Image */}
             <div className="relative w-48 shrink-0 overflow-hidden bg-muted sm:w-56">
@@ -188,7 +198,7 @@ export function PropertyCatalogCard({ property, distance, horizontal }: Property
 
   return (
     <>
-      <Link href={`/imoveis/${property.id}`}>
+      <Link href={`/imoveis/${property.id}`} className="block">
         <div className="group overflow-hidden rounded-[10px] border border-border bg-card transition-all duration-[0.4s] hover:shadow-md hover:scale-[1.02]">
           {/* Image */}
           <div className="relative aspect-[16/9] overflow-hidden bg-muted">
@@ -229,9 +239,7 @@ export function PropertyCatalogCard({ property, distance, horizontal }: Property
               <div className="absolute bottom-3 left-3">
                 <Badge variant="blue" className="gap-1">
                   <Navigation className="h-3 w-3" />
-                  {distance < 1
-                    ? `${Math.round(distance * 1000)} m`
-                    : `${distance.toFixed(1)} km`}
+                  {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}
                 </Badge>
               </div>
             )}
