@@ -96,10 +96,10 @@ export default function ComerciaisClient({ initialProperties }: ComerciaisClient
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="px-6 pb-8 pt-36 md:pt-40">
+      <section className="flex min-h-[50vh] flex-col items-center justify-center px-6 pb-8 pt-36 text-center md:pt-40 bg-[#1a1b19]">
         <div className="mx-auto max-w-6xl text-center">
-          <h1 className="text-primary">Comerciais</h1>
-          <p className="lead mt-4 text-muted-foreground">
+          <h1 className="text-white">Comerciais</h1>
+          <p className="lead mt-4 text-white/70">
             Imóveis comerciais para seu negócio crescer.
           </p>
         </div>

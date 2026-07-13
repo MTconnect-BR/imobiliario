@@ -343,14 +343,14 @@ export default function ImoveisClient({ initialProperties }: ImoveisClientProps)
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="flex min-h-[50vh] flex-col items-center justify-center px-6 pb-6 pt-32 text-center md:pt-40">
+      <section className="flex min-h-[50vh] flex-col items-center justify-center px-6 pb-6 pt-32 text-center md:pt-40 bg-[#1a1b19]">
         <div className="mx-auto max-w-6xl text-center">
-          <h1 className="text-primary">Encontre o imóvel perfeito</h1>
-          <p className="lead mt-4 text-muted-foreground">
+          <h1 className="text-white">Encontre o imóvel perfeito</h1>
+          <p className="lead mt-4 text-white/70">
             Explore nosso catálogo completo de imóveis. Casas, apartamentos,
             terrenos e muito mais.
           </p>
-          <div className="mt-4 flex items-center justify-center gap-3 text-sm text-muted-foreground">
+          <div className="mt-4 flex items-center justify-center gap-3 text-sm text-white/70">
             <Badge variant="blue">
               {allProperties.length.toLocaleString("pt-BR")} imóveis disponíveis
             </Badge>
