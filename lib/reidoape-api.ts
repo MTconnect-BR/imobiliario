@@ -386,14 +386,43 @@ export async function getPropertyById(id: string): Promise<Property | null> {
   const cached = getRawItemById(reidoapeId);
   if (cached) return rawItemToProperty(cached);
 
-  ensureLoading();
-
-  if (cache?.loadingPromise) {
-    await cache.loadingPromise;
+  if (cache) {
+    const item = cache.map.get(reidoapeId);
+    if (item) return rawItemToProperty(item);
   }
 
-  const item = cache?.map.get(reidoapeId);
-  return item ? rawItemToProperty(item) : null;
+  const startTime = Date.now();
+  const TIMEOUT_MS = 8000;
+
+  const firstPage = await fetchPage(0);
+  const total = firstPage.meta?.total ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  for (const item of firstPage.items ?? []) {
+    if (item.id === reidoapeId) return rawItemToProperty(item);
+  }
+
+  const BATCH = 10;
+  for (let batchStart = 1; batchStart < totalPages; batchStart += BATCH) {
+    if (Date.now() - startTime > TIMEOUT_MS) return null;
+
+    const batchEnd = Math.min(batchStart + BATCH, totalPages);
+    const pages: number[] = [];
+    for (let p = batchStart; p < batchEnd; p++) pages.push(p);
+
+    const results = await Promise.all(pages.map((p) => fetchPage(p)));
+    for (const data of results) {
+      for (const item of data.items ?? []) {
+        if (item.id === reidoapeId) return rawItemToProperty(item);
+      }
+    }
+
+    if (batchEnd < totalPages) {
+      await new Promise((r) => setTimeout(r, 200));
+    }
+  }
+
+  return null;
 }
 
 export interface PropertyFilters {
