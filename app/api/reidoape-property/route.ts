@@ -29,8 +29,7 @@ export async function GET(request: NextRequest) {
   }
 
   const properties = await loadProperties();
-  const fullId = `imovel-${reidoapeId}`;
-  const property = properties.find((p) => p.id === fullId);
+  const property = properties.find((p) => p.id === reidoapeId);
 
   if (!property) {
     return NextResponse.json({ property: null }, { status: 404 });
