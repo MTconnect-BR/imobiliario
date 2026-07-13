@@ -5,6 +5,20 @@ import { type Property } from "@/lib/properties";
 
 export const dynamic = "force-dynamic";
 
+const TYPE_FILE_MAP: Record<string, string> = {
+  casa: "casas.json",
+  apartamento: "apartamentos.json",
+  terreno: "terrenos.json",
+  comercial: "comerciais.json",
+};
+
+async function loadProperties(type?: string): Promise<Property[]> {
+  const fileName = type && TYPE_FILE_MAP[type] ? TYPE_FILE_MAP[type] : "all-properties.json";
+  const filePath = join(process.cwd(), "data", fileName);
+  const data = await readFile(filePath, "utf-8");
+  return JSON.parse(data);
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -13,17 +27,39 @@ export async function GET(request: Request) {
     const type = searchParams.get("type") ?? undefined;
     const state = searchParams.get("state") ?? undefined;
     const city = searchParams.get("city") ?? undefined;
+    const bedrooms = searchParams.get("bedrooms") ?? undefined;
+    const bathrooms = searchParams.get("bathrooms") ?? undefined;
+    const parking = searchParams.get("parking") ?? undefined;
+    const minPrice = searchParams.get("minPrice") ?? undefined;
+    const maxPrice = searchParams.get("maxPrice") ?? undefined;
     const search = searchParams.get("search")?.toLowerCase() ?? undefined;
 
-    const filePath = join(process.cwd(), "data", "all-properties.json");
-    const data = await readFile(filePath, "utf-8");
-    const allProperties: Property[] = JSON.parse(data);
+    const allProperties = await loadProperties(type);
 
     let filtered = allProperties;
 
-    if (type) filtered = filtered.filter((p) => p.type === type);
     if (state) filtered = filtered.filter((p) => p.state === state);
-    if (city) filtered = filtered.filter((p) => p.city === city);
+    if (city) filtered = filtered.filter((p) => p.city.toLowerCase() === city.toLowerCase());
+    if (bedrooms) {
+      const min = parseInt(bedrooms, 10);
+      if (!isNaN(min)) filtered = filtered.filter((p) => p.bedrooms >= min);
+    }
+    if (bathrooms) {
+      const min = parseInt(bathrooms, 10);
+      if (!isNaN(min)) filtered = filtered.filter((p) => p.bathrooms >= min);
+    }
+    if (parking) {
+      const min = parseInt(parking, 10);
+      if (!isNaN(min)) filtered = filtered.filter((p) => p.parkingSpaces >= min);
+    }
+    if (minPrice) {
+      const min = parseInt(minPrice, 10);
+      if (!isNaN(min)) filtered = filtered.filter((p) => p.price >= min);
+    }
+    if (maxPrice) {
+      const max = parseInt(maxPrice, 10);
+      if (!isNaN(max)) filtered = filtered.filter((p) => p.price <= max);
+    }
     if (search) {
       filtered = filtered.filter(
         (p) =>

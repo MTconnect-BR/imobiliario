@@ -7,9 +7,9 @@ const REIDOAPE_API = "https://reidoape.com.br/api";
 const REIDOAPE_ID_MASTER = "90821645";
 const PAGE_SIZE = 100;
 const OUTPUT_DIR = path.join(__dirname, "..", "data");
-const OUTPUT_FILE = path.join(OUTPUT_DIR, "all-properties.json");
 
 function cleanHtml(html) {
+  if (!html) return "";
   return html
     .replace(/<[^>]*>/g, "")
     .replace(/&nbsp;/g, " ")
@@ -21,6 +21,7 @@ function cleanHtml(html) {
 }
 
 function parsePrice(text) {
+  if (!text) return 0;
   const cleaned = cleanHtml(text);
   const match = cleaned.match(/R\$\s*([\d.,]+)/);
   if (!match) return 0;
@@ -30,6 +31,7 @@ function parsePrice(text) {
 }
 
 function parseArea(text) {
+  if (!text) return 0;
   const cleaned = cleanHtml(text).trim();
   if (!cleaned) return 0;
   const normalized = cleaned.replace(/\./g, "").replace(",", ".");
@@ -43,15 +45,16 @@ function parseArea(text) {
 }
 
 function parseNumber(text) {
+  if (!text) return 0;
   const cleaned = cleanHtml(text);
   const num = parseInt(cleaned, 10);
   return isNaN(num) ? 0 : num;
 }
 
 function mapItem(item) {
-  const cityState = item.cidade.split(",").map((s) => s.trim());
-  const city = cityState[0] ?? item.cidade;
-  const stateShort = item.estado;
+  const cityState = (item.cidade || "").split(",").map((s) => s.trim());
+  const city = cityState[0] ?? (item.cidade || "");
+  const stateShort = item.estado || "";
 
   const enderecoRaw = cleanHtml(item.enderecoPermissao ?? "")
     .replace(/^Endereço:\s*/i, "")
@@ -70,8 +73,12 @@ function mapItem(item) {
   const banheiros = parseNumber(item.banheiros_txt ?? "0");
   const vagas = parseNumber(item.vagas_txt ?? "0");
 
-  const matriculaUrl = `https://venda-imoveis.caixa.gov.br/editais/matricula/${item.estado}/${item.ref_caixa}.pdf`;
-  const officialUrl = `https://venda-imoveis.caixa.gov.br/sistema/detalhe-imovel.asp?hdnimovel=${item.ref_caixa}`;
+  const matriculaUrl = item.ref_caixa
+    ? `https://venda-imoveis.caixa.gov.br/editais/matricula/${item.estado}/${item.ref_caixa}.pdf`
+    : "";
+  const officialUrl = item.ref_caixa
+    ? `https://venda-imoveis.caixa.gov.br/sistema/detalhe-imovel.asp?hdnimovel=${item.ref_caixa}`
+    : "";
 
   const typeMap = {
     Apartamento: "apartamento",
@@ -93,6 +100,8 @@ function mapItem(item) {
     "Grupo de Salas Comerciais": "comercial",
     "Imóvel Comercial": "comercial",
     Sobrado: "casa",
+    "Casa Duplex": "casa",
+    "Andar Corporativo": "comercial",
   };
 
   const images = (
@@ -101,8 +110,8 @@ function mapItem(item) {
 
   let lat, lng;
   if (item.map_lat && item.map_lon) {
-    lat = item.map_lat;
-    lng = item.map_lon;
+    lat = parseFloat(item.map_lat);
+    lng = parseFloat(item.map_lon);
   } else if (item.coordenadas) {
     const parts = item.coordenadas.match(/-?\d+\.\d+/g);
     if (parts?.length === 2) {
@@ -115,16 +124,22 @@ function mapItem(item) {
   const description = item.descricao_html
     ? cleanHtml(item.descricao_html)
     : item.titulo_plain ||
-      `Imóvel ${item.categoria_nome}\n\nRef: ${item.referencia_plain}`;
+      `Imóvel ${item.categoria_nome || item.categoria}\n\nRef: ${item.referencia_plain || item.ref_caixa}`;
+
+  const categoria = item.categoria || item.categoria_nome || "";
 
   return {
     id: `imovel-${item.id}`,
+    reidoapeId: item.id,
     title:
       item.titulo_plain ||
-      `Imóvel ${item.categoria_nome} - ${item.bairro}, ${item.cidade}`,
-    type: typeMap[item.categoria] ?? "casa",
+      `Imóvel ${categoria} - ${item.bairro}, ${item.cidade}`,
+    type: typeMap[categoria] ?? "casa",
+    categoria,
     status: "disponivel",
     price,
+    avaliacaoPrice: avaliacao || undefined,
+    descontoPct: desconto,
     area,
     bedrooms: quartos,
     bathrooms: banheiros,
@@ -140,18 +155,19 @@ function mapItem(item) {
     images,
     lat,
     lng,
+    modalidade: situacao,
+    tipo_origem: item.tipo || "",
+    refCaixa: item.ref_caixa || "",
+    documents: item.ref_caixa
+      ? [{ label: "Matrícula do Imóvel", url: matriculaUrl }]
+      : [],
+    officialUrl,
+    financing: item.financiamento || item.financing || undefined,
+    fgts: item.fgts || undefined,
+    pagamento: item.pagamento || undefined,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     source: "reidoape",
-    refCaixa: item.ref_caixa,
-    reidoapeId: item.id,
-    avaliacaoPrice: avaliacao || undefined,
-    descontoPct: desconto,
-    situacaoCaixa: situacao,
-    documents: [
-      { label: "Matrícula do Imóvel", url: matriculaUrl },
-    ],
-    officialUrl,
   };
 }
 
@@ -176,17 +192,18 @@ function fetchPage(page) {
 }
 
 async function main() {
-  console.log("Iniciando download de todos os imóveis...");
+  console.log("Iniciando download de todos os imóveis do Rei do Apê...\n");
 
   const firstPage = await fetchPage(0);
   const total = firstPage.meta?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
-  console.log(`Total: ${total} imóveis em ${totalPages} páginas`);
+  console.log(`Total: ${total} imóveis em ${totalPages} páginas ( PageSize: ${PAGE_SIZE} )`);
 
   const allItems = [...(firstPage.items ?? [])];
   console.log(`Página 0: ${allItems.length} itens`);
 
-  const BATCH = 10;
+  const BATCH = 5;
+  const DELAY_MS = 300;
   for (let batchStart = 1; batchStart < totalPages; batchStart += BATCH) {
     const batchEnd = Math.min(batchStart + BATCH, totalPages);
     const pages = [];
@@ -199,7 +216,12 @@ async function main() {
     console.log(
       `Páginas ${batchStart}-${batchEnd - 1}: ${allItems.length} itens total`
     );
+    if (batchEnd < totalPages) {
+      await new Promise((r) => setTimeout(r, DELAY_MS));
+    }
   }
+
+  console.log(`\nTotal baixado: ${allItems.length} itens`);
 
   const properties = allItems.map(mapItem);
 
@@ -213,16 +235,52 @@ async function main() {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 
-  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(uniqueProperties, null, 2));
+  const allFile = path.join(OUTPUT_DIR, "all-properties.json");
+  fs.writeFileSync(allFile, JSON.stringify(uniqueProperties, null, 2));
   console.log(
-    `\nSalvo ${uniqueProperties.length} imóveis únicos em ${OUTPUT_FILE}`
+    `\nSalvo ${uniqueProperties.length} imóveis únicos em ${allFile}`
   );
   console.log(
     `Removidos ${properties.length - uniqueProperties.length} duplicatas`
   );
-  console.log(
-    `Tamanho: ${(fs.statSync(OUTPUT_FILE).size / 1024 / 1024).toFixed(2)} MB`
-  );
+
+  const categories = {
+    casas: [],
+    apartamentos: [],
+    terrenos: [],
+    comerciais: [],
+  };
+
+  for (const p of uniqueProperties) {
+    if (p.type === "casa") {
+      categories.casas.push(p);
+    } else if (p.type === "apartamento") {
+      categories.apartamentos.push(p);
+    } else if (p.type === "terreno") {
+      categories.terrenos.push(p);
+    } else if (p.type === "comercial") {
+      categories.comerciais.push(p);
+    }
+  }
+
+  console.log("\n--- Contagem por Categoria ---");
+  for (const [cat, items] of Object.entries(categories)) {
+    const fileName = `${cat}.json`;
+    const filePath = path.join(OUTPUT_DIR, fileName);
+    fs.writeFileSync(filePath, JSON.stringify(items, null, 2));
+    const sizeMB = (fs.statSync(filePath).size / 1024 / 1024).toFixed(2);
+    console.log(`${cat}: ${items.length} imóveis (${fileName} - ${sizeMB} MB)`);
+  }
+
+  console.log("\n--- Resumo Final ---");
+  console.log(`Total único: ${uniqueProperties.length}`);
+  console.log(`Casas: ${categories.casas.length}`);
+  console.log(`Apartamentos: ${categories.apartamentos.length}`);
+  console.log(`Terrenos: ${categories.terrenos.length}`);
+  console.log(`Comerciais: ${categories.comerciais.length}`);
+
+  const totalSize = (fs.statSync(allFile).size / 1024 / 1024).toFixed(2);
+  console.log(`\nTamanho total all-properties.json: ${totalSize} MB`);
 }
 
 main().catch(console.error);
