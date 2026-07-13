@@ -100,6 +100,8 @@ export default function ImoveisPage() {
   const [selectedParking, setSelectedParking] = useState("all");
   const [selectedPrice, setSelectedPrice] = useState("all");
   const [selectedSort, setSelectedSort] = useState("recentes");
+  const [neighborhoodQuery, setNeighborhoodQuery] = useState("");
+  const [referenceQuery, setReferenceQuery] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
   const [geocoding, setGeocoding] = useState(false);
@@ -200,9 +202,19 @@ export default function ImoveisPage() {
         if (p.price < min || p.price > max) return false;
       }
 
+      if (neighborhoodQuery) {
+        const nq = neighborhoodQuery.toLowerCase();
+        if (!p.neighborhood.toLowerCase().includes(nq) && !p.city.toLowerCase().includes(nq)) return false;
+      }
+
+      if (referenceQuery) {
+        const rq = referenceQuery.toLowerCase();
+        if (!p.refCaixa?.toLowerCase().includes(rq) && !p.id.toLowerCase().includes(rq)) return false;
+      }
+
       return true;
     });
-  }, [allProperties, searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice]);
+  }, [allProperties, searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, neighborhoodQuery, referenceQuery]);
 
   const sortedProperties = useMemo(() => {
     const sorted = [...filteredProperties];
@@ -340,7 +352,8 @@ export default function ImoveisPage() {
   const hasFilters =
     searchQuery || selectedType !== "all" || selectedState !== "all" ||
     selectedBedrooms !== "all" || selectedBathrooms !== "all" ||
-    selectedParking !== "all" || selectedPrice !== "all";
+    selectedParking !== "all" || selectedPrice !== "all" ||
+    neighborhoodQuery || referenceQuery;
 
   function clearFilters() {
     setSearchQuery("");
@@ -350,6 +363,8 @@ export default function ImoveisPage() {
     setSelectedBathrooms("all");
     setSelectedParking("all");
     setSelectedPrice("all");
+    setNeighborhoodQuery("");
+    setReferenceQuery("");
     setNearbyProperties([]);
   }
 
@@ -522,6 +537,30 @@ export default function ImoveisPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  Bairro ou cidade
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Centro, Jardim..."
+                  value={neighborhoodQuery}
+                  onChange={(e) => setNeighborhoodQuery(e.target.value)}
+                  className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  Ref. ou código
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: IMCX87877..."
+                  value={referenceQuery}
+                  onChange={(e) => setReferenceQuery(e.target.value)}
+                  className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                />
               </div>
             </div>
           )}
