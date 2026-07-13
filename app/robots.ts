@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/crm", "/auth", "/api"],
       },
     ],
-    sitemap: "https://imobiliario-nu.vercel.app/sitemap.xml",
+    sitemap: "https://www.xn--sienagestoimobiliria-yxb9a.com.br/sitemap.xml",
   };
 }

@@ -3,7 +3,7 @@ import { getProperties } from "@/lib/properties-server";
 import { waitForFullLoad } from "@/lib/reidoape-api";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = "https://imobiliario-nu.vercel.app";
+  const base = "https://www.xn--sienagestoimobiliria-yxb9a.com.br";
   const now = new Date();
 
   const staticPages: MetadataRoute.Sitemap = [

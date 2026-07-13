@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "https://imobiliario-nu.vercel.app",
+    baseURL: "https://www.xn--sienagestoimobiliria-yxb9a.com.br",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },

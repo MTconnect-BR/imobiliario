@@ -11,10 +11,11 @@ export async function GET(req: NextRequest) {
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=br`,
       {
         headers: {
-          "User-Agent": "ImobiliarioPlatform/1.0 (https://imobiliario-nu.vercel.app)",
+          "User-Agent":
+            "ImobiliarioPlatform/1.0 (https://www.xn--sienagestoimobiliria-yxb9a.com.br)",
           "Accept-Language": "pt-BR",
         },
-      }
+      },
     );
 
     const data = await res.json();

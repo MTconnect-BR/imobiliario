@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://imobiliario-nu.vercel.app"),
+  metadataBase: new URL("https://www.xn--sienagestoimobiliria-yxb9a.com.br"),
   title: {
     default: "Imobiliário | Compre, alugue e invista em imóveis",
     template: "%s | Imobiliário",
@@ -38,11 +38,10 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    url: "https://imobiliario-nu.vercel.app",
+    url: "https://www.xn--sienagestoimobiliria-yxb9a.com.br",
     siteName: "Imobiliário",
     title: "Imobiliário | Compre, alugue e invista em imóveis",
-    description:
-      "A plataforma completa para comprar, alugar e investir em imóveis no Brasil.",
+    description: "A plataforma completa para comprar, alugar e investir em imóveis no Brasil.",
     images: [
       {
         url: "/og.png",
@@ -55,8 +54,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Imobiliário | Compre, alugue e invista em imóveis",
-    description:
-      "A plataforma completa para comprar, alugar e investir em imóveis no Brasil.",
+    description: "A plataforma completa para comprar, alugar e investir em imóveis no Brasil.",
     images: ["/og.png"],
   },
   robots: {
@@ -74,7 +72,7 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
   },
   alternates: {
-    canonical: "https://imobiliario-nu.vercel.app",
+    canonical: "https://www.xn--sienagestoimobiliria-yxb9a.com.br",
   },
 };
 
