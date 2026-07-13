@@ -5,12 +5,12 @@ import dynamic from "next/dynamic";
 
 const MindMarketMenu = dynamic(
   () => import("@/components/mindmarket-menu").then((m) => m.MindMarketMenu),
-  { ssr: false }
+  { ssr: true }
 );
 
 const FAQPanel = dynamic(
   () => import("@/components/faq-panel").then((m) => m.FAQPanel),
-  { ssr: false }
+  { ssr: true }
 );
 
 const PageTransition = dynamic(

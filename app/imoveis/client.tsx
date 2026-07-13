@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, Building2, Navigation, Loader2, SlidersHorizontal, X } from "lucide-react";
+import { Search, Building2, Navigation, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,7 +17,6 @@ const typeFilters: { value: string; label: string }[] = [
   { value: "casa", label: "Casas" },
   { value: "apartamento", label: "Apartamentos" },
   { value: "terreno", label: "Terrenos" },
-  { value: "comercial", label: "Comerciais" },
 ];
 
 const stateFilters: { value: string; label: string }[] = [
@@ -62,13 +61,6 @@ const priceRanges = [
   { value: "1000000-999999999", label: "Acima de R$ 1.000.000" },
 ];
 
-const sortOptions = [
-  { value: "recentes", label: "Mais recentes" },
-  { value: "menor_valor", label: "Menor preço" },
-  { value: "maior_valor", label: "Maior preço" },
-  { value: "maior_desconto", label: "Maior desconto" },
-];
-
 const LOAD_BATCH_DESKTOP = 12;
 const LOAD_BATCH_MOBILE = 8;
 
@@ -91,7 +83,6 @@ export default function ImoveisPage() {
   const [counts, setCounts] = useState<CountsData | null>(null);
   const [displayCount, setDisplayCount] = useState(LOAD_BATCH_DESKTOP);
   const [isMobile, setIsMobile] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
   const [geocoding, setGeocoding] = useState(false);
   const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -104,9 +95,6 @@ export default function ImoveisPage() {
   const [draftBathrooms, setDraftBathrooms] = useState("all");
   const [draftParking, setDraftParking] = useState("all");
   const [draftPrice, setDraftPrice] = useState("all");
-  const [draftSort, setDraftSort] = useState("recentes");
-  const [draftNeighborhood, setDraftNeighborhood] = useState("");
-  const [draftReference, setDraftReference] = useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
@@ -115,9 +103,6 @@ export default function ImoveisPage() {
   const [selectedBathrooms, setSelectedBathrooms] = useState("all");
   const [selectedParking, setSelectedParking] = useState("all");
   const [selectedPrice, setSelectedPrice] = useState("all");
-  const [selectedSort, setSelectedSort] = useState("recentes");
-  const [neighborhoodQuery, setNeighborhoodQuery] = useState("");
-  const [referenceQuery, setReferenceQuery] = useState("");
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -228,39 +213,15 @@ export default function ImoveisPage() {
         if (p.price < min || p.price > max) return false;
       }
 
-      if (neighborhoodQuery) {
-        const nq = neighborhoodQuery.toLowerCase();
-        if (!p.neighborhood.toLowerCase().includes(nq) && !p.city.toLowerCase().includes(nq)) return false;
-      }
-
-      if (referenceQuery) {
-        const rq = referenceQuery.toLowerCase();
-        if (!p.refCaixa?.toLowerCase().includes(rq) && !p.id.toLowerCase().includes(rq)) return false;
-      }
-
       return true;
     });
-  }, [allProperties, searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, neighborhoodQuery, referenceQuery]);
+  }, [allProperties, searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice]);
 
   const sortedProperties = useMemo(() => {
-    const sorted = [...filteredProperties];
-    switch (selectedSort) {
-      case "menor_valor":
-        sorted.sort((a, b) => a.price - b.price);
-        break;
-      case "maior_valor":
-        sorted.sort((a, b) => b.price - a.price);
-        break;
-      case "maior_desconto":
-        sorted.sort((a, b) => (b.descontoPct ?? 0) - (a.descontoPct ?? 0));
-        break;
-      case "recentes":
-      default:
-        sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-    }
-    return sorted;
-  }, [filteredProperties, selectedSort]);
+    return [...filteredProperties].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [filteredProperties]);
 
   const displayedProperties = useMemo(
     () => sortedProperties.slice(0, displayCount),
@@ -269,7 +230,7 @@ export default function ImoveisPage() {
 
   useEffect(() => {
     setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
-  }, [searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, selectedSort, neighborhoodQuery, referenceQuery, isMobile]);
+  }, [searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, isMobile]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -338,9 +299,6 @@ export default function ImoveisPage() {
     setSelectedBathrooms(draftBathrooms);
     setSelectedParking(draftParking);
     setSelectedPrice(draftPrice);
-    setSelectedSort(draftSort);
-    setNeighborhoodQuery(draftNeighborhood);
-    setReferenceQuery(draftReference);
   }
 
   function handleSearchKeyDown(e: React.KeyboardEvent) {
@@ -352,20 +310,7 @@ export default function ImoveisPage() {
   const hasAppliedFilters =
     searchQuery || selectedType !== "all" || selectedState !== "all" ||
     selectedBedrooms !== "all" || selectedBathrooms !== "all" ||
-    selectedParking !== "all" || selectedPrice !== "all" ||
-    neighborhoodQuery || referenceQuery;
-
-  const hasDraftChanges =
-    draftSearch !== searchQuery ||
-    draftType !== selectedType ||
-    draftState !== selectedState ||
-    draftBedrooms !== selectedBedrooms ||
-    draftBathrooms !== selectedBathrooms ||
-    draftParking !== selectedParking ||
-    draftPrice !== selectedPrice ||
-    draftSort !== selectedSort ||
-    draftNeighborhood !== neighborhoodQuery ||
-    draftReference !== referenceQuery;
+    selectedParking !== "all" || selectedPrice !== "all";
 
   function clearAllFilters() {
     setDraftSearch("");
@@ -375,9 +320,6 @@ export default function ImoveisPage() {
     setDraftBathrooms("all");
     setDraftParking("all");
     setDraftPrice("all");
-    setDraftSort("recentes");
-    setDraftNeighborhood("");
-    setDraftReference("");
     setSearchQuery("");
     setSelectedType("all");
     setSelectedState("all");
@@ -385,9 +327,6 @@ export default function ImoveisPage() {
     setSelectedBathrooms("all");
     setSelectedParking("all");
     setSelectedPrice("all");
-    setSelectedSort("recentes");
-    setNeighborhoodQuery("");
-    setReferenceQuery("");
     setNearbyProperties([]);
   }
 
@@ -422,8 +361,8 @@ export default function ImoveisPage() {
         </div>
       </section>
 
-      <section className="sticky top-20 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-4 md:top-0">
-        <div className="mx-auto max-w-6xl space-y-3">
+      <section className="sticky top-20 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:top-0">
+        <div className="mx-auto max-w-6xl px-6 py-4">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -442,8 +381,8 @@ export default function ImoveisPage() {
             </Button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap gap-2">
               {typeFilters.map((filter) => (
                 <button
                   key={filter.value}
@@ -464,165 +403,101 @@ export default function ImoveisPage() {
               ))}
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <select
-                value={draftPrice}
-                onChange={(e) => {
-                  setDraftPrice(e.target.value);
-                  setSelectedPrice(e.target.value);
-                  setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
-                }}
-                aria-label="Filtrar por faixa de preço"
-                className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
-              >
-                {priceRanges.map((range) => (
-                  <option key={range.value} value={range.value}>
-                    {range.label}
-                  </option>
-                ))}
-              </select>
+            <select
+              value={draftPrice}
+              onChange={(e) => {
+                setDraftPrice(e.target.value);
+                setSelectedPrice(e.target.value);
+                setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+              }}
+              aria-label="Filtrar por faixa de preço"
+              className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+            >
+              {priceRanges.map((range) => (
+                <option key={range.value} value={range.value}>
+                  {range.label}
+                </option>
+              ))}
+            </select>
 
-              <select
-                value={draftState}
-                onChange={(e) => {
-                  setDraftState(e.target.value);
-                  setSelectedState(e.target.value);
-                  setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
-                }}
-                aria-label="Filtrar por estado"
-                className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
-              >
-                {stateFilters.map((s) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
+            <select
+              value={draftState}
+              onChange={(e) => {
+                setDraftState(e.target.value);
+                setSelectedState(e.target.value);
+                setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+              }}
+              aria-label="Filtrar por estado"
+              className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+            >
+              {stateFilters.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
 
-              <select
-                value={draftBedrooms}
-                onChange={(e) => {
-                  setDraftBedrooms(e.target.value);
-                  setSelectedBedrooms(e.target.value);
-                  setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
-                }}
-                aria-label="Filtrar por dormitórios"
-                className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
-              >
-                {bedroomFilters.map((b) => (
-                  <option key={b.value} value={b.value}>
-                    {b.label === "Qualquer" ? `Dormitórios: ${b.label}` : `${b.label} dormitórios`}
-                  </option>
-                ))}
-              </select>
+            <select
+              value={draftBedrooms}
+              onChange={(e) => {
+                setDraftBedrooms(e.target.value);
+                setSelectedBedrooms(e.target.value);
+                setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+              }}
+              aria-label="Filtrar por dormitórios"
+              className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+            >
+              {bedroomFilters.map((b) => (
+                <option key={b.value} value={b.value}>
+                  {b.label === "Qualquer" ? `Dormitórios: ${b.label}` : `${b.label} dormitórios`}
+                </option>
+              ))}
+            </select>
 
+            <select
+              value={draftBathrooms}
+              onChange={(e) => {
+                setDraftBathrooms(e.target.value);
+                setSelectedBathrooms(e.target.value);
+                setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+              }}
+              aria-label="Filtrar por banheiros"
+              className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+            >
+              {bathroomFilters.map((b) => (
+                <option key={b.value} value={b.value}>
+                  {b.label === "Qualquer" ? `Banheiros: ${b.label}` : `${b.label} banheiros`}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={draftParking}
+              onChange={(e) => {
+                setDraftParking(e.target.value);
+                setSelectedParking(e.target.value);
+                setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+              }}
+              aria-label="Filtrar por vagas"
+              className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
+            >
+              {parkingFilters.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label === "Qualquer" ? `Vagas: ${p.label}` : `${p.label} vagas`}
+                </option>
+              ))}
+            </select>
+
+            {hasAppliedFilters && (
               <button
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className={`flex items-center gap-2 h-10 rounded-[10px] px-4 text-sm font-medium transition-all duration-[0.4s] ${
-                  showAdvanced
-                    ? "bg-foreground text-background"
-                    : "bg-card text-foreground border border-border hover:bg-muted"
-                }`}
+                onClick={clearAllFilters}
+                className="flex items-center gap-1 h-10 rounded-[10px] px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                <SlidersHorizontal className="h-4 w-4" />
-                Filtros
+                <X className="h-4 w-4" />
+                Limpar
               </button>
-
-              {hasAppliedFilters && (
-                <button
-                  onClick={clearAllFilters}
-                  className="flex items-center gap-1 h-10 rounded-[10px] px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X className="h-4 w-4" />
-                  Limpar
-                </button>
-              )}
-            </div>
+            )}
           </div>
-
-          {showAdvanced && (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 border-t border-border pt-3">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Banheiros
-                </label>
-                <select
-                  value={draftBathrooms}
-                  onChange={(e) => setDraftBathrooms(e.target.value)}
-                  className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
-                >
-                  {bathroomFilters.map((b) => (
-                    <option key={b.value} value={b.value}>
-                      {b.label === "Qualquer" ? `Banheiros: ${b.label}` : `${b.label} banheiros`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Vagas
-                </label>
-                <select
-                  value={draftParking}
-                  onChange={(e) => setDraftParking(e.target.value)}
-                  className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
-                >
-                  {parkingFilters.map((p) => (
-                    <option key={p.value} value={p.value}>
-                      {p.label === "Qualquer" ? `Vagas: ${p.label}` : `${p.label} vagas`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Ordenar por
-                </label>
-                <select
-                  value={draftSort}
-                  onChange={(e) => setDraftSort(e.target.value)}
-                  className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
-                >
-                  {sortOptions.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Bairro ou cidade
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ex: Centro, Jardim..."
-                  value={draftNeighborhood}
-                  onChange={(e) => setDraftNeighborhood(e.target.value)}
-                  onKeyDown={handleSearchKeyDown}
-                  className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Ref. ou código
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ex: IMCX87877..."
-                  value={draftReference}
-                  onChange={(e) => setDraftReference(e.target.value)}
-                  onKeyDown={handleSearchKeyDown}
-                  className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-                />
-              </div>
-              <div className="sm:col-span-3 lg:col-span-5">
-                <Button onClick={() => { applyFilters(); setShowAdvanced(false); }} className="w-full">
-                  Aplicar filtros
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
