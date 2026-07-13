@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
-import { PropertyGridSkeleton, FiltersSkeleton } from "@/components/skeletons";
+import { PropertyGridSkeleton } from "@/components/skeletons";
 import { Property } from "@/lib/properties";
 import { haversineDistance, geocode } from "@/lib/geolocation";
 
@@ -91,6 +91,23 @@ export default function ImoveisPage() {
   const [counts, setCounts] = useState<CountsData | null>(null);
   const [displayCount, setDisplayCount] = useState(LOAD_BATCH_DESKTOP);
   const [isMobile, setIsMobile] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
+  const [geocoding, setGeocoding] = useState(false);
+  const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const [draftSearch, setDraftSearch] = useState("");
+  const [draftType, setDraftType] = useState("all");
+  const [draftState, setDraftState] = useState("all");
+  const [draftBedrooms, setDraftBedrooms] = useState("all");
+  const [draftBathrooms, setDraftBathrooms] = useState("all");
+  const [draftParking, setDraftParking] = useState("all");
+  const [draftPrice, setDraftPrice] = useState("all");
+  const [draftSort, setDraftSort] = useState("recentes");
+  const [draftNeighborhood, setDraftNeighborhood] = useState("");
+  const [draftReference, setDraftReference] = useState("");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [selectedState, setSelectedState] = useState("all");
@@ -101,11 +118,6 @@ export default function ImoveisPage() {
   const [selectedSort, setSelectedSort] = useState("recentes");
   const [neighborhoodQuery, setNeighborhoodQuery] = useState("");
   const [referenceQuery, setReferenceQuery] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
-  const [geocoding, setGeocoding] = useState(false);
-  const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -122,11 +134,11 @@ export default function ImoveisPage() {
     const p = searchParams.get("price");
     const st = searchParams.get("state");
     const b = searchParams.get("bedrooms");
-    if (s) setSearchQuery(s);
-    if (t) setSelectedType(t);
-    if (p) setSelectedPrice(p);
-    if (st) setSelectedState(st);
-    if (b) setSelectedBedrooms(b);
+    if (s) { setDraftSearch(s); setSearchQuery(s); }
+    if (t) { setDraftType(t); setSelectedType(t); }
+    if (p) { setDraftPrice(p); setSelectedPrice(p); }
+    if (st) { setDraftState(st); setSelectedState(st); }
+    if (b) { setDraftBedrooms(b); setSelectedBedrooms(b); }
   }, [searchParams]);
 
   useEffect(() => {
@@ -318,13 +330,54 @@ export default function ImoveisPage() {
     };
   }, [filteredProperties.length, searchQuery, allProperties]);
 
-  const hasFilters =
+  function applyFilters() {
+    setSearchQuery(draftSearch);
+    setSelectedType(draftType);
+    setSelectedState(draftState);
+    setSelectedBedrooms(draftBedrooms);
+    setSelectedBathrooms(draftBathrooms);
+    setSelectedParking(draftParking);
+    setSelectedPrice(draftPrice);
+    setSelectedSort(draftSort);
+    setNeighborhoodQuery(draftNeighborhood);
+    setReferenceQuery(draftReference);
+  }
+
+  function handleSearchKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter") {
+      applyFilters();
+    }
+  }
+
+  const hasAppliedFilters =
     searchQuery || selectedType !== "all" || selectedState !== "all" ||
     selectedBedrooms !== "all" || selectedBathrooms !== "all" ||
     selectedParking !== "all" || selectedPrice !== "all" ||
     neighborhoodQuery || referenceQuery;
 
-  function clearFilters() {
+  const hasDraftChanges =
+    draftSearch !== searchQuery ||
+    draftType !== selectedType ||
+    draftState !== selectedState ||
+    draftBedrooms !== selectedBedrooms ||
+    draftBathrooms !== selectedBathrooms ||
+    draftParking !== selectedParking ||
+    draftPrice !== selectedPrice ||
+    draftSort !== selectedSort ||
+    draftNeighborhood !== neighborhoodQuery ||
+    draftReference !== referenceQuery;
+
+  function clearAllFilters() {
+    setDraftSearch("");
+    setDraftType("all");
+    setDraftState("all");
+    setDraftBedrooms("all");
+    setDraftBathrooms("all");
+    setDraftParking("all");
+    setDraftPrice("all");
+    setDraftSort("recentes");
+    setDraftNeighborhood("");
+    setDraftReference("");
     setSearchQuery("");
     setSelectedType("all");
     setSelectedState("all");
@@ -332,6 +385,7 @@ export default function ImoveisPage() {
     setSelectedBathrooms("all");
     setSelectedParking("all");
     setSelectedPrice("all");
+    setSelectedSort("recentes");
     setNeighborhoodQuery("");
     setReferenceQuery("");
     setNearbyProperties([]);
@@ -368,29 +422,39 @@ export default function ImoveisPage() {
         </div>
       </section>
 
-      <section className="sticky top-20 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-3 md:top-0 md:py-4">
-        <div className="mx-auto max-w-6xl">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+      <section className="sticky top-20 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-4 md:top-0">
+        <div className="mx-auto max-w-6xl space-y-3">
+          <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Buscar por título, endereço, bairro, ref..."
                 aria-label="Buscar imóveis"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={draftSearch}
+                onChange={(e) => setDraftSearch(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 className="h-10 w-full rounded-[10px] border border-border bg-card pl-10 pr-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s]"
               />
             </div>
+            <Button onClick={applyFilters} className="h-10 rounded-[10px] px-6">
+              Buscar
+            </Button>
+          </div>
 
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo">
               {typeFilters.map((filter) => (
                 <button
                   key={filter.value}
-                  onClick={() => setSelectedType(filter.value)}
-                  aria-pressed={selectedType === filter.value}
+                  onClick={() => {
+                    setDraftType(filter.value);
+                    setSelectedType(filter.value);
+                    setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                  }}
+                  aria-pressed={draftType === filter.value}
                   className={`rounded-[10px] px-4 py-2 text-sm font-medium transition-all duration-[0.4s] ${
-                    selectedType === filter.value
+                    draftType === filter.value
                       ? "bg-foreground text-background"
                       : "bg-card text-foreground border border-border hover:bg-muted"
                   }`}
@@ -402,8 +466,12 @@ export default function ImoveisPage() {
 
             <div className="flex flex-wrap gap-2">
               <select
-                value={selectedPrice}
-                onChange={(e) => setSelectedPrice(e.target.value)}
+                value={draftPrice}
+                onChange={(e) => {
+                  setDraftPrice(e.target.value);
+                  setSelectedPrice(e.target.value);
+                  setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                }}
                 aria-label="Filtrar por faixa de preço"
                 className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
               >
@@ -415,8 +483,12 @@ export default function ImoveisPage() {
               </select>
 
               <select
-                value={selectedState}
-                onChange={(e) => setSelectedState(e.target.value)}
+                value={draftState}
+                onChange={(e) => {
+                  setDraftState(e.target.value);
+                  setSelectedState(e.target.value);
+                  setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                }}
                 aria-label="Filtrar por estado"
                 className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
               >
@@ -428,8 +500,12 @@ export default function ImoveisPage() {
               </select>
 
               <select
-                value={selectedBedrooms}
-                onChange={(e) => setSelectedBedrooms(e.target.value)}
+                value={draftBedrooms}
+                onChange={(e) => {
+                  setDraftBedrooms(e.target.value);
+                  setSelectedBedrooms(e.target.value);
+                  setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                }}
                 aria-label="Filtrar por dormitórios"
                 className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s] cursor-pointer"
               >
@@ -452,9 +528,9 @@ export default function ImoveisPage() {
                 Filtros
               </button>
 
-              {hasFilters && (
+              {hasAppliedFilters && (
                 <button
-                  onClick={clearFilters}
+                  onClick={clearAllFilters}
                   className="flex items-center gap-1 h-10 rounded-[10px] px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X className="h-4 w-4" />
@@ -465,14 +541,14 @@ export default function ImoveisPage() {
           </div>
 
           {showAdvanced && (
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 border-t border-border pt-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 border-t border-border pt-3">
               <div>
                 <label className="mb-1 block text-xs font-medium text-muted-foreground">
                   Banheiros
                 </label>
                 <select
-                  value={selectedBathrooms}
-                  onChange={(e) => setSelectedBathrooms(e.target.value)}
+                  value={draftBathrooms}
+                  onChange={(e) => setDraftBathrooms(e.target.value)}
                   className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
                 >
                   {bathroomFilters.map((b) => (
@@ -487,8 +563,8 @@ export default function ImoveisPage() {
                   Vagas
                 </label>
                 <select
-                  value={selectedParking}
-                  onChange={(e) => setSelectedParking(e.target.value)}
+                  value={draftParking}
+                  onChange={(e) => setDraftParking(e.target.value)}
                   className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
                 >
                   {parkingFilters.map((p) => (
@@ -503,8 +579,8 @@ export default function ImoveisPage() {
                   Ordenar por
                 </label>
                 <select
-                  value={selectedSort}
-                  onChange={(e) => setSelectedSort(e.target.value)}
+                  value={draftSort}
+                  onChange={(e) => setDraftSort(e.target.value)}
                   className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
                 >
                   {sortOptions.map((o) => (
@@ -521,8 +597,9 @@ export default function ImoveisPage() {
                 <input
                   type="text"
                   placeholder="Ex: Centro, Jardim..."
-                  value={neighborhoodQuery}
-                  onChange={(e) => setNeighborhoodQuery(e.target.value)}
+                  value={draftNeighborhood}
+                  onChange={(e) => setDraftNeighborhood(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
                   className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 />
               </div>
@@ -533,10 +610,16 @@ export default function ImoveisPage() {
                 <input
                   type="text"
                   placeholder="Ex: IMCX87877..."
-                  value={referenceQuery}
-                  onChange={(e) => setReferenceQuery(e.target.value)}
+                  value={draftReference}
+                  onChange={(e) => setDraftReference(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
                   className="h-10 w-full rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 />
+              </div>
+              <div className="sm:col-span-3 lg:col-span-5">
+                <Button onClick={() => { applyFilters(); setShowAdvanced(false); }} className="w-full">
+                  Aplicar filtros
+                </Button>
               </div>
             </div>
           )}
@@ -560,13 +643,13 @@ export default function ImoveisPage() {
                 Nenhum imóvel encontrado
               </h2>
               <p className="mt-2 text-center text-muted-foreground">
-                {hasFilters
+                {hasAppliedFilters
                   ? "Tente ajustar os filtros ou limpar a busca."
                   : "Ainda não há imóveis cadastrados no catálogo."}
               </p>
               <div className="mt-6 flex gap-3">
-                {hasFilters ? (
-                  <Button variant="outline" onClick={clearFilters}>
+                {hasAppliedFilters ? (
+                  <Button variant="outline" onClick={clearAllFilters}>
                     Limpar filtros
                   </Button>
                 ) : (
@@ -590,7 +673,7 @@ export default function ImoveisPage() {
                       Mas temos imóveis nessas proximidades:
                     </p>
                   </div>
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                     {nearbyProperties.map(({ property, distance }) => (
                       <PropertyCatalogCard
                         key={property.id}
@@ -614,7 +697,7 @@ export default function ImoveisPage() {
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
-                    {hasFilters ? "Resultados" : "Imóveis"}
+                    {hasAppliedFilters ? "Resultados" : "Imóveis"}
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {sortedProperties.length.toLocaleString("pt-BR")} imóveis encontrados
@@ -622,7 +705,7 @@ export default function ImoveisPage() {
                 </div>
               </div>
 
-                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 {displayedProperties.map((property) => (
                   <PropertyCatalogCard key={property.id} property={property} />
                 ))}

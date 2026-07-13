@@ -49,9 +49,9 @@ export function PropertyCatalogCard({ property, distance, horizontal }: Property
   if (horizontal) {
     return (
       <Link href={`/imoveis/${property.id}`}>
-        <div className="group flex overflow-hidden rounded-[10px] border border-border bg-card transition-all duration-[0.4s] hover:shadow-md hover:scale-[1.01]">
+        <div className="group flex h-40 overflow-hidden rounded-[10px] border border-border bg-card transition-all duration-[0.4s] hover:shadow-md hover:scale-[1.01]">
           {/* Image */}
-          <div className="relative w-48 shrink-0 overflow-hidden bg-muted sm:w-64">
+          <div className="relative w-48 shrink-0 overflow-hidden bg-muted sm:w-56">
             {!imageError && property.imageUrl ? (
               <>
                 {!imageLoaded && (
@@ -86,32 +86,32 @@ export function PropertyCatalogCard({ property, distance, horizontal }: Property
           </div>
 
           {/* Content */}
-          <div className="flex flex-1 flex-col justify-between p-4">
-            <div>
-              <h3 className="text-base font-medium tracking-[-0.06em] text-foreground line-clamp-1">
+          <div className="flex flex-1 flex-col justify-between overflow-hidden p-4">
+            <div className="min-w-0">
+              <h3 className="text-sm font-medium tracking-[-0.06em] text-foreground line-clamp-1">
                 {property.title}
               </h3>
-              <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3 w-3 shrink-0" />
                 <span className="line-clamp-1">
                   {property.neighborhood}, {property.city} - {property.state}
                 </span>
               </div>
-              <p className="mt-2 text-lg font-medium tracking-[-0.06em] text-foreground">
+              <p className="mt-2 text-base font-medium tracking-[-0.06em] text-foreground">
                 {formatPrice(property.price)}
               </p>
             </div>
-            <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Bed className="h-3.5 w-3.5" />
+                <Bed className="h-3 w-3" />
                 {property.bedrooms}
               </span>
               <span className="flex items-center gap-1">
-                <Bath className="h-3.5 w-3.5" />
+                <Bath className="h-3 w-3" />
                 {property.bathrooms}
               </span>
               <span className="flex items-center gap-1">
-                <Maximize className="h-3.5 w-3.5" />
+                <Maximize className="h-3 w-3" />
                 {property.area} m²
               </span>
             </div>
