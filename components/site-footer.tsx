@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Phone, Mail, MapPin, CirclePlay, MessageCircle } from "lucide-react";
+import { Phone, Mail, MapPin, Camera, MessageCircle } from "lucide-react";
 
 const regioes = [
   {
@@ -119,13 +119,13 @@ export function SiteFooter() {
 
           <div className="flex items-center gap-3">
             <a
-              href="https://www.youtube.com/"
+              href="https://www.instagram.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-foreground hover:text-background"
-              aria-label="YouTube"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-gradient-to-br hover:from-purple-500 hover:via-pink-500 hover:to-orange-400 hover:text-white"
+              aria-label="Instagram"
             >
-              <CirclePlay className="h-4 w-4" />
+              <Camera className="h-4 w-4" />
             </a>
             <a
               href="https://api.whatsapp.com/send?phone=5508005431000"

@@ -4,6 +4,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+body {
+  padding-bottom: 80px;
+}
+
 @theme inline {
     --font-sans: var(--font-sans);
     --font-heading: var(--font-sans);
@@ -482,6 +486,7 @@
     letter-spacing: -0.04em;
     text-decoration: none;
     transition: background-color var(--transition-duration-fast) var(--ease-smooth);
+    gap: 6px;
 }
 
 @media (min-width: 1000px) {
@@ -590,6 +595,7 @@ html.has-menu-mobile-open {
     text-decoration: none;
     color: var(--color-charcoal);
     transition: background-color var(--transition-duration-fast) var(--ease-smooth);
+    gap: 6px;
 }
 
 .c-menu-mobile_contact:hover {

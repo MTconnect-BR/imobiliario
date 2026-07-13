@@ -105,7 +105,7 @@ export default function ComerciaisClient({ initialProperties }: ComerciaisClient
         </div>
       </section>
 
-      <section className="sticky top-20 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:top-0">
+      <section className="border-b border-border bg-background">
         <div className="mx-auto max-w-6xl px-6 py-4">
           <div className="flex gap-2">
             <div className="relative flex-1">

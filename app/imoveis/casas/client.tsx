@@ -120,7 +120,7 @@ export default function CasasClient({ initialProperties }: CasasClientProps) {
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="px-6 pb-8 pt-36 md:pt-40">
+      <section className="flex min-h-[50vh] flex-col items-center justify-center px-6 pb-8 pt-36 text-center md:pt-40">
         <div className="mx-auto max-w-6xl text-center">
           <h1 className="text-primary">Casas</h1>
           <p className="lead mt-4 text-muted-foreground">
@@ -129,7 +129,7 @@ export default function CasasClient({ initialProperties }: CasasClientProps) {
         </div>
       </section>
 
-      <section className="sticky top-20 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:top-0">
+      <section className="border-b border-border bg-background">
         <div className="mx-auto max-w-6xl px-6 py-4">
           <div className="flex gap-2">
             <div className="relative flex-1">
