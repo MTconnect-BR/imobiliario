@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { Search, Home, Loader2, X } from "lucide-react";
+import { Search, Home, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
@@ -10,7 +10,7 @@ import { PropertyGridSkeleton } from "@/components/skeletons";
 import { Property } from "@/lib/properties";
 
 const TYPE = "casa";
-const LOAD_BATCH = 12;
+const PER_PAGE = 20;
 
 const modalidadeFilters: { value: string; label: string }[] = [
   { value: "all", label: "Qualquer modalidade" },
@@ -33,9 +33,8 @@ export default function CasasPage() {
   const [selectedModalidade, setSelectedModalidade] = useState("all");
   const [selectedOrigem, setSelectedOrigem] = useState("all");
   const [selectedRefCaixa, setSelectedRefCaixa] = useState("");
-  const [displayCount, setDisplayCount] = useState(LOAD_BATCH);
+  const [currentPage, setCurrentPage] = useState(1);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchProperties() {
@@ -82,35 +81,63 @@ export default function CasasPage() {
     });
   }, [properties, searchQuery, selectedState, selectedModalidade, selectedOrigem, selectedRefCaixa]);
 
-  const displayed = useMemo(
-    () => filtered.slice(0, displayCount),
-    [filtered, displayCount]
-  );
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * PER_PAGE;
+    return filtered.slice(start, start + PER_PAGE);
+  }, [filtered, currentPage]);
 
   useEffect(() => {
-    setDisplayCount(LOAD_BATCH);
+    setCurrentPage(1);
   }, [searchQuery, selectedState, selectedModalidade, selectedOrigem, selectedRefCaixa]);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && displayCount < filtered.length) {
-          setDisplayCount((prev) => Math.min(prev + LOAD_BATCH, filtered.length));
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [displayCount, filtered.length]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") setSearchQuery(draftSearch);
   }
 
+  function goToPage(page: number) {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   const hasFilters = searchQuery || selectedState !== "all" || selectedModalidade !== "all" || selectedOrigem !== "all" || selectedRefCaixa;
+
+  function renderPagination() {
+    if (totalPages <= 1) return null;
+
+    const pages: (number | "...")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push("...");
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (currentPage < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+
+    return (
+      <div className="flex items-center justify-center gap-1 mt-8">
+        <Button variant="outline" size="icon" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} aria-label="Página anterior">
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        {pages.map((p, i) =>
+          p === "..." ? (
+            <span key={`ellipsis-${i}`} className="px-2 text-muted-foreground">...</span>
+          ) : (
+            <Button key={p} variant={currentPage === p ? "default" : "outline"} size="icon" onClick={() => goToPage(p)}>
+              {p}
+            </Button>
+          )
+        )}
+        <Button variant="outline" size="icon" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} aria-label="Próxima página">
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -172,6 +199,7 @@ export default function CasasPage() {
                   setSelectedModalidade("all");
                   setSelectedOrigem("all");
                   setSelectedRefCaixa("");
+                  setCurrentPage(1);
                 }}
                 className="flex items-center gap-1 h-10 rounded-[10px] px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -189,7 +217,7 @@ export default function CasasPage() {
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <select
                 value={selectedModalidade}
-                onChange={(e) => setSelectedModalidade(e.target.value)}
+                onChange={(e) => { setSelectedModalidade(e.target.value); setCurrentPage(1); }}
                 aria-label="Filtrar por modalidade"
                 className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
               >
@@ -200,7 +228,7 @@ export default function CasasPage() {
 
               <select
                 value={selectedOrigem}
-                onChange={(e) => setSelectedOrigem(e.target.value)}
+                onChange={(e) => { setSelectedOrigem(e.target.value); setCurrentPage(1); }}
                 aria-label="Filtrar por origem"
                 className="h-10 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
               >
@@ -209,17 +237,15 @@ export default function CasasPage() {
                 ))}
               </select>
 
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="REF / Código Caixa"
-                  aria-label="Buscar por referência"
-                  value={selectedRefCaixa}
-                  onChange={(e) => setSelectedRefCaixa(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="h-10 w-48 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s]"
-                />
-              </div>
+              <input
+                type="text"
+                placeholder="REF / Código Caixa"
+                aria-label="Buscar por referência"
+                value={selectedRefCaixa}
+                onChange={(e) => { setSelectedRefCaixa(e.target.value); setCurrentPage(1); }}
+                onKeyDown={handleKeyDown}
+                className="h-10 w-48 rounded-[10px] border border-border bg-card px-4 py-2 text-sm font-medium tracking-[-0.04em] text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 transition-all duration-[0.4s]"
+              />
             </div>
           )}
         </div>
@@ -230,9 +256,9 @@ export default function CasasPage() {
           {loading ? (
             <div className="space-y-6">
               <Skeleton className="h-8 w-48" />
-              <PropertyGridSkeleton count={12} />
+              <PropertyGridSkeleton count={10} />
             </div>
-          ) : displayed.length === 0 ? (
+          ) : paginated.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Home className="mb-4 h-16 w-16 text-muted-foreground/30" />
               <h2 className="text-xl font-medium tracking-[-0.06em]">
@@ -257,26 +283,17 @@ export default function CasasPage() {
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {filtered.length.toLocaleString("pt-BR")} imóveis encontrados
+                  {totalPages > 1 && <> — Página {currentPage} de {totalPages}</>}
                 </p>
               </div>
 
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                {displayed.map((property) => (
-                  <PropertyCatalogCard key={property.id} property={property} />
+              <div className="space-y-4">
+                {paginated.map((property) => (
+                  <PropertyCatalogCard key={property.id} property={property} horizontal />
                 ))}
               </div>
 
-              {displayCount < filtered.length && (
-                <div ref={sentinelRef} className="flex justify-center py-10">
-                  <button
-                    onClick={() => setDisplayCount((prev) => Math.min(prev + LOAD_BATCH, filtered.length))}
-                    className="flex items-center gap-2 rounded-[10px] bg-card border border-border px-6 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-                  >
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Carregar mais ({displayCount}/{filtered.length})
-                  </button>
-                </div>
-              )}
+              {renderPagination()}
             </>
           )}
         </div>

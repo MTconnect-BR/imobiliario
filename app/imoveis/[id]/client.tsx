@@ -85,7 +85,7 @@ export default function PropertyDetailPage() {
                 const bCity = b.city === prop.city ? 1 : 0;
                 return bCity - aCity;
               })
-              .slice(0, 5);
+              .slice(0, 10);
             setRelatedProperties(similar);
           }
         } else {

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Search, Building2, Navigation, Loader2, X } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Search, Building2, Navigation, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,8 +74,7 @@ const origemFilters: { value: string; label: string }[] = [
   { value: "particular", label: "Particular" },
 ];
 
-const LOAD_BATCH_DESKTOP = 12;
-const LOAD_BATCH_MOBILE = 8;
+const PER_PAGE = 20;
 
 interface NearbyProperty {
   property: Property;
@@ -83,16 +82,15 @@ interface NearbyProperty {
 }
 
 export default function ImoveisPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [allProperties, setAllProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
-  const [displayCount, setDisplayCount] = useState(LOAD_BATCH_DESKTOP);
-  const [isMobile, setIsMobile] = useState(false);
   const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
   const [geocoding, setGeocoding] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const geocodeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const [draftSearch, setDraftSearch] = useState("");
   const [draftType, setDraftType] = useState("all");
@@ -115,15 +113,7 @@ export default function ImoveisPage() {
   const [selectedModalidade, setSelectedModalidade] = useState("all");
   const [selectedOrigem, setSelectedOrigem] = useState("all");
   const [selectedRefCaixa, setSelectedRefCaixa] = useState("");
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const searchParams = useSearchParams();
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const s = searchParams.get("search");
@@ -131,11 +121,13 @@ export default function ImoveisPage() {
     const p = searchParams.get("price");
     const st = searchParams.get("state");
     const b = searchParams.get("bedrooms");
+    const pg = searchParams.get("page");
     if (s) { setDraftSearch(s); setSearchQuery(s); }
     if (t) { setDraftType(t); setSelectedType(t); }
     if (p) { setDraftPrice(p); setSelectedPrice(p); }
     if (st) { setDraftState(st); setSelectedState(st); }
     if (b) { setDraftBedrooms(b); setSelectedBedrooms(b); }
+    if (pg) setCurrentPage(parseInt(pg, 10) || 1);
   }, [searchParams]);
 
   useEffect(() => {
@@ -215,42 +207,23 @@ export default function ImoveisPage() {
     );
   }, [filteredProperties]);
 
-  const displayedProperties = useMemo(
-    () => sortedProperties.slice(0, displayCount),
-    [sortedProperties, displayCount]
-  );
+  const totalPages = Math.ceil(sortedProperties.length / PER_PAGE);
+  const paginatedProperties = useMemo(() => {
+    const start = (currentPage - 1) * PER_PAGE;
+    return sortedProperties.slice(start, start + PER_PAGE);
+  }, [sortedProperties, currentPage]);
 
   useEffect(() => {
-    setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
-  }, [searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, selectedModalidade, selectedOrigem, selectedRefCaixa, isMobile]);
+    setCurrentPage(1);
+  }, [searchQuery, selectedType, selectedState, selectedBedrooms, selectedBathrooms, selectedParking, selectedPrice, selectedModalidade, selectedOrigem, selectedRefCaixa]);
 
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && displayCount < sortedProperties.length) {
-          const batch = isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP;
-          setDisplayCount((prev) => Math.min(prev + batch, sortedProperties.length));
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [displayCount, sortedProperties.length, isMobile]);
-
-  useEffect(() => {
-    if (geocodeTimerRef.current) {
-      clearTimeout(geocodeTimerRef.current);
-    }
-
     if (filteredProperties.length > 0 || !searchQuery) {
       setNearbyProperties([]);
       return;
     }
 
-    geocodeTimerRef.current = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       setGeocoding(true);
       try {
         const result = await geocode(searchQuery);
@@ -276,11 +249,7 @@ export default function ImoveisPage() {
       }
     }, 500);
 
-    return () => {
-      if (geocodeTimerRef.current) {
-        clearTimeout(geocodeTimerRef.current);
-      }
-    };
+    return () => clearTimeout(timer);
   }, [filteredProperties.length, searchQuery, allProperties]);
 
   function applyFilters() {
@@ -294,12 +263,16 @@ export default function ImoveisPage() {
     setSelectedModalidade(draftModalidade);
     setSelectedOrigem(draftOrigem);
     setSelectedRefCaixa(draftRefCaixa);
+    setCurrentPage(1);
   }
 
   function handleSearchKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") {
-      applyFilters();
-    }
+    if (e.key === "Enter") applyFilters();
+  }
+
+  function goToPage(page: number) {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   const hasAppliedFilters =
@@ -329,15 +302,65 @@ export default function ImoveisPage() {
     setSelectedModalidade("all");
     setSelectedOrigem("all");
     setSelectedRefCaixa("");
+    setCurrentPage(1);
     setNearbyProperties([]);
   }
 
-  const loadMore = useCallback(() => {
-    if (displayCount < sortedProperties.length) {
-      const batch = isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP;
-      setDisplayCount((prev) => Math.min(prev + batch, sortedProperties.length));
+  function renderPagination() {
+    if (totalPages <= 1) return null;
+
+    const pages: (number | "...")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push("...");
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (currentPage < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
     }
-  }, [displayCount, sortedProperties.length, isMobile]);
+
+    return (
+      <div className="flex items-center justify-center gap-1 mt-8">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 1}
+          aria-label="Página anterior"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        {pages.map((p, i) =>
+          p === "..." ? (
+            <span key={`ellipsis-${i}`} className="px-2 text-muted-foreground">
+              ...
+            </span>
+          ) : (
+            <Button
+              key={p}
+              variant={currentPage === p ? "default" : "outline"}
+              size="icon"
+              onClick={() => goToPage(p)}
+            >
+              {p}
+            </Button>
+          )
+        )}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          aria-label="Próxima página"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -391,7 +414,7 @@ export default function ImoveisPage() {
                   onClick={() => {
                     setDraftType(filter.value);
                     setSelectedType(filter.value);
-                    setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                    setCurrentPage(1);
                   }}
                   aria-pressed={draftType === filter.value}
                   className={`rounded-[10px] px-4 py-2 text-sm font-medium transition-all duration-[0.4s] ${
@@ -410,7 +433,7 @@ export default function ImoveisPage() {
               onChange={(e) => {
                 setDraftPrice(e.target.value);
                 setSelectedPrice(e.target.value);
-                setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                setCurrentPage(1);
               }}
               aria-label="Filtrar por faixa de preço"
               className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
@@ -427,7 +450,7 @@ export default function ImoveisPage() {
               onChange={(e) => {
                 setDraftState(e.target.value);
                 setSelectedState(e.target.value);
-                setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                setCurrentPage(1);
               }}
               aria-label="Filtrar por estado"
               className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
@@ -444,7 +467,7 @@ export default function ImoveisPage() {
               onChange={(e) => {
                 setDraftBedrooms(e.target.value);
                 setSelectedBedrooms(e.target.value);
-                setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                setCurrentPage(1);
               }}
               aria-label="Filtrar por dormitórios"
               className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
@@ -461,7 +484,7 @@ export default function ImoveisPage() {
               onChange={(e) => {
                 setDraftBathrooms(e.target.value);
                 setSelectedBathrooms(e.target.value);
-                setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                setCurrentPage(1);
               }}
               aria-label="Filtrar por banheiros"
               className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
@@ -478,7 +501,7 @@ export default function ImoveisPage() {
               onChange={(e) => {
                 setDraftParking(e.target.value);
                 setSelectedParking(e.target.value);
-                setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                setCurrentPage(1);
               }}
               aria-label="Filtrar por vagas"
               className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
@@ -515,7 +538,7 @@ export default function ImoveisPage() {
                 onChange={(e) => {
                   setDraftModalidade(e.target.value);
                   setSelectedModalidade(e.target.value);
-                  setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                  setCurrentPage(1);
                 }}
                 aria-label="Filtrar por modalidade"
                 className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
@@ -530,7 +553,7 @@ export default function ImoveisPage() {
                 onChange={(e) => {
                   setDraftOrigem(e.target.value);
                   setSelectedOrigem(e.target.value);
-                  setDisplayCount(isMobile ? LOAD_BATCH_MOBILE : LOAD_BATCH_DESKTOP);
+                  setCurrentPage(1);
                 }}
                 aria-label="Filtrar por origem"
                 className="h-10 rounded-[10px] border border-border bg-card px-3 py-2 text-sm font-medium tracking-[-0.04em] text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
@@ -564,9 +587,9 @@ export default function ImoveisPage() {
                 <Skeleton className="h-8 w-48" />
                 <Skeleton className="h-4 w-32" />
               </div>
-              <PropertyGridSkeleton count={isMobile ? 8 : 12} />
+              <PropertyGridSkeleton count={10} />
             </div>
-          ) : displayedProperties.length === 0 ? (
+          ) : paginatedProperties.length === 0 && nearbyProperties.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Building2 className="mb-4 h-16 w-16 text-muted-foreground/30" />
               <h2 className="text-xl font-medium tracking-[-0.06em]">
@@ -588,9 +611,33 @@ export default function ImoveisPage() {
                   </Link>
                 )}
               </div>
+            </div>
+          ) : (
+            <>
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
+                    {hasAppliedFilters ? "Resultados" : "Imóveis"}
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {sortedProperties.length.toLocaleString("pt-BR")} imóveis encontrados
+                    {totalPages > 1 && (
+                      <> — Página {currentPage} de {totalPages}</>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {paginatedProperties.map((property) => (
+                  <PropertyCatalogCard key={property.id} property={property} horizontal />
+                ))}
+              </div>
+
+              {renderPagination()}
 
               {nearbyProperties.length > 0 && (
-                <div className="mt-16 w-full">
+                <div className="mt-16">
                   <div className="mb-8 text-center">
                     <Badge variant="blue" className="mb-3 gap-1">
                       <Navigation className="h-3 w-3" />
@@ -603,12 +650,13 @@ export default function ImoveisPage() {
                       Mas temos imóveis nessas proximidades:
                     </p>
                   </div>
-                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="space-y-4">
                     {nearbyProperties.map(({ property, distance }) => (
                       <PropertyCatalogCard
                         key={property.id}
                         property={property}
                         distance={distance}
+                        horizontal
                       />
                     ))}
                   </div>
@@ -616,46 +664,9 @@ export default function ImoveisPage() {
               )}
 
               {geocoding && (
-                <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-foreground" />
+                <div className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Buscando imóveis nas proximidades...
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
-                    {hasAppliedFilters ? "Resultados" : "Imóveis"}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {sortedProperties.length.toLocaleString("pt-BR")} imóveis encontrados
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                {displayedProperties.map((property) => (
-                  <PropertyCatalogCard key={property.id} property={property} />
-                ))}
-              </div>
-
-              {displayCount < sortedProperties.length && (
-                <div ref={sentinelRef} className="flex justify-center py-10">
-                  <button
-                    onClick={loadMore}
-                    className="flex items-center gap-2 rounded-[10px] bg-card border border-border px-6 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-                  >
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Carregar mais ({displayCount}/{sortedProperties.length})
-                  </button>
-                </div>
-              )}
-
-              {displayCount >= sortedProperties.length && sortedProperties.length > 0 && (
-                <div className="py-10 text-center text-sm text-muted-foreground">
-                  Todos os {sortedProperties.length.toLocaleString("pt-BR")} imóveis foram carregados
                 </div>
               )}
             </>

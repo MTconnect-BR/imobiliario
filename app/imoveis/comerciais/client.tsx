@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { Search, Store, Loader2 } from "lucide-react";
+import { Search, Store, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
@@ -10,7 +10,7 @@ import { PropertyGridSkeleton } from "@/components/skeletons";
 import { Property } from "@/lib/properties";
 
 const TYPE = "comercial";
-const LOAD_BATCH = 12;
+const PER_PAGE = 20;
 
 export default function ComerciaisPage() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -18,8 +18,7 @@ export default function ComerciaisPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [draftSearch, setDraftSearch] = useState("");
   const [selectedState, setSelectedState] = useState("all");
-  const [displayCount, setDisplayCount] = useState(LOAD_BATCH);
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     async function fetchProperties() {
@@ -50,7 +49,8 @@ export default function ComerciaisPage() {
           !p.title.toLowerCase().includes(q) &&
           !p.address.toLowerCase().includes(q) &&
           !p.neighborhood.toLowerCase().includes(q) &&
-          !p.city.toLowerCase().includes(q)
+          !p.city.toLowerCase().includes(q) &&
+          !p.refCaixa?.toLowerCase().includes(q)
         )
           return false;
       }
@@ -59,35 +59,61 @@ export default function ComerciaisPage() {
     });
   }, [properties, searchQuery, selectedState]);
 
-  const displayed = useMemo(
-    () => filtered.slice(0, displayCount),
-    [filtered, displayCount]
-  );
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * PER_PAGE;
+    return filtered.slice(start, start + PER_PAGE);
+  }, [filtered, currentPage]);
 
   useEffect(() => {
-    setDisplayCount(LOAD_BATCH);
+    setCurrentPage(1);
   }, [searchQuery, selectedState]);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && displayCount < filtered.length) {
-          setDisplayCount((prev) => Math.min(prev + LOAD_BATCH, filtered.length));
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [displayCount, filtered.length]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") setSearchQuery(draftSearch);
   }
 
+  function goToPage(page: number) {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   const hasFilters = searchQuery || selectedState !== "all";
+
+  function renderPagination() {
+    if (totalPages <= 1) return null;
+    const pages: (number | "...")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push("...");
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (currentPage < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+    return (
+      <div className="flex items-center justify-center gap-1 mt-8">
+        <Button variant="outline" size="icon" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} aria-label="Página anterior">
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        {pages.map((p, i) =>
+          p === "..." ? (
+            <span key={`ellipsis-${i}`} className="px-2 text-muted-foreground">...</span>
+          ) : (
+            <Button key={p} variant={currentPage === p ? "default" : "outline"} size="icon" onClick={() => goToPage(p)}>
+              {p}
+            </Button>
+          )
+        )}
+        <Button variant="outline" size="icon" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} aria-label="Próxima página">
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -107,7 +133,7 @@ export default function ComerciaisPage() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Buscar por título, endereço, bairro..."
+                placeholder="Buscar por título, endereço, bairro, ref..."
                 aria-label="Buscar imóveis comerciais"
                 value={draftSearch}
                 onChange={(e) => setDraftSearch(e.target.value)}
@@ -139,9 +165,11 @@ export default function ComerciaisPage() {
                   setDraftSearch("");
                   setSearchQuery("");
                   setSelectedState("all");
+                  setCurrentPage(1);
                 }}
                 className="flex items-center gap-1 h-10 rounded-[10px] px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
+                <X className="h-4 w-4" />
                 Limpar
               </button>
             )}
@@ -158,18 +186,16 @@ export default function ComerciaisPage() {
           {loading ? (
             <div className="space-y-6">
               <Skeleton className="h-8 w-48" />
-              <PropertyGridSkeleton count={12} />
+              <PropertyGridSkeleton count={10} />
             </div>
-          ) : displayed.length === 0 ? (
+          ) : paginated.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Store className="mb-4 h-16 w-16 text-muted-foreground/30" />
               <h2 className="text-xl font-medium tracking-[-0.06em]">
                 Nenhum imóvel comercial encontrado
               </h2>
               <p className="mt-2 text-muted-foreground">
-                {hasFilters
-                  ? "Tente ajustar os filtros."
-                  : "Ainda não há imóveis comerciais cadastrados."}
+                {hasFilters ? "Tente ajustar os filtros." : "Ainda não há imóveis comerciais cadastrados."}
               </p>
               <div className="mt-6">
                 <Link href="/crm">
@@ -185,26 +211,17 @@ export default function ComerciaisPage() {
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {filtered.length.toLocaleString("pt-BR")} imóveis encontrados
+                  {totalPages > 1 && <> — Página {currentPage} de {totalPages}</>}
                 </p>
               </div>
 
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                {displayed.map((property) => (
-                  <PropertyCatalogCard key={property.id} property={property} />
+              <div className="space-y-4">
+                {paginated.map((property) => (
+                  <PropertyCatalogCard key={property.id} property={property} horizontal />
                 ))}
               </div>
 
-              {displayCount < filtered.length && (
-                <div ref={sentinelRef} className="flex justify-center py-10">
-                  <button
-                    onClick={() => setDisplayCount((prev) => Math.min(prev + LOAD_BATCH, filtered.length))}
-                    className="flex items-center gap-2 rounded-[10px] bg-card border border-border px-6 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-                  >
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Carregar mais ({displayCount}/{filtered.length})
-                  </button>
-                </div>
-              )}
+              {renderPagination()}
             </>
           )}
         </div>
