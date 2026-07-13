@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/carousel";
 import { PropertyCatalogCard } from "@/components/property-catalog-card";
 import { PropertyMap } from "@/components/property-map";
+import { ImageLightbox } from "@/components/image-lightbox";
 import {
   Property,
   getPropertyTypeLabel,
@@ -55,6 +56,8 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
   const [galleryApi, setGalleryApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [totalSlides, setTotalSlides] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
     if (!galleryApi) return;
@@ -128,8 +131,12 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
                         width={1200}
                         height={675}
                         priority={i === 0}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover cursor-pointer"
                         unoptimized
+                        onClick={() => {
+                          setLightboxIndex(i);
+                          setLightboxOpen(true);
+                        }}
                       />
                     </div>
                   </CarouselItem>
@@ -166,7 +173,10 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
               {galleryImages.map((img, i) => (
                 <button
                   key={i}
-                  onClick={() => galleryApi?.scrollTo(i)}
+                  onClick={() => {
+                    setLightboxIndex(i);
+                    setLightboxOpen(true);
+                  }}
                   className={`h-16 w-24 overflow-hidden rounded-[10px] border-2 transition-all duration-[0.4s] ${
                     currentSlide === i
                       ? "border-primary"
@@ -540,6 +550,16 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
             </div>
           </div>
         </section>
+      )}
+
+      {lightboxOpen && (
+        <ImageLightbox
+          images={galleryImages}
+          initialIndex={lightboxIndex}
+          title={property.title}
+          description={property.description}
+          onClose={() => setLightboxOpen(false)}
+        />
       )}
     </main>
   );

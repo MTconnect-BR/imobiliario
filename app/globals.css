@@ -469,34 +469,78 @@ body {
 
 /* Desktop Contact Box - Separado */
 .c-menu-desktop_contact_box {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    z-index: calc(var(--z-index-menu) - 1);
+    position: relative;
     height: var(--menu-bar-height);
     padding: 0 24px;
     background-color: var(--color-white);
     border-radius: 10px;
     justify-content: center;
     align-items: center;
-    display: none;
+    display: flex;
     font-size: 16px;
     font-weight: 500;
     color: var(--color-charcoal);
     letter-spacing: -0.04em;
     text-decoration: none;
     transition: background-color var(--transition-duration-fast) var(--ease-smooth);
-    gap: 6px;
-}
-
-@media (min-width: 1000px) {
-    .c-menu-desktop_contact_box {
-        display: inline-flex;
-    }
 }
 
 .c-menu-desktop_contact_box:hover {
     background-color: var(--color-beige);
+}
+
+/* Desktop Contact Box Group */
+.c-menu-desktop_contact_box_group {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: calc(var(--z-index-menu) - 1);
+    display: none;
+    gap: 8px;
+    align-items: center;
+}
+
+@media (min-width: 1000px) {
+    .c-menu-desktop_contact_box_group {
+        display: flex;
+    }
+}
+
+.c-menu-desktop_instagram_button {
+    height: var(--menu-bar-height);
+    width: var(--menu-bar-height);
+    background-color: var(--color-white);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-charcoal);
+    text-decoration: none;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+}
+
+.c-menu-desktop_instagram_button:hover {
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    color: white;
+}
+
+/* Mobile Instagram */
+.c-menu-mobile_instagram {
+    height: 36px;
+    width: 36px;
+    background-color: var(--color-beige-500);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-charcoal);
+    text-decoration: none;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+}
+
+.c-menu-mobile_instagram:hover {
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    color: white;
 }
 
 /* Desktop Footer Links */
@@ -595,7 +639,6 @@ html.has-menu-mobile-open {
     text-decoration: none;
     color: var(--color-charcoal);
     transition: background-color var(--transition-duration-fast) var(--ease-smooth);
-    gap: 6px;
 }
 
 .c-menu-mobile_contact:hover {
