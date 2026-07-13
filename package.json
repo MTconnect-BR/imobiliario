@@ -10,12 +10,26 @@
     "typecheck": "tsc --noEmit",
     "test": "npx playwright test",
     "test:ui": "npx playwright test --ui",
-    "test:report": "npx playwright show-report"
+    "test:report": "npx playwright show-report",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,mjs}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
     "@hookform/resolvers": "^5.4.0",
     "@shadcn/react": "^0.2.0",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.3",
     "@tailwindcss/postcss": "^4.3.2",
     "@tanstack/react-table": "^8.21.3",
     "@types/leaflet": "^1.9.21",
@@ -43,13 +57,18 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@next/eslint-plugin-next": "^16.2.10",
     "@playwright/test": "^1.61.1",
     "@types/node": "^22.15.3",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.10",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.9.5",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.62.1"
   },

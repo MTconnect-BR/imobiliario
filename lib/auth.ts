@@ -1,5 +1,8 @@
+import { createBrowserClient } from "@supabase/ssr";
+
 export interface User {
   id: string;
+  supabaseId?: string;
   name: string;
   email: string;
   password?: string;
@@ -8,129 +11,111 @@ export interface User {
   createdAt: string;
 }
 
-const USERS_KEY = "imobiliario_users";
-const SESSION_KEY = "imobiliario_session";
+function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  );
+}
 
-function readUsers(): User[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const data = localStorage.getItem(USERS_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch {
-    return [];
+export async function getSession(): Promise<{ user?: User; session?: object } | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session) return null;
+
+  const { user: authUser } = data.session;
+  const metadata = authUser.user_metadata || {};
+
+  return {
+    user: {
+      id: authUser.id,
+      supabaseId: authUser.id,
+      name: metadata.full_name || metadata.name || authUser.email?.split("@")[0] || "",
+      email: authUser.email || "",
+      avatarUrl: metadata.avatar_url || metadata.picture,
+      githubId: metadata.provider_id ? Number(metadata.provider_id) : undefined,
+      createdAt: authUser.created_at,
+    },
+    session: data.session,
+  };
+}
+
+export async function login(
+  email: string,
+  password: string,
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    return { success: false, error: error.message };
   }
+  return { success: true };
 }
 
-function writeUsers(users: User[]): void {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-
-function generateId(): string {
-  return crypto.randomUUID?.() ?? Date.now().toString(36) + Math.random().toString(36).slice(2);
-}
-
-export function getSession(): Omit<User, "password"> | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const data = localStorage.getItem(SESSION_KEY);
-    return data ? JSON.parse(data) : null;
-  } catch {
-    return null;
+export async function register(
+  name: string,
+  email: string,
+  password: string,
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = createClient();
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { full_name: name } },
+  });
+  if (error) {
+    if (error.message.includes("already")) {
+      return { success: false, error: "Este email já está cadastrado." };
+    }
+    return { success: false, error: error.message };
   }
+  return { success: true };
 }
 
-export function setSession(user: User): void {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password, ...safe } = user;
-  localStorage.setItem(SESSION_KEY, JSON.stringify(safe));
+export async function logout(): Promise<void> {
+  const supabase = createClient();
+  await supabase.auth.signOut();
 }
 
-export function logout(): void {
-  localStorage.removeItem(SESSION_KEY);
+export async function forgotPassword(email: string): Promise<{ success: boolean; error?: string }> {
+  const supabase = createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/auth/reset-password`,
+  });
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  return { success: true };
 }
 
-export function isGithubSession(): boolean {
-  const session = getSession();
-  return !!session?.githubId;
-}
-
-export function loginWithGithub(githubUser: {
+export async function loginWithGithub(githubUser: {
   id: number;
   login: string;
   email: string;
   avatar_url: string;
-}): { success: boolean; error?: string } {
-  const users = readUsers();
-  let user = users.find((u) => u.githubId === githubUser.id);
+}): Promise<{ success: boolean; error?: string }> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (user) {
-    // Update existing user info
-    user.name = githubUser.login;
-    user.email = githubUser.email;
-    user.avatarUrl = githubUser.avatar_url;
-    writeUsers(users);
-  } else {
-    // Create new user
-    user = {
-      id: generateId(),
-      name: githubUser.login,
-      email: githubUser.email,
-      avatarUrl: githubUser.avatar_url,
-      githubId: githubUser.id,
-      createdAt: new Date().toISOString(),
-    };
-    users.push(user);
-    writeUsers(users);
+    const metadata: Record<string, string | number | undefined> = {};
+    if (githubUser.login) metadata.full_name = githubUser.login;
+    if (githubUser.avatar_url) metadata.avatar_url = githubUser.avatar_url;
+    if (githubUser.id) metadata.provider_id = githubUser.id;
+
+    const { error } = await supabase.auth.updateUser({ data: metadata });
+    if (error) return { success: false, error: error.message };
   }
 
-  setSession(user);
   return { success: true };
 }
 
-export function register(name: string, email: string, password: string): { success: boolean; error?: string } {
-  const users = readUsers();
-  if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-    return { success: false, error: "Este email já está cadastrado." };
-  }
-  const user: User = {
-    id: generateId(),
-    name,
-    email: email.toLowerCase(),
-    password: simpleHash(password),
-    createdAt: new Date().toISOString(),
-  };
-  users.push(user);
-  writeUsers(users);
-  return { success: true };
-}
-
-export function login(email: string, password: string): { success: boolean; error?: string; user?: User } {
-  const users = readUsers();
-  const user = users.find(
-    (u) => u.email === email.toLowerCase() && u.password === simpleHash(password)
-  );
-  if (!user) {
-    return { success: false, error: "Email ou senha incorretos." };
-  }
-  setSession(user);
-  return { success: true, user };
-}
-
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0;
-  }
-  return btoa(`_${Math.abs(hash)}_${str.length}`);
-}
-
-export function forgotPassword(email: string): { success: boolean; error?: string } {
-  const users = readUsers();
-  const user = users.find((u) => u.email === email.toLowerCase());
-  if (!user) {
-    return { success: false, error: "Email não encontrado." };
-  }
-  return { success: true };
+export async function isGithubSession(): Promise<boolean> {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.user?.app_metadata?.provider === "github";
 }

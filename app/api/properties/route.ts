@@ -1,23 +1,6 @@
 import { NextResponse } from "next/server";
-import { readFile } from "fs/promises";
-import { join } from "path";
-import { type Property } from "@/lib/properties";
-
-export const dynamic = "force-dynamic";
-
-const TYPE_FILE_MAP: Record<string, string> = {
-  casa: "casas.json",
-  apartamento: "apartamentos.json",
-  terreno: "terrenos.json",
-  comercial: "comerciais.json",
-};
-
-async function loadProperties(type?: string): Promise<Property[]> {
-  const fileName = type && TYPE_FILE_MAP[type] ? TYPE_FILE_MAP[type] : "all-properties.json";
-  const filePath = join(process.cwd(), "data", fileName);
-  const data = await readFile(filePath, "utf-8");
-  return JSON.parse(data);
-}
+import { getPropertiesFiltered } from "@/lib/reidoape-api";
+import type { PropertyFilters } from "@/lib/reidoape-api";
 
 export async function GET(request: Request) {
   try {
@@ -38,61 +21,27 @@ export async function GET(request: Request) {
     const refCaixa = searchParams.get("refCaixa") ?? undefined;
     const search = searchParams.get("search")?.toLowerCase() ?? undefined;
 
-    const allProperties = await loadProperties(type);
+    const filters: PropertyFilters = {
+      type,
+      state,
+      city,
+      neighborhood,
+      bedrooms,
+      bathrooms,
+      parking,
+      minPrice,
+      maxPrice,
+      modalidade,
+      tipoOrigem,
+      refCaixa,
+      search,
+      page,
+      limit,
+    };
 
-    let filtered = allProperties;
+    const { properties, total, partial } = await getPropertiesFiltered(filters);
 
-    if (state) filtered = filtered.filter((p) => p.state === state);
-    if (city) filtered = filtered.filter((p) => p.city.toLowerCase() === city.toLowerCase());
-    if (neighborhood) {
-      const n = neighborhood.toLowerCase();
-      filtered = filtered.filter((p) => p.neighborhood?.toLowerCase().includes(n));
-    }
-    if (bedrooms) {
-      const min = parseInt(bedrooms, 10);
-      if (!isNaN(min)) filtered = filtered.filter((p) => p.bedrooms >= min);
-    }
-    if (bathrooms) {
-      const min = parseInt(bathrooms, 10);
-      if (!isNaN(min)) filtered = filtered.filter((p) => p.bathrooms >= min);
-    }
-    if (parking) {
-      const min = parseInt(parking, 10);
-      if (!isNaN(min)) filtered = filtered.filter((p) => p.parkingSpaces >= min);
-    }
-    if (minPrice) {
-      const min = parseInt(minPrice, 10);
-      if (!isNaN(min)) filtered = filtered.filter((p) => p.price >= min);
-    }
-    if (maxPrice) {
-      const max = parseInt(maxPrice, 10);
-      if (!isNaN(max)) filtered = filtered.filter((p) => p.price <= max);
-    }
-    if (modalidade) {
-      filtered = filtered.filter((p) => p.modalidade === modalidade);
-    }
-    if (tipoOrigem) {
-      filtered = filtered.filter((p) => p.tipo_origem === tipoOrigem);
-    }
-    if (refCaixa) {
-      const r = refCaixa.toLowerCase();
-      filtered = filtered.filter((p) => p.refCaixa?.toLowerCase().includes(r));
-    }
-    if (search) {
-      filtered = filtered.filter(
-        (p) =>
-          p.title.toLowerCase().includes(search) ||
-          p.city.toLowerCase().includes(search) ||
-          p.neighborhood?.toLowerCase().includes(search) ||
-          p.refCaixa?.toLowerCase().includes(search)
-      );
-    }
-
-    const total = filtered.length;
-    const start = page * limit;
-    const properties = filtered.slice(start, start + limit);
-
-    return NextResponse.json({ properties, total, page, limit });
+    return NextResponse.json({ properties, total, page, limit, partial });
   } catch {
     return NextResponse.json({ properties: [], total: 0, page: 0, limit: 10 }, { status: 500 });
   }

@@ -1,33 +1,17 @@
-import { readFile } from "fs/promises";
-import { join } from "path";
 import { type Property } from "@/lib/properties";
-
-const TYPE_FILE_MAP: Record<string, string> = {
-  casa: "casas.json",
-  apartamento: "apartamentos.json",
-  terreno: "terrenos.json",
-  comercial: "comerciais.json",
-};
-
-let cachedAll: Property[] | null = null;
-const cachedByType: Record<string, Property[]> = {};
+import {
+  getAllProperties,
+  getPropertiesFiltered,
+  getPropertyById as getReidoapePropertyById,
+  getCounts,
+} from "@/lib/reidoape-api";
 
 export async function getProperties(type?: string): Promise<Property[]> {
-  if (type && cachedByType[type]) return cachedByType[type];
-  if (!type && cachedAll) return cachedAll;
-
-  const fileName = type && TYPE_FILE_MAP[type] ? TYPE_FILE_MAP[type] : "all-properties.json";
-  const filePath = join(process.cwd(), "data", fileName);
-  const data = await readFile(filePath, "utf-8");
-  const properties: Property[] = JSON.parse(data);
-
   if (type) {
-    cachedByType[type] = properties;
-  } else {
-    cachedAll = properties;
+    const { properties } = await getPropertiesFiltered({ type, limit: 10000 });
+    return properties;
   }
-
-  return properties;
+  return getAllProperties();
 }
 
 export function filterProperties(
@@ -45,12 +29,13 @@ export function filterProperties(
     tipoOrigem?: string;
     refCaixa?: string;
     search?: string;
-  }
+  },
 ): Property[] {
   let filtered = properties;
 
   if (filters.state) filtered = filtered.filter((p) => p.state === filters.state);
-  if (filters.city) filtered = filtered.filter((p) => p.city.toLowerCase() === filters.city!.toLowerCase());
+  if (filters.city)
+    filtered = filtered.filter((p) => p.city.toLowerCase() === filters.city!.toLowerCase());
   if (filters.neighborhood) {
     const n = filters.neighborhood.toLowerCase();
     filtered = filtered.filter((p) => p.neighborhood?.toLowerCase().includes(n));
@@ -88,9 +73,45 @@ export function filterProperties(
         p.title.toLowerCase().includes(q) ||
         p.city.toLowerCase().includes(q) ||
         p.neighborhood?.toLowerCase().includes(q) ||
-        p.refCaixa?.toLowerCase().includes(q)
+        p.refCaixa?.toLowerCase().includes(q),
     );
   }
 
   return filtered;
+}
+
+export async function getPropertyById(id: string): Promise<Property | null> {
+  return getReidoapePropertyById(id);
+}
+
+export async function createProperty(
+  _input: Omit<Property, "id" | "createdAt" | "updatedAt">,
+): Promise<Property | null> {
+  return null;
+}
+
+export async function updateProperty(
+  _id: string,
+  _input: Partial<Omit<Property, "id" | "createdAt" | "updatedAt">>,
+): Promise<Property | null> {
+  return null;
+}
+
+export async function deleteProperty(_id: string): Promise<boolean> {
+  return true;
+}
+
+export async function getPropertiesCount(): Promise<number> {
+  const counts = await getCounts();
+  return counts.total;
+}
+
+export async function getPropertiesByState(): Promise<{ state: string; count: number }[]> {
+  const counts = await getCounts();
+  return Object.entries(counts.byState).map(([state, count]) => ({ state, count }));
+}
+
+export async function getPropertiesByType(): Promise<{ type: string; count: number }[]> {
+  const counts = await getCounts();
+  return Object.entries(counts.byType).map(([type, count]) => ({ type, count }));
 }

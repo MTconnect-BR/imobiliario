@@ -1,6 +1,6 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
-import reactPlugin from "eslint-plugin-react";
+import nextPlugin from "@next/eslint-plugin-next";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 
 export default [
@@ -8,22 +8,13 @@ export default [
   ...tseslint.configs.recommended,
   {
     plugins: {
-      react: reactPlugin,
       "react-hooks": reactHooksPlugin,
     },
+  },
+  nextPlugin.configs["core-web-vitals"],
+  {
     rules: {
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
-      "react/react-in-jsx-scope": "off",
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        { argsIgnorePattern: "^_" },
-      ],
-    },
-    settings: {
-      react: {
-        version: "detect",
-      },
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
   },
   {

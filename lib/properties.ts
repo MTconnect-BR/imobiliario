@@ -44,33 +44,6 @@ export interface Property {
 
 export type PropertyInput = Omit<Property, "id" | "createdAt" | "updatedAt">;
 
-export function getAllProperties(): Property[] {
-  return [];
-}
-
-export function getPropertyById(id: string): Property | undefined {
-  return undefined;
-}
-
-export function createProperty(input: PropertyInput): Property {
-  const now = new Date().toISOString();
-  return {
-    ...input,
-    images: input.images ?? (input.imageUrl ? [input.imageUrl] : []),
-    id: crypto.randomUUID?.() ?? Date.now().toString(36) + Math.random().toString(36).slice(2),
-    createdAt: now,
-    updatedAt: now,
-  };
-}
-
-export function updateProperty(id: string, input: Partial<PropertyInput>): Property | null {
-  return null;
-}
-
-export function deleteProperty(id: string): boolean {
-  return true;
-}
-
 export function getPropertyTypeLabel(type: PropertyType): string {
   const labels: Record<PropertyType, string> = {
     casa: "Casa",
@@ -96,8 +69,4 @@ export function formatPrice(price: number): string {
     currency: "BRL",
     maximumFractionDigits: 0,
   }).format(price);
-}
-
-export function getRelatedProperties(property: Property, limit = 6): Property[] {
-  return [];
 }

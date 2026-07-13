@@ -37,7 +37,7 @@ export default function ForgotPasswordClient() {
   async function onSubmit(data: ForgotValues) {
     setLoading(true);
     await new Promise((r) => setTimeout(r, 800));
-    const result = forgotPassword(data.email);
+    const result = await forgotPassword(data.email);
     setLoading(false);
 
     if (result.success) {
@@ -61,9 +61,7 @@ export default function ForgotPasswordClient() {
 
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl tracking-[-0.06em]">
-            Redefinir senha
-          </CardTitle>
+          <CardTitle className="text-xl tracking-[-0.06em]">Redefinir senha</CardTitle>
           <CardDescription>
             {sent
               ? "Verifique sua caixa de entrada e siga as instruções."
@@ -81,16 +79,12 @@ export default function ForgotPasswordClient() {
                   stroke="currentColor"
                   strokeWidth={2}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
               <p className="text-sm text-muted-foreground">
-                Se o email <strong>{form.getValues("email")}</strong> estiver
-                cadastrado, você receberá um link para redefinir sua senha.
+                Se o email <strong>{form.getValues("email")}</strong> estiver cadastrado, você
+                receberá um link para redefinir sua senha.
               </p>
               <Button
                 variant="outline"
@@ -105,18 +99,13 @@ export default function ForgotPasswordClient() {
             </div>
           ) : (
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-medium">
-                        Email
-                      </FormLabel>
+                      <FormLabel className="text-xs font-medium">Email</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
@@ -141,8 +130,6 @@ export default function ForgotPasswordClient() {
               </form>
             </Form>
           )}
-
-
         </CardContent>
       </Card>
     </div>

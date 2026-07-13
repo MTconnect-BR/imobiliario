@@ -16,10 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Property,
-  PropertyInput,
-} from "@/lib/properties";
+import { Property, PropertyInput } from "@/lib/properties";
 import { getSession, logout } from "@/lib/auth";
 import { toast } from "sonner";
 
@@ -38,13 +35,16 @@ export default function CRMPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const s = getSession();
-    setSession(s);
-    if (!s) {
-      router.replace("/auth/signin?redirect=/crm");
-    } else {
-      setAuthChecked(true);
-    }
+    (async () => {
+      const s = await getSession();
+      const sessionUser = s?.user ?? null;
+      setSession(sessionUser);
+      if (!sessionUser) {
+        router.replace("/auth/signin?redirect=/crm");
+      } else {
+        setAuthChecked(true);
+      }
+    })();
   }, [router]);
 
   const loadExternalProperties = useCallback(async () => {
@@ -102,38 +102,65 @@ export default function CRMPage() {
     setDeleteDialogOpen(true);
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (deletingProperty) {
-      setProperties((prev) => prev.filter((p) => p.id !== deletingProperty.id));
-      toast.success("Imóvel removido com sucesso!");
+      try {
+        const res = await fetch(`/api/properties?id=${deletingProperty.id}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Falha ao excluir");
+        setProperties((prev) => prev.filter((p) => p.id !== deletingProperty.id));
+        toast.success("Imóvel removido com sucesso!");
+      } catch {
+        toast.error("Erro ao excluir imóvel.");
+      }
     }
     setDeleteDialogOpen(false);
     setDeletingProperty(null);
   }
 
-  function handleSave(data: PropertyInput) {
-    if (editingProperty) {
-      setProperties((prev) =>
-        prev.map((p) =>
-          p.id === editingProperty.id ? { ...p, ...data, updatedAt: new Date().toISOString() } : p
-        )
-      );
-      toast.success("Imóvel atualizado com sucesso!");
-    } else {
-      const now = new Date().toISOString();
-      const newProperty: Property = {
-        ...data,
-        id: `local-${Date.now()}`,
-        createdAt: now,
-        updatedAt: now,
-      };
-      setProperties((prev) => [newProperty, ...prev]);
-      toast.success("Imóvel publicado com sucesso!");
+  async function handleSave(data: PropertyInput) {
+    try {
+      if (editingProperty) {
+        const res = await fetch(`/api/properties?id=${editingProperty.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error("Falha ao atualizar");
+        setProperties((prev) =>
+          prev.map((p) =>
+            p.id === editingProperty.id
+              ? { ...p, ...data, updatedAt: new Date().toISOString() }
+              : p,
+          ),
+        );
+        toast.success("Imóvel atualizado com sucesso!");
+      } else {
+        const res = await fetch("/api/properties", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error("Falha ao criar");
+        const created = await res.json();
+        const now = new Date().toISOString();
+        const newProperty: Property = {
+          ...data,
+          id: created.id ?? `local-${Date.now()}`,
+          createdAt: now,
+          updatedAt: now,
+        };
+        setProperties((prev) => [newProperty, ...prev]);
+        toast.success("Imóvel publicado com sucesso!");
+      }
+    } catch {
+      toast.error("Erro ao salvar imóvel.");
     }
   }
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     setSession(null);
     toast.success("Logout realizado!");
     router.replace("/auth/signin");
@@ -168,9 +195,7 @@ export default function CRMPage() {
       <div className="mx-auto max-w-7xl px-6 pt-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-primary tracking-[-0.06em]">
-              Painel de Imóveis
-            </h1>
+            <h1 className="text-primary tracking-[-0.06em]">Painel de Imóveis</h1>
             <p className="mt-2 text-muted-foreground">
               Gerencie seus imóveis publicados na plataforma.
             </p>
@@ -238,7 +263,13 @@ export default function CRMPage() {
             <option value="all">Todos os tipos</option>
             {uniqueTypes.map((t) => (
               <option key={t} value={t}>
-                {t === "casa" ? "Casa" : t === "apartamento" ? "Apartamento" : t === "terreno" ? "Terreno" : "Comercial"}
+                {t === "casa"
+                  ? "Casa"
+                  : t === "apartamento"
+                    ? "Apartamento"
+                    : t === "terreno"
+                      ? "Terreno"
+                      : "Comercial"}
               </option>
             ))}
           </select>
@@ -250,7 +281,9 @@ export default function CRMPage() {
           >
             <option value="all">Todos os estados</option>
             {uniqueStates.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
           </select>
 
@@ -262,14 +295,22 @@ export default function CRMPage() {
             <option value="all">Todos os status</option>
             {uniqueStatuses.map((s) => (
               <option key={s} value={s}>
-                {s === "disponivel" ? "Disponível" : s === "em_negociacao" ? "Em negociação" : "Vendido"}
+                {s === "disponivel"
+                  ? "Disponível"
+                  : s === "em_negociacao"
+                    ? "Em negociação"
+                    : "Vendido"}
               </option>
             ))}
           </select>
 
           {(filterType !== "all" || filterState !== "all" || filterStatus !== "all") && (
             <button
-              onClick={() => { setFilterType("all"); setFilterState("all"); setFilterStatus("all"); }}
+              onClick={() => {
+                setFilterType("all");
+                setFilterState("all");
+                setFilterStatus("all");
+              }}
               className="h-10 rounded-[10px] px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Limpar filtros
@@ -295,11 +336,7 @@ export default function CRMPage() {
                 <p className="mt-2 text-sm text-muted-foreground">
                   Comece publicando seu primeiro imóvel.
                 </p>
-                <Button
-                  variant="green"
-                  className="mt-6"
-                  onClick={handleCreate}
-                >
+                <Button variant="green" className="mt-6" onClick={handleCreate}>
                   <Plus className="h-4 w-4" />
                   Publicar Imóvel
                 </Button>
@@ -321,16 +358,12 @@ export default function CRMPage() {
           <DialogHeader>
             <DialogTitle>Excluir imóvel</DialogTitle>
             <DialogDescription>
-              Tem certeza que deseja excluir{" "}
-              <strong>{deletingProperty?.title}</strong>? Esta ação não pode ser
-              desfeita.
+              Tem certeza que deseja excluir <strong>{deletingProperty?.title}</strong>? Esta ação
+              não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               Cancelar
             </Button>
             <Button variant="red" onClick={confirmDelete}>
