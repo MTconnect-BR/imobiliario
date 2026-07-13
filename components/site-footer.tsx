@@ -109,6 +109,12 @@ export function SiteFooter() {
             <Link href="/contato" className="text-muted-foreground hover:text-foreground transition-colors">
               Contato
             </Link>
+            <Link href="/termos-de-servico" className="text-muted-foreground hover:text-foreground transition-colors">
+              Termos
+            </Link>
+            <Link href="/politica-de-privacidade" className="text-muted-foreground hover:text-foreground transition-colors">
+              Privacidade
+            </Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -131,6 +137,11 @@ export function SiteFooter() {
               <MessageCircle className="h-4 w-4" />
             </a>
           </div>
+        </div>
+
+        {/* Copyright */}
+        <div className="mt-8 text-center text-xs text-muted-foreground">
+          &copy; {new Date().getFullYear()} Imobiliário. Todos os direitos reservados.
         </div>
       </div>
     </footer>
