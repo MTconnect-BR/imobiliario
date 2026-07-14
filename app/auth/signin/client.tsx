@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -18,7 +18,8 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { login, loginWithGithub, getSession } from "@/lib/auth";
+import { login, getSession } from "@/lib/auth";
+import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
 
 const signInSchema = z.object({
@@ -28,15 +29,6 @@ const signInSchema = z.object({
 
 type SignInValues = z.infer<typeof signInSchema>;
 
-function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-  return match ? decodeURIComponent(match[2]) : null;
-}
-
-function deleteCookie(name: string) {
-  document.cookie = `${name}=; path=/; max-age=0`;
-}
-
 function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,50 +36,15 @@ function SignInContent() {
   const [githubLoading, setGithubLoading] = useState(false);
 
   const error = searchParams.get("error");
-  const githubStatus = searchParams.get("github");
   const githubLogin = searchParams.get("github_login");
   const redirect =
     searchParams.get("redirect") || sessionStorage.getItem("oauth_redirect") || "/crm";
-
-  const handleGithubCallback = useCallback(() => {
-    if (githubStatus !== "success") return;
-    (async () => {
-      const userData = getCookie("github_user");
-      if (!userData) {
-        toast.error("Erro ao processar autenticação GitHub.");
-        return;
-      }
-
-      try {
-        const githubUser = JSON.parse(userData);
-        const result = await loginWithGithub(githubUser);
-        deleteCookie("github_user");
-
-        if (result.success) {
-          sessionStorage.removeItem("oauth_redirect");
-          toast.success("Login via GitHub realizado com sucesso!");
-          router.push(redirect);
-        } else {
-          toast.error(result.error || "Erro ao fazer login.");
-        }
-      } catch {
-        toast.error("Erro ao processar dados do GitHub.");
-      }
-    })();
-  }, [githubStatus, redirect, router]);
-
-  useEffect(() => {
-    handleGithubCallback();
-  }, [handleGithubCallback]);
 
   useEffect(() => {
     if (!error) return;
 
     const errorMessages: Record<string, string> = {
       not_member: `Acesso restrito. ${githubLogin ? `O usuário "${githubLogin}" não é membro da organização.` : "Somente membros da organização podem acessar."}`,
-      no_code: "Erro ao autenticar com GitHub. Tente novamente.",
-      token_exchange_failed: "Erro ao obter token do GitHub. Tente novamente.",
-      user_fetch_failed: "Erro ao obter dados do GitHub. Tente novamente.",
       github_config: "Configuração OAuth do GitHub indisponível.",
     };
 
@@ -148,7 +105,16 @@ function SignInContent() {
             onClick={() => {
               setGithubLoading(true);
               sessionStorage.setItem("oauth_redirect", redirect);
-              window.location.href = "/api/auth/github";
+              const supabase = createBrowserClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+              );
+              supabase.auth.signInWithOAuth({
+                provider: "github",
+                options: {
+                  redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
+                },
+              });
             }}
           >
             <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
