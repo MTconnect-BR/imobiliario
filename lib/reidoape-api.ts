@@ -391,7 +391,7 @@ export async function getPropertyById(id: string): Promise<Property | null> {
 
   if (cache?.loadingPromise) {
     const startWait = Date.now();
-    const WAIT_TIMEOUT_MS = 25000;
+    const WAIT_TIMEOUT_MS = 40000;
     while (cache && cache.loadingPromise) {
       if (Date.now() - startWait > WAIT_TIMEOUT_MS) break;
       await new Promise((r) => setTimeout(r, 200));
@@ -403,6 +403,33 @@ export async function getPropertyById(id: string): Promise<Property | null> {
 
   if (cache?.map.has(reidoapeId)) {
     return rawItemToProperty(cache.map.get(reidoapeId)!);
+  }
+
+  if (!cache) return null;
+
+  const loadedPages = cache.pagesLoaded;
+  const totalPages = cache.totalPages;
+  if (loadedPages >= totalPages) return null;
+
+  const startTime = Date.now();
+  const SEARCH_TIMEOUT_MS = 30000;
+  const BATCH = 20;
+
+  for (let batchStart = loadedPages; batchStart < totalPages; batchStart += BATCH) {
+    if (Date.now() - startTime > SEARCH_TIMEOUT_MS) break;
+
+    const batchEnd = Math.min(batchStart + BATCH, totalPages);
+    const pages: number[] = [];
+    for (let p = batchStart; p < batchEnd; p++) pages.push(p);
+
+    const results = await Promise.all(pages.map((p) => fetchPage(p)));
+    for (const data of results) {
+      for (const item of data.items ?? []) {
+        if (!cache.map.has(item.id)) cache.map.set(item.id, item);
+        if (item.id === reidoapeId) return rawItemToProperty(item);
+      }
+    }
+    cache.pagesLoaded = batchEnd;
   }
 
   return null;
