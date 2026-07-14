@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PropertyDetailClient from "./client";
-import { getPropertyById, getProperties } from "@/lib/properties-server";
+import { getPropertyById } from "@/lib/properties-server";
+import { getPropertiesFiltered } from "@/lib/reidoape-api";
+import type { Property } from "@/lib/properties";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -23,11 +25,15 @@ export default async function PropertyDetailPage({ params }: Props) {
 
   if (!property) notFound();
 
-  let similar = [];
+  let similar: Property[] = [];
   try {
-    const properties = await getProperties();
+    const { properties } = await getPropertiesFiltered({
+      type: property.type,
+      state: property.state,
+      limit: 100,
+    });
     similar = properties
-      .filter((p) => p.id !== property.id && p.type === property.type && p.state === property.state)
+      .filter((p) => p.id !== property.id)
       .sort((a, b) => {
         const aCity = a.city === property.city ? 1 : 0;
         const bCity = b.city === property.city ? 1 : 0;

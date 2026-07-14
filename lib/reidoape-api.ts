@@ -387,53 +387,22 @@ export async function getPropertyById(id: string): Promise<Property | null> {
     return rawItemToProperty(cache.map.get(reidoapeId)!);
   }
 
-  const startTime = Date.now();
-  const TIMEOUT_MS = 8000;
+  ensureLoading();
 
-  const firstPage = await fetchPage(0);
-  const total = firstPage.meta?.total ?? 0;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-
-  for (const item of firstPage.items ?? []) {
-    if (item.id === reidoapeId) return rawItemToProperty(item);
-  }
-
-  if (!cache) {
-    cache = {
-      map: new Map(),
-      totalPages,
-      pagesLoaded: 1,
-      loadingPromise: null,
-      timestamp: Date.now(),
-      stale: false,
-    };
-  }
-  for (const item of firstPage.items ?? []) {
-    if (!cache.map.has(item.id)) cache.map.set(item.id, item);
-  }
-  cache.pagesLoaded = 1;
-  cache.totalPages = totalPages;
-
-  const BATCH = 10;
-  for (let batchStart = 1; batchStart < totalPages; batchStart += BATCH) {
-    if (Date.now() - startTime > TIMEOUT_MS) return null;
-
-    const batchEnd = Math.min(batchStart + BATCH, totalPages);
-    const pages: number[] = [];
-    for (let p = batchStart; p < batchEnd; p++) pages.push(p);
-
-    const results = await Promise.all(pages.map((p) => fetchPage(p)));
-    for (const data of results) {
-      for (const item of data.items ?? []) {
-        if (!cache.map.has(item.id)) cache.map.set(item.id, item);
-        if (item.id === reidoapeId) return rawItemToProperty(item);
+  if (cache?.loadingPromise) {
+    const startWait = Date.now();
+    const WAIT_TIMEOUT_MS = 25000;
+    while (cache && cache.loadingPromise) {
+      if (Date.now() - startWait > WAIT_TIMEOUT_MS) break;
+      await new Promise((r) => setTimeout(r, 200));
+      if (cache?.map.has(reidoapeId)) {
+        return rawItemToProperty(cache.map.get(reidoapeId)!);
       }
     }
-    cache.pagesLoaded = batchEnd;
+  }
 
-    if (batchEnd < totalPages) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  if (cache?.map.has(reidoapeId)) {
+    return rawItemToProperty(cache.map.get(reidoapeId)!);
   }
 
   return null;
