@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const redirectUri = process.env.NEXT_PUBLIC_APP_URL || "https://imobiliario-one.vercel.app";
+  const origin = request.nextUrl.origin;
 
   if (!supabaseUrl) {
-    return NextResponse.redirect(new URL("/auth/signin?error=supabase_config", redirectUri));
+    return NextResponse.redirect(new URL("/auth/signin?error=supabase_config", origin));
   }
 
   const params = new URLSearchParams({
     provider: "github",
-    redirect_to: `${redirectUri}/api/auth/github/callback`,
+    redirect_to: `${origin}/api/auth/github/callback`,
   });
 
   return NextResponse.redirect(`${supabaseUrl}/auth/v1/authorize?${params.toString()}`);

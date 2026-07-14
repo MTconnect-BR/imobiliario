@@ -17,7 +17,7 @@ async function checkOrgMembership(token: string, username: string): Promise<bool
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
-  const redirectBase = process.env.NEXT_PUBLIC_APP_URL || "https://imobiliario-one.vercel.app";
+  const redirectBase = request.nextUrl.origin;
 
   if (!code) {
     return NextResponse.redirect(new URL("/auth/signin?error=no_code", redirectBase));
