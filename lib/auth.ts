@@ -20,24 +20,33 @@ function createClient() {
 
 export async function getSession(): Promise<{ user?: User; session?: object } | null> {
   const supabase = createClient();
-  const { data, error } = await supabase.auth.getSession();
-  if (error || !data.session) return null;
 
-  const { user: authUser } = data.session;
-  const metadata = authUser.user_metadata || {};
+  const timeoutPromise = new Promise<null>((resolve) => {
+    setTimeout(() => resolve(null), 8000);
+  });
 
-  return {
-    user: {
-      id: authUser.id,
-      supabaseId: authUser.id,
-      name: metadata.full_name || metadata.name || authUser.email?.split("@")[0] || "",
-      email: authUser.email || "",
-      avatarUrl: metadata.avatar_url || metadata.picture,
-      githubId: metadata.provider_id ? Number(metadata.provider_id) : undefined,
-      createdAt: authUser.created_at,
-    },
-    session: data.session,
-  };
+  const sessionPromise = (async () => {
+    const { data, error } = await supabase.auth.getSession();
+    if (error || !data.session) return null;
+
+    const { user: authUser } = data.session;
+    const metadata = authUser.user_metadata || {};
+
+    return {
+      user: {
+        id: authUser.id,
+        supabaseId: authUser.id,
+        name: metadata.full_name || metadata.name || authUser.email?.split("@")[0] || "",
+        email: authUser.email || "",
+        avatarUrl: metadata.avatar_url || metadata.picture,
+        githubId: metadata.provider_id ? Number(metadata.provider_id) : undefined,
+        createdAt: authUser.created_at,
+      },
+      session: data.session,
+    };
+  })();
+
+  return Promise.race([sessionPromise, timeoutPromise]);
 }
 
 export async function login(

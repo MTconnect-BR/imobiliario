@@ -35,16 +35,37 @@ export default function CRMPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const s = await getSession();
-      const sessionUser = s?.user ?? null;
-      setSession(sessionUser);
-      if (!sessionUser) {
+    let cancelled = false;
+    const timeout = setTimeout(() => {
+      if (!cancelled) {
         router.replace("/auth/signin?redirect=/crm");
-      } else {
-        setAuthChecked(true);
+      }
+    }, 10000);
+
+    (async () => {
+      try {
+        const s = await getSession();
+        if (cancelled) return;
+        clearTimeout(timeout);
+        const sessionUser = s?.user ?? null;
+        setSession(sessionUser);
+        if (!sessionUser) {
+          router.replace("/auth/signin?redirect=/crm");
+        } else {
+          setAuthChecked(true);
+        }
+      } catch {
+        if (!cancelled) {
+          clearTimeout(timeout);
+          router.replace("/auth/signin?redirect=/crm");
+        }
       }
     })();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [router]);
 
   const loadExternalProperties = useCallback(async () => {
