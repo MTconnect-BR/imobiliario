@@ -105,9 +105,7 @@ export function MindMarketMenu() {
                         onClick={() => toggleSubmenu(item.label)}
                         aria-expanded={expandedSubmenu === item.label}
                       >
-                        <span className="c-menu-desktop_link_label">
-                          {item.label}
-                        </span>
+                        <span className="c-menu-desktop_link_label">{item.label}</span>
                         <svg
                           className={`c-menu-desktop_arrow ${expandedSubmenu === item.label ? "-active" : ""}`}
                           width="12"
@@ -152,9 +150,7 @@ export function MindMarketMenu() {
                       className="c-menu-desktop_link"
                       onClick={closeMenu}
                     >
-                      <span className="c-menu-desktop_link_label">
-                        {item.label}
-                      </span>
+                      <span className="c-menu-desktop_link_label">{item.label}</span>
                     </Link>
                   )}
                 </li>
@@ -190,7 +186,21 @@ export function MindMarketMenu() {
           className="c-menu-desktop_instagram_button"
           aria-label="Instagram"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+          </svg>
         </a>
         <Link href="/contato" className="c-menu-desktop_contact_box">
           Fale Conosco
@@ -212,7 +222,7 @@ export function MindMarketMenu() {
         <div className="c-menu-mobile_bar">
           <div className="c-menu-mobile_logo">
             <Link href="/" className="c-menu-mobile_logo_text" onClick={closeMenu}>
-              Imobiliário
+              Siena Gestão & Imobiliária
             </Link>
           </div>
           <div className="c-menu-mobile_cta">
@@ -223,13 +233,23 @@ export function MindMarketMenu() {
               className="c-menu-mobile_instagram"
               aria-label="Instagram"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+              </svg>
             </a>
-            <Link
-              href="/contato"
-              className="c-menu-mobile_contact"
-              onClick={closeMenu}
-            >
+            <Link href="/contato" className="c-menu-mobile_contact" onClick={closeMenu}>
               Fale Conosco
             </Link>
             <button
@@ -265,9 +285,7 @@ export function MindMarketMenu() {
                         onClick={() => toggleSubmenu(item.label)}
                         aria-expanded={expandedSubmenu === item.label}
                       >
-                        <span className="c-menu-mobile_accordion_label">
-                          {item.label}
-                        </span>
+                        <span className="c-menu-mobile_accordion_label">{item.label}</span>
                         <svg
                           className={`c-menu-mobile_arrow ${expandedSubmenu === item.label ? "-active" : ""}`}
                           width="12"
@@ -289,10 +307,7 @@ export function MindMarketMenu() {
                       >
                         <ul className="c-menu-mobile_dropdown_list">
                           {item.children.map((subItem) => (
-                            <li
-                              key={subItem.label}
-                              className="c-menu-mobile_dropdown_item"
-                            >
+                            <li key={subItem.label} className="c-menu-mobile_dropdown_item">
                               <Link
                                 href={subItem.href}
                                 className="c-menu-mobile_dropdown_link"
@@ -311,9 +326,7 @@ export function MindMarketMenu() {
                       className="c-menu-mobile_nav_link"
                       onClick={closeMenu}
                     >
-                      <span className="c-menu-mobile_nav_link_label">
-                        {item.label}
-                      </span>
+                      <span className="c-menu-mobile_nav_link_label">{item.label}</span>
                     </Link>
                   )}
                 </li>

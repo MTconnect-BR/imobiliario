@@ -15,8 +15,8 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.xn--sienagestoimobiliria-yxb9a.com.br"),
   title: {
-    default: "Imobiliário | Compre, alugue e invista em imóveis",
-    template: "%s | Imobiliário",
+    default: "Siena Gestão & Imobiliária | Compre, alugue e invista em imóveis",
+    template: "%s | Siena Gestão & Imobiliária",
   },
   description:
     "A plataforma completa para comprar, alugar e investir em imóveis no Brasil. Encontre casas, apartamentos, terrenos e imóveis comerciais com as melhores condições do mercado.",
@@ -33,27 +33,27 @@ export const metadata: Metadata = {
     "real estate",
     "brasil",
   ],
-  authors: [{ name: "Imobiliário" }],
-  creator: "Imobiliário",
+  authors: [{ name: "Siena Gestão & Imobiliária" }],
+  creator: "Siena Gestão & Imobiliária",
   openGraph: {
     type: "website",
     locale: "pt_BR",
     url: "https://www.xn--sienagestoimobiliria-yxb9a.com.br",
-    siteName: "Imobiliário",
-    title: "Imobiliário | Compre, alugue e invista em imóveis",
+    siteName: "Siena Gestão & Imobiliária",
+    title: "Siena Gestão & Imobiliária | Compre, alugue e invista em imóveis",
     description: "A plataforma completa para comprar, alugar e investir em imóveis no Brasil.",
     images: [
       {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Imobiliário",
+        alt: "Siena Gestão & Imobiliária",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Imobiliário | Compre, alugue e invista em imóveis",
+    title: "Siena Gestão & Imobiliária | Compre, alugue e invista em imóveis",
     description: "A plataforma completa para comprar, alugar e investir em imóveis no Brasil.",
     images: ["/og.png"],
   },

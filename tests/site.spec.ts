@@ -31,7 +31,7 @@ test.describe("Homepage", () => {
     await expect(page.getByText("Por que escolher a")).toBeVisible();
     await expect(page.getByText("O que nos diferencia?")).toBeVisible();
     await expect(page.getByText("Vantagens da plataforma")).toBeVisible();
-    await expect(page.getByText("Por que confiar na Imobiliário?")).toBeVisible();
+    await expect(page.getByText("Por que confiar na Siena Gestão & Imobiliária?")).toBeVisible();
   });
 });
 
@@ -42,9 +42,7 @@ test.describe("Property Catalog", () => {
   test("should load catalog page with search and filters", async ({ page }) => {
     await page.goto("/imoveis");
     await expect(page.getByLabel("Buscar imóveis")).toBeVisible();
-    await expect(
-      page.getByRole("group", { name: "Filtrar por tipo" })
-    ).toBeVisible();
+    await expect(page.getByRole("group", { name: "Filtrar por tipo" })).toBeVisible();
     await expect(page.getByLabel("Filtrar por faixa de preço")).toBeVisible();
   });
 
@@ -58,9 +56,7 @@ test.describe("Property Catalog", () => {
   test("should filter by price range", async ({ page }) => {
     await page.goto("/imoveis");
     await page.getByLabel("Filtrar por faixa de preço").selectOption("0-300000");
-    await expect(
-      page.getByLabel("Filtrar por faixa de preço")
-    ).toHaveValue("0-300000");
+    await expect(page.getByLabel("Filtrar por faixa de preço")).toHaveValue("0-300000");
   });
 
   test("should clear filters when clicking clear button", async ({ page }) => {
@@ -160,7 +156,9 @@ test.describe("Category Pages", () => {
 
   test("apartamentos page should load with correct heading", async ({ page }) => {
     await page.goto("/imoveis/apartamentos");
-    await expect(page.getByRole("heading", { name: "Apartamentos" })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("heading", { name: "Apartamentos" })).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test("should have state filter on category page", async ({ page }) => {
@@ -191,7 +189,9 @@ test.describe("Menu", () => {
     await expect(imoveisLink).toBeVisible();
     await imoveisLink.click();
     await expect(page.locator(".c-menu-desktop_dropdown.-active")).toBeVisible();
-    await expect(page.locator(".c-menu-desktop_dropdown_link").filter({ hasText: "Casas" })).toBeVisible();
+    await expect(
+      page.locator(".c-menu-desktop_dropdown_link").filter({ hasText: "Casas" }),
+    ).toBeVisible();
   });
 
   test("should navigate to category via dropdown", async ({ page }) => {
@@ -255,19 +255,26 @@ test.describe("Auth Pages", () => {
   test("forgot password submit shows loading then feedback", async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => {
-      localStorage.setItem("imobiliario_users", JSON.stringify([{
-        id: "test-001",
-        name: "Teste",
-        email: "teste@test.com",
-        password: "abc123",
-        createdAt: new Date().toISOString(),
-      }]));
+      localStorage.setItem(
+        "imobiliario_users",
+        JSON.stringify([
+          {
+            id: "test-001",
+            name: "Teste",
+            email: "teste@test.com",
+            password: "abc123",
+            createdAt: new Date().toISOString(),
+          },
+        ]),
+      );
     });
     await page.goto("/auth/forgot-password");
     await page.getByPlaceholder("seu@email.com").fill("teste@test.com");
     await page.getByRole("button", { name: "Enviar link" }).click();
     await expect(page.getByRole("button", { name: "Enviando..." })).toBeVisible({ timeout: 3000 });
-    await expect(page.getByRole("button", { name: "Enviar novamente" })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole("button", { name: "Enviar novamente" })).toBeVisible({
+      timeout: 15000,
+    });
   });
 
   test("signup page has GitHub button and signin link", async ({ page }) => {
@@ -280,12 +287,15 @@ test.describe("Auth Pages", () => {
   test("already logged in user redirects from signin", async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => {
-      localStorage.setItem("imobiliario_session", JSON.stringify({
-        id: "test-user-001",
-        name: "Teste User",
-        email: "teste@imobiliario.com.br",
-        createdAt: new Date().toISOString(),
-      }));
+      localStorage.setItem(
+        "imobiliario_session",
+        JSON.stringify({
+          id: "test-user-001",
+          name: "Teste User",
+          email: "teste@imobiliario.com.br",
+          createdAt: new Date().toISOString(),
+        }),
+      );
     });
     await page.goto("/auth/signin");
     await expect(page).toHaveURL(/\/crm/, { timeout: 10000 });
@@ -326,12 +336,15 @@ test.describe("Chrome Visibility", () => {
   test("menu and FAQ should be hidden on CRM page", async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => {
-      localStorage.setItem("imobiliario_session", JSON.stringify({
-        id: "test-user-001",
-        name: "Teste",
-        email: "t@t.com",
-        createdAt: new Date().toISOString(),
-      }));
+      localStorage.setItem(
+        "imobiliario_session",
+        JSON.stringify({
+          id: "test-user-001",
+          name: "Teste",
+          email: "t@t.com",
+          createdAt: new Date().toISOString(),
+        }),
+      );
     });
     await page.goto("/crm");
     await expect(page.locator(".c-menu-desktop")).not.toBeVisible();

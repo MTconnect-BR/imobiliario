@@ -55,7 +55,7 @@ export default function ForgotPasswordClient() {
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
         <Link href="/" className="text-2xl font-medium tracking-[-0.06em] text-foreground">
-          Imobiliário
+          Siena Gestão &amp; Imobiliária
         </Link>
       </div>
 

@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
       {
         headers: {
           "User-Agent":
-            "ImobiliarioPlatform/1.0 (https://www.xn--sienagestoimobiliria-yxb9a.com.br)",
+            "SienaGestaoImobiliaria/1.0 (https://www.xn--sienagestoimobiliria-yxb9a.com.br)",
           "Accept-Language": "pt-BR",
         },
       },

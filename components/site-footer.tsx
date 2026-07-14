@@ -53,7 +53,10 @@ export function SiteFooter() {
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 shrink-0" />
-                <a href="mailto:contato@imobiliario.com" className="hover:text-foreground transition-colors">
+                <a
+                  href="mailto:contato@imobiliario.com"
+                  className="hover:text-foreground transition-colors"
+                >
                   contato@imobiliario.com
                 </a>
               </div>
@@ -92,7 +95,9 @@ export function SiteFooter() {
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex flex-col items-center gap-2 md:items-start">
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold tracking-[-0.08em]">Imobiliário</span>
+              <span className="text-xl font-bold tracking-[-0.08em]">
+                Siena Gestão & Imobiliária
+              </span>
             </div>
             <p className="text-xs text-muted-foreground">
               Imóveis da Caixa com até 90% de desconto
@@ -100,19 +105,34 @@ export function SiteFooter() {
           </div>
 
           <nav className="flex flex-wrap items-center justify-center gap-4 text-sm">
-            <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               Home
             </Link>
-            <Link href="/imoveis" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/imoveis"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               Imóveis
             </Link>
-            <Link href="/contato" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/contato"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               Contato
             </Link>
-            <Link href="/termos-de-servico" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/termos-de-servico"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               Termos
             </Link>
-            <Link href="/politica-de-privacidade" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/politica-de-privacidade"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               Privacidade
             </Link>
           </nav>
@@ -141,7 +161,8 @@ export function SiteFooter() {
 
         {/* Copyright */}
         <div className="mt-8 text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} Imobiliário. Todos os direitos reservados.
+          &copy; {new Date().getFullYear()} Siena Gestão & Imobiliária. Todos os direitos
+          reservados.
         </div>
       </div>
     </footer>
