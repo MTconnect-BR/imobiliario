@@ -405,6 +405,24 @@ export async function getPropertyById(id: string): Promise<Property | null> {
     return rawItemToProperty(cache.map.get(reidoapeId)!);
   }
 
+  try {
+    const searchUrl = `${API_BASE}?id_master=${ID_MASTER}&pagina=0&limite=10&busca=${reidoapeId}`;
+    const res = await fetch(searchUrl, { headers: { "User-Agent": "Mozilla/5.0" } });
+    const data = await res.json();
+
+    if (data.items && data.items.length > 0) {
+      const item = data.items.find(
+        (i: RawItem) => i.id === reidoapeId || i.referencia_plain === reidoapeId,
+      );
+      if (item) {
+        if (cache) cache.map.set(reidoapeId, item);
+        return rawItemToProperty(item);
+      }
+    }
+  } catch {
+    /* fallback to paginated search */
+  }
+
   if (!cache) return null;
 
   const loadedPages = cache.pagesLoaded;
