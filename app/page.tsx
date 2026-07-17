@@ -1,4 +1,5 @@
 import { HomeSearch } from "@/components/home-search";
+import { CoverageMap } from "@/components/coverage-map";
 import type { Metadata } from "next";
 
 const SITE_URL = "https://www.xn--sienagestoimobiliria-yxb9a.com.br";
@@ -121,6 +122,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Nossa Atuação — Mapa */}
+      <CoverageMap />
     </main>
   );
 }
