@@ -122,14 +122,13 @@ export function CoverageMap() {
     if (!raw || Object.keys(counts.byState).length === 0) return;
     let cancelled = false;
 
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     async function addMarkers() {
       const L = (await import("leaflet")).default;
       if (cancelled) return;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const map = raw as any;
 
       map.eachLayer((layer: any) => {
-        // eslint-disable-line @typescript-eslint/no-explicit-any
         if (layer._icon && layer.removeFrom) layer.removeFrom(map);
       });
 
@@ -156,7 +155,6 @@ export function CoverageMap() {
         markers.push(marker);
       });
       if (markers.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         map.fitBounds(
           L.featureGroup(markers as any[])
             .getBounds()
