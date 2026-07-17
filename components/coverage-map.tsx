@@ -1,58 +1,93 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 
-const REGIONS = [
-  {
-    state: "São Paulo",
-    cities: [
-      { name: "São Paulo", lat: -23.5505, lng: -46.6333, count: 1200 },
-      { name: "Campinas", lat: -22.9099, lng: -47.0626, count: 350 },
-      { name: "Santos", lat: -23.9608, lng: -46.3336, count: 180 },
-    ],
-  },
-  {
-    state: "Rio de Janeiro",
-    cities: [
-      { name: "Rio de Janeiro", lat: -22.9068, lng: -43.1729, count: 1800 },
-      { name: "Niterói", lat: -22.8833, lng: -43.1036, count: 220 },
-      { name: "Petrópolis", lat: -22.5106, lng: -43.1776, count: 150 },
-    ],
-  },
-  {
-    state: "Paraná",
-    cities: [
-      { name: "Curitiba", lat: -25.4284, lng: -49.2733, count: 980 },
-      { name: "Londrina", lat: -23.3045, lng: -51.1696, count: 290 },
-      { name: "Maringá", lat: -23.421, lng: -51.9331, count: 210 },
-    ],
-  },
-  {
-    state: "Santa Catarina",
-    cities: [
-      { name: "Florianópolis", lat: -27.5954, lng: -48.548, count: 620 },
-      { name: "Joinville", lat: -26.3045, lng: -48.8487, count: 180 },
-      { name: "Blumenau", lat: -26.9194, lng: -49.0661, count: 140 },
-    ],
-  },
-];
+interface CountsData {
+  total: number;
+  byState: Record<string, number>;
+  byCity: Record<string, number>;
+  loading: boolean;
+}
 
-const TOTAL_PROPERTIES = REGIONS.reduce(
-  (sum, r) => sum + r.cities.reduce((s, c) => s + c.count, 0),
-  0,
-);
+const STATE_NAMES: Record<string, string> = {
+  SP: "São Paulo",
+  RJ: "Rio de Janeiro",
+  PR: "Paraná",
+  SC: "Santa Catarina",
+  MG: "Minas Gerais",
+  RS: "Rio Grande do Sul",
+  BA: "Bahia",
+  ES: "Espírito Santo",
+};
 
-const TOTAL_CITIES = REGIONS.reduce((sum, r) => sum + r.cities.length, 0);
+const STATE_COLORS: Record<string, string> = {
+  SP: "#2563eb",
+  RJ: "#dc2626",
+  PR: "#16a34a",
+  SC: "#ea580c",
+  MG: "#7c3aed",
+  RS: "#0891b2",
+  BA: "#ca8a04",
+  ES: "#be123c",
+};
 
-const TOTAL_STATES = REGIONS.length;
+const STATE_COORDS: Record<string, [number, number]> = {
+  SP: [-23.55, -46.63],
+  RJ: [-22.91, -43.17],
+  PR: [-25.43, -49.27],
+  SC: [-27.6, -48.55],
+  MG: [-19.92, -43.94],
+  RS: [-30.03, -51.23],
+  BA: [-12.97, -38.51],
+  ES: [-20.32, -40.34],
+};
+
+const CITY_COORDS: Record<string, [number, number]> = {
+  "São Paulo": [-23.5505, -46.6333],
+  "Rio de Janeiro": [-22.9068, -43.1729],
+  Curitiba: [-25.4284, -49.2733],
+  Florianópolis: [-27.5954, -48.548],
+  "Belo Horizonte": [-19.9191, -43.9386],
+  "Porto Alegre": [-30.0346, -51.2177],
+  Salvador: [-12.9714, -38.5124],
+  Vitória: [-20.3155, -40.3128],
+  Campinas: [-22.9099, -47.0626],
+  Niterói: [-22.8833, -43.1036],
+  Londrina: [-23.3045, -51.1696],
+  Joinville: [-26.3045, -48.8487],
+  Santos: [-23.9608, -46.3336],
+  Petrópolis: [-22.5106, -43.1776],
+  Maringá: [-23.421, -51.9331],
+  Blumenau: [-26.9194, -49.0661],
+};
 
 export function CoverageMap() {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
+  const [counts, setCounts] = useState<CountsData>({
+    total: 0,
+    byState: {},
+    byCity: {},
+    loading: true,
+  });
 
   useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return;
+    fetch("/api/counts")
+      .then((r) => r.json())
+      .then((data) =>
+        setCounts({
+          total: data.total || 0,
+          byState: data.byState || {},
+          byCity: data.byCity || {},
+          loading: false,
+        }),
+      )
+      .catch(() => setCounts((p) => ({ ...p, loading: false })));
+  }, []);
+
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current || counts.loading) return;
 
     let cancelled = false;
 
@@ -82,46 +117,46 @@ export function CoverageMap() {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map);
 
-      const stateColors: Record<string, string> = {
-        "São Paulo": "#2563eb",
-        "Rio de Janeiro": "#dc2626",
-        Paraná: "#16a34a",
-        "Santa Catarina": "#ea580c",
-      };
-
       const allMarkers: ReturnType<typeof L.marker>[] = [];
 
-      REGIONS.forEach((region) => {
-        const color = stateColors[region.state] || "#6b7280";
+      const statesSorted = Object.entries(counts.byState)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 6);
 
-        region.cities.forEach((city) => {
-          const icon = L.divIcon({
-            html: `<div style="
-              width:14px;height:14px;border-radius:50%;
-              background:${color};border:2px solid white;
-              box-shadow:0 1px 4px rgba(0,0,0,.3);
-            "></div>`,
-            className: "",
-            iconSize: [14, 14],
-            iconAnchor: [7, 7],
-          });
+      statesSorted.forEach(([stateCode, stateCount]) => {
+        const color = STATE_COLORS[stateCode] || "#6b7280";
+        const stateCenter = STATE_COORDS[stateCode];
 
-          const marker = L.marker([city.lat, city.lng], { icon })
+        const stateIcon = L.divIcon({
+          html: `<div style="
+            width:28px;height:28px;border-radius:50%;
+            background:${color};border:3px solid white;
+            box-shadow:0 2px 8px rgba(0,0,0,.35);
+            display:flex;align-items:center;justify-content:center;
+            color:white;font-size:10px;font-weight:700;
+            font-family:system-ui,sans-serif;
+          ">${stateCount > 999 ? `${Math.round(stateCount / 100) / 10}k` : stateCount}</div>`,
+          className: "",
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+        });
+
+        if (stateCenter) {
+          const marker = L.marker(stateCenter, { icon: stateIcon })
             .addTo(map)
             .bindPopup(
-              `<div style="font-family:system-ui,sans-serif;min-width:120px">
-                <strong style="font-size:14px">${city.name}</strong><br/>
-                <span style="color:#666;font-size:12px">${region.state}</span><br/>
-                <span style="font-size:13px;font-weight:600;color:${color}">${city.count.toLocaleString("pt-BR")} imóveis</span>
+              `<div style="font-family:system-ui,sans-serif;min-width:140px">
+                <strong style="font-size:14px">${STATE_NAMES[stateCode] || stateCode}</strong><br/>
+                <span style="font-size:13px;font-weight:600;color:${color}">${stateCount.toLocaleString("pt-BR")} imóveis</span>
               </div>`,
             );
           allMarkers.push(marker);
-        });
+        }
       });
 
       if (allMarkers.length > 0) {
         const group = L.featureGroup(allMarkers);
-        map.fitBounds(group.getBounds().pad(0.1));
+        map.fitBounds(group.getBounds().pad(0.15));
       }
 
       mapInstanceRef.current = map;
@@ -136,7 +171,17 @@ export function CoverageMap() {
         mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [counts.loading, counts.byState]);
+
+  const statesSorted = Object.entries(counts.byState)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 6);
+
+  const topCities = Object.entries(counts.byCity)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 12);
+
+  const totalByState = statesSorted.reduce((s, [, v]) => s + v, 0);
 
   return (
     <section className="px-6 py-16">
@@ -146,40 +191,49 @@ export function CoverageMap() {
             Nossa <strong className="text-primary">Atuação</strong>
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-charcoal/70">
-            Presença consolidada nas principais cidades do Sul e Sudeste. Imóveis da Caixa com até
-            90% de desconto em localizações estratégicas.
+            Presença consolidada em todo o Brasil. Imóveis da Caixa com até 90% de desconto em
+            localizações estratégicas.
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
           {/* Mapa */}
           <div className="relative">
-            <div
-              ref={mapRef}
-              className="h-[400px] w-full overflow-hidden rounded-[10px] border border-border sm:h-[480px]"
-            />
+            {counts.loading ? (
+              <div className="flex h-[400px] items-center justify-center rounded-[10px] border border-border bg-charcoal/5 sm:h-[480px]">
+                <div className="text-center">
+                  <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  <p className="text-sm text-charcoal/50">Carregando mapa...</p>
+                </div>
+              </div>
+            ) : (
+              <div
+                ref={mapRef}
+                className="h-[400px] w-full overflow-hidden rounded-[10px] border border-border sm:h-[480px]"
+              />
+            )}
           </div>
 
           {/* Painel lateral */}
           <div className="flex flex-col gap-4">
             {/* Legenda */}
             <div className="rounded-[10px] border border-border bg-white p-4">
-              <h3 className="mb-3 text-sm font-medium text-charcoal">Legenda</h3>
+              <h3 className="mb-3 text-sm font-medium text-charcoal">Estados com mais imóveis</h3>
               <div className="space-y-2">
-                {REGIONS.map((region) => {
-                  const colors: Record<string, string> = {
-                    "São Paulo": "bg-blue-600",
-                    "Rio de Janeiro": "bg-red-600",
-                    Paraná: "bg-green-600",
-                    "Santa Catarina": "bg-orange-600",
-                  };
-                  return (
-                    <div key={region.state} className="flex items-center gap-2">
-                      <div className={`h-3 w-3 rounded-full ${colors[region.state]}`} />
-                      <span className="text-xs text-charcoal/70">{region.state}</span>
-                    </div>
-                  );
-                })}
+                {statesSorted.map(([code, count]) => (
+                  <div key={code} className="flex items-center gap-2">
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{ background: STATE_COLORS[code] || "#6b7280" }}
+                    />
+                    <span className="flex-1 text-xs text-charcoal/70">
+                      {STATE_NAMES[code] || code}
+                    </span>
+                    <span className="text-xs font-semibold text-charcoal">
+                      {count.toLocaleString("pt-BR")}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -190,46 +244,45 @@ export function CoverageMap() {
                 <div className="flex items-baseline justify-between">
                   <span className="text-xs text-charcoal/60">Total</span>
                   <span className="text-lg font-bold text-primary">
-                    {TOTAL_PROPERTIES.toLocaleString("pt-BR")}
+                    {counts.total.toLocaleString("pt-BR")}
                   </span>
                 </div>
                 <div className="border-t border-border" />
                 <div className="flex items-baseline justify-between">
                   <span className="text-xs text-charcoal/60">Estados</span>
-                  <span className="text-sm font-semibold text-charcoal">{TOTAL_STATES}</span>
+                  <span className="text-sm font-semibold text-charcoal">{statesSorted.length}</span>
                 </div>
                 <div className="flex items-baseline justify-between">
                   <span className="text-xs text-charcoal/60">Cidades</span>
-                  <span className="text-sm font-semibold text-charcoal">{TOTAL_CITIES}</span>
+                  <span className="text-sm font-semibold text-charcoal">
+                    {Object.keys(counts.byCity).length}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Cidades por estado */}
+            {/* Cidades */}
             <div className="rounded-[10px] border border-border bg-white p-4">
-              <h3 className="mb-3 text-sm font-medium text-charcoal">Imóveis por Estado</h3>
+              <h3 className="mb-3 text-sm font-medium text-charcoal">Top Cidades</h3>
               <div className="space-y-3">
-                {REGIONS.map((region) => {
-                  const total = region.cities.reduce((s, c) => s + c.count, 0);
-                  const pct = Math.round((total / TOTAL_PROPERTIES) * 100);
-                  const barColors: Record<string, string> = {
-                    "São Paulo": "bg-blue-600",
-                    "Rio de Janeiro": "bg-red-600",
-                    Paraná: "bg-green-600",
-                    "Santa Catarina": "bg-orange-600",
-                  };
+                {topCities.map(([city, count]) => {
+                  const pct = totalByState > 0 ? Math.round((count / totalByState) * 100) : 0;
+                  const stateCode = Object.keys(STATE_COLORS).find((sc) =>
+                    city.includes(STATE_NAMES[sc]?.split(" ")[0] || "___"),
+                  );
+                  const barColor = STATE_COLORS[stateCode || ""] || "#6b7280";
                   return (
-                    <div key={region.state}>
+                    <div key={city}>
                       <div className="mb-1 flex items-center justify-between text-xs">
-                        <span className="text-charcoal/70">{region.state}</span>
+                        <span className="text-charcoal/70">{city}</span>
                         <span className="font-medium text-charcoal">
-                          {total.toLocaleString("pt-BR")} ({pct}%)
+                          {count.toLocaleString("pt-BR")} ({pct}%)
                         </span>
                       </div>
                       <div className="h-1.5 overflow-hidden rounded-full bg-charcoal/10">
                         <div
-                          className={`h-full rounded-full ${barColors[region.state]}`}
-                          style={{ width: `${pct}%` }}
+                          className="h-full rounded-full"
+                          style={{ width: `${Math.min(pct * 2, 100)}%`, background: barColor }}
                         />
                       </div>
                     </div>
