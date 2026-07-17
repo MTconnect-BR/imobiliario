@@ -126,28 +126,24 @@ function PropertyCard({ property }: { property: Property }) {
           <img
             src={property.images[0]}
             alt={property.address}
-            className="h-14 w-14 shrink-0 rounded-md object-cover"
+            className="h-12 w-12 shrink-0 rounded-md object-cover"
           />
         ) : (
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-muted">
-            <Home className="h-6 w-6 text-muted-foreground" />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted">
+            <Home className="h-5 w-5 text-muted-foreground" />
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-medium">{property.address}</p>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="truncate text-[11px] font-medium leading-tight">{property.address}</p>
+          <p className="text-[10px] text-muted-foreground leading-tight">
             {property.neighborhood && `${property.neighborhood}, `}
             {property.city} - {property.state}
           </p>
           {property.price && (
-            <p className="mt-0.5 text-xs font-bold text-primary">{parsePrice(property.price)}</p>
+            <p className="mt-0.5 text-[11px] font-bold text-primary">
+              {parsePrice(property.price)}
+            </p>
           )}
-          <div className="mt-0.5 flex flex-wrap gap-1 text-[10px] text-muted-foreground">
-            {property.area && <span>{property.area}m²</span>}
-            {property.bedrooms && <span>{property.bedrooms} qto</span>}
-            {property.bathrooms && <span>{property.bathrooms} ban</span>}
-            {property.parkingSpaces && <span>{property.parkingSpaces} vag</span>}
-          </div>
         </div>
       </div>
     </Link>
@@ -264,50 +260,50 @@ export function AIChatbot() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-20 left-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl sm:left-6 sm:h-14 sm:w-14"
+        className="fixed bottom-16 left-4 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl sm:bottom-20 sm:left-6 sm:h-14 sm:w-14"
         aria-label="Abrir assistente de IA"
       >
-        <Bot className="h-6 w-6 sm:h-7 sm:w-7" />
+        <Bot className="h-5 w-5 sm:h-7 sm:w-7" />
       </button>
     );
   }
 
   return (
-    <div className="fixed bottom-20 left-4 z-50 flex h-[min(420px,calc(100vh-120px))] w-[min(320px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl sm:left-6 sm:w-[340px]">
+    <div className="fixed bottom-16 left-4 z-50 flex h-[min(340px,calc(100vh-100px))] w-[calc(100vw-32px)] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl sm:bottom-20 sm:left-6 sm:h-[min(400px,calc(100vh-120px))] sm:w-[320px]">
       {/* Header */}
-      <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2.5">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
-            <Bot className="h-4 w-4 text-white" />
+      <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20">
+            <Bot className="h-3.5 w-3.5 text-white" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-white">Assistente Siena</p>
-            <p className="text-[10px] text-blue-100">Online agora</p>
+            <p className="text-[11px] font-semibold text-white">Assistente Siena</p>
+            <p className="text-[9px] text-blue-100">Online agora</p>
           </div>
         </div>
         <button
           onClick={() => setIsOpen(false)}
-          className="flex h-7 w-7 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+          className="flex h-6 w-6 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/20 hover:text-white"
           aria-label="Fechar"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 space-y-3 overflow-y-auto p-3">
+      <div className="flex-1 space-y-2.5 overflow-y-auto p-2.5">
         {messages.map((msg) => (
           <div
             key={msg.id}
             className={`flex gap-1.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             {msg.role === "assistant" && (
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-                <Bot className="h-3 w-3 text-blue-600" />
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                <Bot className="h-2.5 w-2.5 text-blue-600" />
               </div>
             )}
             <div
-              className={`max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
+              className={`max-w-[85%] rounded-xl px-2.5 py-1.5 text-[11px] leading-snug ${
                 msg.role === "user"
                   ? "bg-primary text-primary-foreground rounded-br-sm"
                   : "bg-muted rounded-bl-sm"
@@ -328,19 +324,19 @@ export function AIChatbot() {
               )}
             </div>
             {msg.role === "user" && (
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary">
-                <User className="h-3 w-3 text-primary-foreground" />
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary">
+                <User className="h-2.5 w-2.5 text-primary-foreground" />
               </div>
             )}
           </div>
         ))}
         {isLoading && (
           <div className="flex gap-1.5 justify-start">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-              <Bot className="h-3 w-3 text-blue-600" />
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+              <Bot className="h-2.5 w-2.5 text-blue-600" />
             </div>
-            <div className="rounded-xl rounded-bl-sm bg-muted px-3 py-2.5">
-              <div className="flex gap-1">
+            <div className="rounded-xl rounded-bl-sm bg-muted px-2.5 py-2">
+              <div className="flex gap-0.5">
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400 [animation-delay:-0.3s]" />
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400 [animation-delay:-0.15s]" />
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400" />
@@ -353,14 +349,13 @@ export function AIChatbot() {
 
       {/* Suggestions */}
       {messages.length <= 1 && (
-        <div className="border-t border-border px-3 py-2">
-          <p className="mb-1.5 text-[10px] text-muted-foreground">Sugestões:</p>
+        <div className="border-t border-border px-2.5 py-1.5">
           <div className="flex flex-wrap gap-1">
             {SUGGESTIONS.map((s) => (
               <button
                 key={s}
                 onClick={() => handleSend(s)}
-                className="rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 {s}
               </button>
@@ -370,7 +365,7 @@ export function AIChatbot() {
       )}
 
       {/* Input */}
-      <div className="border-t border-border p-2.5">
+      <div className="border-t border-border p-2">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -384,26 +379,26 @@ export function AIChatbot() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Descreva o imóvel..."
-            className="min-w-0 flex-1 rounded-full border border-border bg-muted/30 px-3 py-2 text-xs outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
+            className="min-w-0 flex-1 rounded-full border border-border bg-muted/30 px-2.5 py-1.5 text-[11px] outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
             aria-label="Enviar"
           >
-            <Send className="h-3.5 w-3.5" />
+            <Send className="h-3 w-3" />
           </button>
         </form>
-        <div className="mt-1.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+        <div className="mt-1 flex items-center justify-center gap-1 text-[9px] text-muted-foreground">
           <span>Falar com humano?</span>
           <Link
             href="/contato"
             target="_blank"
             className="font-medium text-primary hover:underline"
           >
-            Atendente <ExternalLink className="inline h-2.5 w-2.5" />
+            Atendente <ExternalLink className="inline h-2 w-2" />
           </Link>
         </div>
       </div>
