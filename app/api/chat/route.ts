@@ -43,9 +43,6 @@ async function chatWithGemma(messages: ChatMessage[]): Promise<string> {
         temperature: 0.7,
         topP: 0.9,
         topK: 40,
-        thinkingConfig: {
-          thinkingBudget: -1,
-        },
         systemInstruction: SYSTEM_INSTRUCTION,
       },
     });
