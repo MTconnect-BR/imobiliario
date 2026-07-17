@@ -28,11 +28,21 @@ interface Message {
   timestamp: Date;
 }
 
-const SUGGESTIONS = ["Casas no RJ", "Aptos 2 quartos", "Até R$ 200 mil", "Terrenos em SP"];
+const SUGGESTIONS = [
+  "Quais imóveis vocês têm?",
+  "Como funciona a compra?",
+  "Posso usar FGTS?",
+  "Imóveis no RJ",
+];
 
-const WELCOME_MESSAGE = `Olá! Sou a assistente da **Siena Gestão & Imobiliária** 🏠
+const WELCOME_MESSAGE = `Olá! Sou a assistente virtual da **Siena Gestão & Imobiliária** 🏠
 
-Posso ajudar você a encontrar imóveis da Caixa com até 90% de desconto.
+Sou especialista em imóveis da Caixa com até 90% de desconto. Posso ajudar você a:
+
+- Encontrar casas, apartamentos, terrenos
+- Tirar dúvidas sobre financiamento e FGTS
+- Explicar o processo de compra
+- Informar preços e condições
 
 Como posso ajudar?`;
 
@@ -114,6 +124,44 @@ function extractSearchIntent(text: string): {
   return filters;
 }
 
+function hasSearchIntent(text: string): boolean {
+  const lower = text.toLowerCase();
+  const searchKeywords = [
+    "imóvel",
+    "imoveis",
+    "imóveis",
+    "casa",
+    "casas",
+    "apartamento",
+    "apto",
+    "terreno",
+    "comercial",
+    "quartos",
+    "preço",
+    "valor",
+    "reais",
+    "mil",
+    "rj",
+    "sp",
+    "pr",
+    "sc",
+    "rio",
+    "paulo",
+    "curitiba",
+    "florianópolis",
+    "buscar",
+    "encontrar",
+    "procurar",
+    "quero",
+    "procuro",
+    "tenho interesse",
+    "até",
+    "abaixo",
+    "menos",
+  ];
+  return searchKeywords.some((kw) => lower.includes(kw));
+}
+
 function PropertyCard({ property }: { property: Property }) {
   return (
     <Link
@@ -158,6 +206,7 @@ export function AIChatbot() {
   const [hasOpened, setHasOpened] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const chatHistoryRef = useRef<Array<{ role: string; content: string }>>([]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -209,6 +258,33 @@ export function AIChatbot() {
     }
   };
 
+  const chatWithAI = async (userMessage: string): Promise<string> => {
+    chatHistoryRef.current.push({ role: "user", content: userMessage });
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: chatHistoryRef.current }),
+      });
+
+      if (!res.ok) throw new Error("API error");
+
+      const data = await res.json();
+      const assistantResponse = data.response;
+
+      chatHistoryRef.current.push({ role: "model", content: assistantResponse });
+
+      if (chatHistoryRef.current.length > 20) {
+        chatHistoryRef.current = chatHistoryRef.current.slice(-20);
+      }
+
+      return assistantResponse;
+    } catch {
+      return "Desculpe, tive um problema ao processar sua mensagem. Por favor, tente novamente ou entre em contato pelo WhatsApp: (21) 96537-3111";
+    }
+  };
+
   const handleSend = async (text?: string) => {
     const query = text || input.trim();
     if (!query) return;
@@ -224,20 +300,25 @@ export function AIChatbot() {
     setIsLoading(true);
 
     try {
-      const properties = await searchProperties(query);
-      let response = "";
+      let aiResponse = "";
+      let properties: Property[] | undefined;
 
-      if (properties.length > 0) {
-        response = `Encontrei **${properties.length} imóvel${properties.length > 1 ? "is" : ""}**:`;
+      if (hasSearchIntent(query)) {
+        properties = await searchProperties(query);
+        aiResponse = await chatWithAI(query);
+
+        if (properties && properties.length > 0) {
+          aiResponse += `\n\nEncontrei **${properties.length} imóvel${properties.length > 1 ? "is" : ""} no nosso catálogo:`;
+        }
       } else {
-        response = `Não encontrei imóveis para "${query}". Tente:\n- "Casas no RJ"\n- "Aptos 2 quartos"\n- "Até 200 mil"`;
+        aiResponse = await chatWithAI(query);
       }
 
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: response,
-        properties: properties.length > 0 ? properties : undefined,
+        content: aiResponse,
+        properties,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
@@ -247,7 +328,7 @@ export function AIChatbot() {
         {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: "Erro ao buscar imóveis. Tente novamente ou fale com atendente.",
+          content: "Erro ao processar. Tente novamente ou fale com atendente: (21) 96537-3111",
           timestamp: new Date(),
         },
       ]);
@@ -278,7 +359,7 @@ export function AIChatbot() {
           </div>
           <div>
             <p className="text-[11px] font-semibold text-white">Assistente Siena</p>
-            <p className="text-[9px] text-blue-100">Online agora</p>
+            <p className="text-[9px] text-blue-100">Powered by Gemma 4 IA</p>
           </div>
         </div>
         <button
@@ -378,7 +459,7 @@ export function AIChatbot() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Descreva o imóvel..."
+            placeholder="Digite sua mensagem..."
             className="min-w-0 flex-1 rounded-full border border-border bg-muted/30 px-2.5 py-1.5 text-[11px] outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
             disabled={isLoading}
           />
