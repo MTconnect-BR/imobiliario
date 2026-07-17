@@ -28,17 +28,11 @@ interface Message {
   timestamp: Date;
 }
 
-const SUGGESTIONS = [
-  "Casas no Rio de Janeiro",
-  "Apartamentos com 2 quartos",
-  "Imóveis até R$ 200.000",
-  "Terrenos em São Paulo",
-  "Imóveis com financiamento",
-];
+const SUGGESTIONS = ["Casas no RJ", "Aptos 2 quartos", "Até R$ 200 mil", "Terrenos em SP"];
 
-const WELCOME_MESSAGE = `Olá! Sou a assistente virtual da **Siena Gestão & Imobiliária** 🏠
+const WELCOME_MESSAGE = `Olá! Sou a assistente da **Siena Gestão & Imobiliária** 🏠
 
-Posso ajudar você a encontrar o imóvel perfeito! Sou especialista em imóveis da Caixa com até 90% de desconto.
+Posso ajudar você a encontrar imóveis da Caixa com até 90% de desconto.
 
 Como posso ajudar?`;
 
@@ -125,34 +119,34 @@ function PropertyCard({ property }: { property: Property }) {
     <Link
       href={`/imoveis/${property.id}`}
       target="_blank"
-      className="block rounded-lg border border-border bg-card p-3 transition-all hover:shadow-md hover:border-primary/50"
+      className="block rounded-lg border border-border bg-card p-2 transition-all hover:shadow-md hover:border-primary/50"
     >
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         {property.images?.[0] ? (
           <img
             src={property.images[0]}
             alt={property.address}
-            className="h-20 w-20 rounded-md object-cover"
+            className="h-14 w-14 shrink-0 rounded-md object-cover"
           />
         ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-md bg-muted">
-            <Home className="h-8 w-8 text-muted-foreground" />
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-muted">
+            <Home className="h-6 w-6 text-muted-foreground" />
           </div>
         )}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{property.address}</p>
-          <p className="text-xs text-muted-foreground">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs font-medium">{property.address}</p>
+          <p className="text-[10px] text-muted-foreground">
             {property.neighborhood && `${property.neighborhood}, `}
             {property.city} - {property.state}
           </p>
           {property.price && (
-            <p className="mt-1 text-sm font-bold text-primary">{parsePrice(property.price)}</p>
+            <p className="mt-0.5 text-xs font-bold text-primary">{parsePrice(property.price)}</p>
           )}
-          <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+          <div className="mt-0.5 flex flex-wrap gap-1 text-[10px] text-muted-foreground">
             {property.area && <span>{property.area}m²</span>}
-            {property.bedrooms && <span>{property.bedrooms} quartos</span>}
-            {property.bathrooms && <span>{property.bathrooms} banheiros</span>}
-            {property.parkingSpaces && <span>{property.parkingSpaces} vagas</span>}
+            {property.bedrooms && <span>{property.bedrooms} qto</span>}
+            {property.bathrooms && <span>{property.bathrooms} ban</span>}
+            {property.parkingSpaces && <span>{property.parkingSpaces} vag</span>}
           </div>
         </div>
       </div>
@@ -238,9 +232,9 @@ export function AIChatbot() {
       let response = "";
 
       if (properties.length > 0) {
-        response = `Encontrei **${properties.length} imóvel${properties.length > 1 ? "is" : ""}** para sua busca:`;
+        response = `Encontrei **${properties.length} imóvel${properties.length > 1 ? "is" : ""}**:`;
       } else {
-        response = `Não encontrei imóveis específicos para "${query}". Tente uma busca mais simples, como:\n- "Casas no RJ"\n- "Apartamento 2 quartos"\n- "Imóveis até 200 mil"\n\nOu entre em contato diretamente com nossa equipe!`;
+        response = `Não encontrei imóveis para "${query}". Tente:\n- "Casas no RJ"\n- "Aptos 2 quartos"\n- "Até 200 mil"`;
       }
 
       const assistantMsg: Message = {
@@ -257,8 +251,7 @@ export function AIChatbot() {
         {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content:
-            "Desculpe, tive um problema ao buscar imóveis. Por favor, tente novamente ou entre em contato pelo WhatsApp.",
+          content: "Erro ao buscar imóveis. Tente novamente ou fale com atendente.",
           timestamp: new Date(),
         },
       ]);
@@ -271,56 +264,53 @@ export function AIChatbot() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-20 left-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl"
+        className="fixed bottom-20 left-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl sm:left-6 sm:h-14 sm:w-14"
         aria-label="Abrir assistente de IA"
       >
-        <Bot className="h-7 w-7" />
+        <Bot className="h-6 w-6 sm:h-7 sm:w-7" />
       </button>
     );
   }
 
   return (
-    <div className="fixed bottom-20 left-6 z-50 flex w-[360px] max-w-[calc(100vw-48px)] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl">
+    <div className="fixed bottom-20 left-4 z-50 flex h-[min(420px,calc(100vh-120px))] w-[min(320px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl sm:left-6 sm:w-[340px]">
       {/* Header */}
-      <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
-            <Bot className="h-5 w-5 text-white" />
+      <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2.5">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
+            <Bot className="h-4 w-4 text-white" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-white">Assistente Siena</p>
-            <p className="text-xs text-blue-100">Online agora</p>
+            <p className="text-xs font-semibold text-white">Assistente Siena</p>
+            <p className="text-[10px] text-blue-100">Online agora</p>
           </div>
         </div>
         <button
           onClick={() => setIsOpen(false)}
-          className="flex h-8 w-8 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+          className="flex h-7 w-7 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/20 hover:text-white"
           aria-label="Fechar"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4" />
         </button>
       </div>
 
       {/* Messages */}
-      <div
-        className="flex-1 overflow-y-auto p-4 space-y-4"
-        style={{ maxHeight: "400px", minHeight: "300px" }}
-      >
+      <div className="flex-1 space-y-3 overflow-y-auto p-3">
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+            className={`flex gap-1.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             {msg.role === "assistant" && (
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-                <Bot className="h-4 w-4 text-blue-600" />
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                <Bot className="h-3 w-3 text-blue-600" />
               </div>
             )}
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+              className={`max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
                 msg.role === "user"
-                  ? "bg-primary text-primary-foreground rounded-br-md"
-                  : "bg-muted rounded-bl-md"
+                  ? "bg-primary text-primary-foreground rounded-br-sm"
+                  : "bg-muted rounded-bl-sm"
               }`}
             >
               <div
@@ -330,7 +320,7 @@ export function AIChatbot() {
                 }}
               />
               {msg.properties && msg.properties.length > 0 && (
-                <div className="mt-3 space-y-2">
+                <div className="mt-2 space-y-1.5">
                   {msg.properties.map((prop) => (
                     <PropertyCard key={prop.id} property={prop} />
                   ))}
@@ -338,22 +328,22 @@ export function AIChatbot() {
               )}
             </div>
             {msg.role === "user" && (
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary">
-                <User className="h-4 w-4 text-primary-foreground" />
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary">
+                <User className="h-3 w-3 text-primary-foreground" />
               </div>
             )}
           </div>
         ))}
         {isLoading && (
-          <div className="flex gap-2 justify-start">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-              <Bot className="h-4 w-4 text-blue-600" />
+          <div className="flex gap-1.5 justify-start">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+              <Bot className="h-3 w-3 text-blue-600" />
             </div>
-            <div className="rounded-2xl rounded-bl-md bg-muted px-4 py-3">
+            <div className="rounded-xl rounded-bl-sm bg-muted px-3 py-2.5">
               <div className="flex gap-1">
-                <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400 [animation-delay:-0.3s]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400 [animation-delay:-0.15s]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400 [animation-delay:-0.3s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400 [animation-delay:-0.15s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400" />
               </div>
             </div>
           </div>
@@ -363,14 +353,14 @@ export function AIChatbot() {
 
       {/* Suggestions */}
       {messages.length <= 1 && (
-        <div className="border-t border-border px-4 py-2">
-          <p className="mb-2 text-xs text-muted-foreground">Sugestões:</p>
-          <div className="flex flex-wrap gap-1.5">
+        <div className="border-t border-border px-3 py-2">
+          <p className="mb-1.5 text-[10px] text-muted-foreground">Sugestões:</p>
+          <div className="flex flex-wrap gap-1">
             {SUGGESTIONS.map((s) => (
               <button
                 key={s}
                 onClick={() => handleSend(s)}
-                className="rounded-full border border-border bg-muted/50 px-3 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 {s}
               </button>
@@ -380,40 +370,40 @@ export function AIChatbot() {
       )}
 
       {/* Input */}
-      <div className="border-t border-border p-3">
+      <div className="border-t border-border p-2.5">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSend();
           }}
-          className="flex items-center gap-2"
+          className="flex items-center gap-1.5"
         >
           <input
             ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Descreva o imóvel que procura..."
-            className="flex-1 rounded-full border border-border bg-muted/30 px-4 py-2.5 text-sm outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
+            placeholder="Descreva o imóvel..."
+            className="min-w-0 flex-1 rounded-full border border-border bg-muted/30 px-3 py-2 text-xs outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
             aria-label="Enviar"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-3.5 w-3.5" />
           </button>
         </form>
-        <div className="mt-2 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <span>Prefere falar com humano?</span>
+        <div className="mt-1.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+          <span>Falar com humano?</span>
           <Link
             href="/contato"
             target="_blank"
-            className="flex items-center gap-1 font-medium text-primary hover:underline"
+            className="font-medium text-primary hover:underline"
           >
-            Falar com atendente <ExternalLink className="h-3 w-3" />
+            Atendente <ExternalLink className="inline h-2.5 w-2.5" />
           </Link>
         </div>
       </div>
