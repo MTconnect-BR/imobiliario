@@ -180,7 +180,7 @@ async function doFullFetch(categoriaIds?: string): Promise<void> {
     map,
     totalPages,
     pagesLoaded: 1,
-    loadingPromise: null,
+    loadingPromise: cache?.loadingPromise ?? null,
     timestamp: Date.now(),
     stale: false,
   };
@@ -188,7 +188,7 @@ async function doFullFetch(categoriaIds?: string): Promise<void> {
   await loadPages(1, totalPages, categoriaIds);
 
   if (cache) {
-    cache = { ...cache, timestamp: Date.now(), loadingPromise: null };
+    cache = { ...cache, timestamp: Date.now() };
   }
 }
 

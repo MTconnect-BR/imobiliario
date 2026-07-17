@@ -36,28 +36,28 @@ export function SiteFooter() {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 shrink-0" />
-                <a href="tel:08005431000" className="hover:text-foreground transition-colors">
-                  (08) 00543-1000
-                </a>
+                <div className="flex flex-col">
+                  <a href="tel:21965373111" className="hover:text-foreground transition-colors">
+                    (21) 96537-3111
+                  </a>
+                  <a href="tel:21959322120" className="hover:text-foreground transition-colors">
+                    (21) 95932-2120
+                  </a>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <MessageCircle className="h-4 w-4 shrink-0" />
-                <a
-                  href="https://api.whatsapp.com/send?phone=5508005431000"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-foreground transition-colors"
-                >
+                <a href="/contato" className="hover:text-foreground transition-colors">
                   WhatsApp
                 </a>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 shrink-0" />
                 <a
-                  href="mailto:contato@imobiliario.com"
+                  href="mailto:sienapatrimonial@gmail.com"
                   className="hover:text-foreground transition-colors"
                 >
-                  contato@imobiliario.com
+                  sienapatrimonial@gmail.com
                 </a>
               </div>
             </div>
@@ -139,7 +139,7 @@ export function SiteFooter() {
 
           <div className="flex items-center gap-3">
             <a
-              href="https://www.instagram.com/"
+              href="https://www.instagram.com/sienagestaoimobiliaria/"
               target="_blank"
               rel="noopener noreferrer"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-gradient-to-br hover:from-purple-500 hover:via-pink-500 hover:to-orange-400 hover:text-white"
@@ -148,9 +148,7 @@ export function SiteFooter() {
               <Camera className="h-4 w-4" />
             </a>
             <a
-              href="https://api.whatsapp.com/send?phone=5508005431000"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/contato"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-green-600 hover:text-white"
               aria-label="WhatsApp"
             >

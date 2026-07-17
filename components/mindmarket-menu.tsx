@@ -180,7 +180,7 @@ export function MindMarketMenu() {
       {/* Desktop Contact Box - Separado */}
       <div className="c-menu-desktop_contact_box_group">
         <a
-          href="https://www.instagram.com/"
+          href="https://www.instagram.com/sienagestaoimobiliaria/"
           target="_blank"
           rel="noopener noreferrer"
           className="c-menu-desktop_instagram_button"
@@ -227,7 +227,7 @@ export function MindMarketMenu() {
           </div>
           <div className="c-menu-mobile_cta">
             <a
-              href="https://www.instagram.com/"
+              href="https://www.instagram.com/sienagestaoimobiliaria/"
               target="_blank"
               rel="noopener noreferrer"
               className="c-menu-mobile_instagram"

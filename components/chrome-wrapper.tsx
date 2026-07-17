@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import { SiteFooter } from "@/components/site-footer";
 import { WhatsAppButton } from "@/components/whatsapp-button";
+import { AIChatbot } from "@/components/ai-chatbot";
 
 const MindMarketMenu = dynamic(
   () => import("@/components/mindmarket-menu").then((m) => m.MindMarketMenu),
@@ -30,9 +31,9 @@ export function ChromeWrapper({ children }: { children: React.ReactNode }) {
     <>
       {!hideChrome && <MindMarketMenu />}
       {hideChrome ? children : <PageTransition>{children}</PageTransition>}
-      {!hideChrome && <FAQPanel />}
       {!hideChrome && <SiteFooter />}
       {!hideWhatsApp && <WhatsAppButton />}
+      {!hideChrome && <AIChatbot />}
     </>
   );
 }

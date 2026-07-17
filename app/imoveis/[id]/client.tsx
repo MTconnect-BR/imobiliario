@@ -12,7 +12,6 @@ import {
   Share2,
   Phone,
   ArrowLeft,
-
   Calendar,
   ExternalLink,
   FileText,
@@ -49,15 +48,16 @@ import {
 
 interface PropertyDetailClientProps {
   property: Property;
-  similarProperties: Property[];
 }
 
-export default function PropertyDetailClient({ property, similarProperties }: PropertyDetailClientProps) {
+export default function PropertyDetailClient({ property }: PropertyDetailClientProps) {
   const [galleryApi, setGalleryApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [totalSlides, setTotalSlides] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [similarProperties, setSimilarProperties] = useState<Property[]>([]);
+  const [similarLoading, setSimilarLoading] = useState(true);
 
   useEffect(() => {
     if (!galleryApi) return;
@@ -66,6 +66,31 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
       setCurrentSlide(galleryApi.selectedScrollSnap());
     });
   }, [galleryApi]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    async function fetchSimilar() {
+      try {
+        const params = new URLSearchParams({
+          type: property.type,
+          state: property.state,
+          city: property.city,
+          excludeId: property.id,
+        });
+        const res = await fetch(`/api/similar-properties?${params}`, { signal: controller.signal });
+        if (res.ok) {
+          const data = await res.json();
+          setSimilarProperties(data.properties ?? []);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setSimilarLoading(false);
+      }
+    }
+    fetchSimilar();
+    return () => controller.abort();
+  }, [property.type, property.state, property.city, property.id]);
 
   const handleShare = useCallback(() => {
     if (navigator.share && property) {
@@ -85,9 +110,7 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
         : "red";
 
   const galleryImages =
-    property.images?.length > 0
-      ? property.images
-      : [property.imageUrl].filter(Boolean);
+    property.images?.length > 0 ? property.images : [property.imageUrl].filter(Boolean);
 
   return (
     <main className="min-h-screen bg-background">
@@ -97,13 +120,17 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink render={<Link href="/imoveis" />}>
-                  Imóveis
-                </BreadcrumbLink>
+                <BreadcrumbLink render={<Link href="/imoveis" />}>Imóveis</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink render={<Link href={`/imoveis/${property.type === "casa" ? "casas" : property.type === "apartamento" ? "apartamentos" : property.type === "terreno" ? "terrenos" : "comerciais"}`} />}>
+                <BreadcrumbLink
+                  render={
+                    <Link
+                      href={`/imoveis/${property.type === "casa" ? "casas" : property.type === "apartamento" ? "apartamentos" : property.type === "terreno" ? "terrenos" : "comerciais"}`}
+                    />
+                  }
+                >
                   {getPropertyTypeLabel(property.type)}s
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -120,7 +147,11 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
       <section className="px-6 pb-8">
         <div className="mx-auto max-w-6xl">
           <div className="relative overflow-hidden rounded-[10px] bg-muted">
-            <Carousel setApi={setGalleryApi} opts={{ align: "start", loop: false, containScroll: "trimSnaps" }} className="w-full">
+            <Carousel
+              setApi={setGalleryApi}
+              opts={{ align: "start", loop: false, containScroll: "trimSnaps" }}
+              className="w-full"
+            >
               <CarouselContent>
                 {galleryImages.map((img, i) => (
                   <CarouselItem key={i}>
@@ -211,9 +242,7 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
                 <Badge variant={statusVariant as "green" | "yellow" | "red"}>
                   {getPropertyStatusLabel(property.status)}
                 </Badge>
-                {property.modalidade && (
-                  <Badge variant="blue">{property.modalidade}</Badge>
-                )}
+                {property.modalidade && <Badge variant="blue">{property.modalidade}</Badge>}
                 {property.refCaixa && (
                   <Badge variant="outline" className="text-muted-foreground">
                     Ref: {property.refCaixa}
@@ -230,7 +259,9 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
               <div className="mt-3 flex items-center gap-2 text-muted-foreground">
                 <MapPin className="h-4 w-4" />
                 <span className="text-sm tracking-[-0.04em]">
-                  {property.address}{property.addressNumber ? `, ${property.addressNumber}` : ""}, {property.neighborhood}, {property.city} - {property.state}
+                  {property.address}
+                  {property.addressNumber ? `, ${property.addressNumber}` : ""},{" "}
+                  {property.neighborhood}, {property.city} - {property.state}
                 </span>
               </div>
 
@@ -275,9 +306,7 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
                 </div>
                 <div className="flex flex-col items-center rounded-[10px] bg-card p-4 text-center">
                   <Maximize className="mb-2 h-5 w-5 text-muted-foreground" />
-                  <span className="text-lg font-medium tracking-[-0.06em]">
-                    {property.area}m²
-                  </span>
+                  <span className="text-lg font-medium tracking-[-0.06em]">{property.area}m²</span>
                   <span className="text-xs text-muted-foreground">Área</span>
                 </div>
                 <div className="flex flex-col items-center rounded-[10px] bg-card p-4 text-center">
@@ -295,9 +324,7 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
 
               {/* Description */}
               <div>
-                <h2 className="mb-4 text-xl font-medium tracking-[-0.06em]">
-                  Descrição
-                </h2>
+                <h2 className="mb-4 text-xl font-medium tracking-[-0.06em]">Descrição</h2>
                 <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                   {property.description}
                 </p>
@@ -333,7 +360,9 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
                           className="flex items-center gap-3 rounded-[10px] bg-card px-4 py-3 transition-colors hover:bg-accent"
                         >
                           <Shield className="h-5 w-5 text-primary" />
-                          <span className="flex-1 text-sm font-medium">Página oficial no site da Caixa</span>
+                          <span className="flex-1 text-sm font-medium">
+                            Página oficial no site da Caixa
+                          </span>
                           <ExternalLink className="h-4 w-4 text-muted-foreground" />
                         </a>
                       )}
@@ -345,9 +374,7 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
               {/* Map */}
               {property.lat != null && property.lng != null && (
                 <div className="mt-8">
-                  <h2 className="mb-4 text-xl font-medium tracking-[-0.06em]">
-                    Localização
-                  </h2>
+                  <h2 className="mb-4 text-xl font-medium tracking-[-0.06em]">Localização</h2>
                   <PropertyMap
                     lat={property.lat}
                     lng={property.lng}
@@ -370,9 +397,7 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
 
               {/* Details Grid */}
               <div>
-                <h2 className="mb-4 text-xl font-medium tracking-[-0.06em]">
-                  Detalhes do Imóvel
-                </h2>
+                <h2 className="mb-4 text-xl font-medium tracking-[-0.06em]">Detalhes do Imóvel</h2>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3">
                     <span className="text-sm text-muted-foreground">Tipo</span>
@@ -382,7 +407,10 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
                   </div>
                   <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3">
                     <span className="text-sm text-muted-foreground">Status</span>
-                    <Badge variant={statusVariant as "green" | "yellow" | "red"} className="text-xs">
+                    <Badge
+                      variant={statusVariant as "green" | "yellow" | "red"}
+                      className="text-xs"
+                    >
                       {getPropertyStatusLabel(property.status)}
                     </Badge>
                   </div>
@@ -417,7 +445,9 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
                   <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3 sm:col-span-2">
                     <span className="text-sm text-muted-foreground">Endereço</span>
                     <span className="text-right text-sm font-medium">
-                      {property.address}{property.addressNumber ? `, ${property.addressNumber}` : ""}, {property.neighborhood}
+                      {property.address}
+                      {property.addressNumber ? `, ${property.addressNumber}` : ""},{" "}
+                      {property.neighborhood}
                     </span>
                   </div>
                   <div className="flex items-center justify-between rounded-[10px] bg-card px-4 py-3">
@@ -463,21 +493,13 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
                     </Link>
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleShare}
-                  >
+                  <Button variant="outline" className="w-full" onClick={handleShare}>
                     <Share2 className="mr-2 h-4 w-4" />
                     Compartilhar
                   </Button>
 
                   {property.officialUrl && (
-                    <Button
-                      variant="outline"
-                      className="mt-3 w-full"
-                      asChild
-                    >
+                    <Button variant="outline" className="mt-3 w-full" asChild>
                       <a href={property.officialUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="mr-2 h-4 w-4" />
                         Ver no site da Caixa
@@ -527,7 +549,16 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
       </section>
 
       {/* Related Properties */}
-      {similarProperties.length > 0 && (
+      {similarLoading ? (
+        <section className="px-6 py-8">
+          <div className="mx-auto max-w-6xl">
+            <h2 className="mb-2 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
+              Imóveis Semelhantes
+            </h2>
+            <p className="mb-6 text-sm text-muted-foreground">Carregando...</p>
+          </div>
+        </section>
+      ) : similarProperties.length > 0 ? (
         <section className="px-6 py-8">
           <div className="mx-auto max-w-6xl">
             <h2 className="mb-2 text-2xl font-medium tracking-[-0.06em] text-foreground md:text-3xl">
@@ -542,15 +573,13 @@ export default function PropertyDetailClient({ property, similarProperties }: Pr
               ))}
             </div>
             <div className="mt-6 text-center">
-              <Link
-                href={`/imoveis?type=${property.type}&state=${property.state}`}
-              >
+              <Link href={`/imoveis?type=${property.type}&state=${property.state}`}>
                 <Button variant="outline">Ver mais imóveis</Button>
               </Link>
             </div>
           </div>
         </section>
-      )}
+      ) : null}
 
       {lightboxOpen && (
         <ImageLightbox
