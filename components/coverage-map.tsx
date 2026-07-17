@@ -125,15 +125,12 @@ export function CoverageMap() {
     async function addMarkers() {
       const L = (await import("leaflet")).default;
       if (cancelled) return;
-      const map = raw as unknown as {
-        eachLayer: (fn: (layer: unknown) => void) => void;
-        addLayer: (l: unknown) => void;
-        fitBounds: (b: unknown, o?: unknown) => void;
-      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const map = raw as any;
 
-      map.eachLayer((layer: unknown) => {
-        const l = layer as { _icon?: unknown; removeFrom?: (m: unknown) => void };
-        if (l._icon && l.removeFrom) l.removeFrom(map);
+      map.eachLayer((layer: any) => {
+        // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (layer._icon && layer.removeFrom) layer.removeFrom(map);
       });
 
       const statesSorted = Object.entries(counts.byState)
@@ -159,8 +156,9 @@ export function CoverageMap() {
         markers.push(marker);
       });
       if (markers.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         map.fitBounds(
-          L.featureGroup(markers as never[])
+          L.featureGroup(markers as any[])
             .getBounds()
             .pad(0.15),
         );
