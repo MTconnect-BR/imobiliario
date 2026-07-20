@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -336,9 +337,10 @@ export default function SearchResultsPage() {
             <div className="lg:col-span-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {mockProperties.map((property) => (
-                  <div
+                  <Link
                     key={property.id}
-                    className="bg-white border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    href={`/imovel/${property.id}`}
+                    className="bg-white border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer block"
                   >
                     {/* Property Image */}
                     <div className="relative h-48">
@@ -386,7 +388,7 @@ export default function SearchResultsPage() {
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
 

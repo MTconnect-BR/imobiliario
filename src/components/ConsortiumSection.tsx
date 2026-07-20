@@ -40,17 +40,17 @@ export default function ConsortiumSection() {
     <section id="consorcio" className="py-10 lg:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-0 items-stretch">
-          {/* Left side - Light blue background with text */}
-          <div className="bg-[#c9d4f5] p-8 lg:p-10 flex flex-col justify-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">
+          {/* Left side - Vibrant blue background with text */}
+          <div className="bg-blue-500 p-8 lg:p-10 flex flex-col justify-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 leading-tight">
               Conquistar um novo lar pagando menos
             </h2>
-            <p className="text-lg text-gray-700 mb-8">
+            <p className="text-lg text-blue-100 mb-8">
               Com o Consórcio Siena você conquista um novo lar sem entrada, sem juros, parcelas leves, cashback e resgate do saldo sem sorteio ou multa se comprar com a gente.
             </p>
             <a
               href="#conhecer-consorcio"
-              className="border-2 border-foreground text-foreground px-8 py-4 rounded-full font-semibold text-lg hover:bg-foreground hover:text-white transition-colors text-center inline-block w-fit"
+              className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white hover:text-blue-500 transition-colors text-center inline-block w-fit"
             >
               Conhecer o Consórcio Siena
             </a>
@@ -72,7 +72,7 @@ export default function ConsortiumSection() {
               <p className="text-sm text-gray-600 mb-4">
                 {card.description}
               </p>
-              <a href="#" className="text-foreground font-semibold text-sm inline-flex items-center gap-1 hover:underline">
+              <a href="#" className="text-blue-600 font-semibold text-sm inline-flex items-center gap-1 hover:underline">
                 {card.cta}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

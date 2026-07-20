@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function RentSection() {
   const [currentCard, setCurrentCard] = useState(0);
@@ -46,23 +47,23 @@ export default function RentSection() {
     <section id="alugar" className="py-10 lg:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-0 items-stretch">
-          {/* Left side - Purple background with text */}
-          <div className="bg-[#e8dff5] p-8 lg:p-10 flex flex-col justify-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">
+          {/* Left side - Vibrant purple background with text */}
+          <div className="bg-violet-500 p-8 lg:p-10 flex flex-col justify-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 leading-tight">
               Alugar bem, sem complicação e fiador
             </h2>
-            <p className="text-lg text-gray-700 mb-8">
+            <p className="text-lg text-violet-100 mb-8">
               Agende visitas online, negocie sem intermediários e assine o contrato digitalmente. Sem fiador. Sem depósito caução. Sem filas.
             </p>
             <a
               href="#buscar"
-              className="border-2 border-foreground text-foreground px-8 py-4 rounded-full font-semibold text-lg hover:bg-foreground hover:text-white transition-colors text-center inline-block w-fit mb-6"
+              className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white hover:text-violet-500 transition-colors text-center inline-block w-fit mb-6"
             >
               Ver apartamentos para alugar
             </a>
             <a
               href="#como-alugar"
-              className="text-foreground font-semibold inline-flex items-center gap-2 hover:underline"
+              className="text-white font-semibold inline-flex items-center gap-2 hover:underline"
             >
               Como alugar na Siena
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +88,7 @@ export default function RentSection() {
               <p className="text-sm text-gray-600 mb-4">
                 {card.description}
               </p>
-              <a href="#" className="text-foreground font-semibold text-sm inline-flex items-center gap-1 hover:underline">
+              <a href="#" className="text-violet-600 font-semibold text-sm inline-flex items-center gap-1 hover:underline">
                 {card.cta}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

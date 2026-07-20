@@ -62,7 +62,7 @@ export default function BuySection() {
               <p className="text-sm text-gray-600 mb-4">
                 {card.description}
               </p>
-              <a href="#" className="text-foreground font-semibold text-sm inline-flex items-center gap-1 hover:underline">
+              <a href="#" className="text-emerald-600 font-semibold text-sm inline-flex items-center gap-1 hover:underline">
                 {card.cta}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -99,23 +99,23 @@ export default function BuySection() {
             </div>
           </div>
 
-          {/* Right side - Beige/olive background with text */}
-          <div className="bg-[#d4dbd2] p-8 lg:p-10 flex flex-col justify-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">
+          {/* Right side - Vibrant green background with text */}
+          <div className="bg-emerald-500 p-8 lg:p-10 flex flex-col justify-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 leading-tight">
               Comprar seu imóvel e ter um cantinho só seu
             </h2>
-            <p className="text-lg text-gray-700 mb-8">
+            <p className="text-lg text-emerald-100 mb-8">
               Conte com nossos consultores para conseguir as melhores taxas de financiamento, tirar todas as suas dúvidas e para qualquer suporte durante todo o processo.
             </p>
             <a
               href="#buscar"
-              className="border-2 border-foreground text-foreground px-8 py-4 rounded-full font-semibold text-lg hover:bg-foreground hover:text-white transition-colors text-center inline-block w-fit mb-6"
+              className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white hover:text-emerald-500 transition-colors text-center inline-block w-fit mb-6"
             >
               Ver apartamentos à venda
             </a>
             <a
               href="#como-comprar"
-              className="text-foreground font-semibold inline-flex items-center gap-2 hover:underline"
+              className="text-white font-semibold inline-flex items-center gap-2 hover:underline"
             >
               Como comprar na Siena
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
