@@ -97,13 +97,12 @@ export default function SearchResultsPage() {
   }, [filters, selectedSort, page, selectedCategory, selectedState, selectedCity, bairroFilter, precoMax, precoMin, quartosFilter]);
 
   useEffect(() => {
+    setPage(0);
+  }, [selectedCategory, selectedState, selectedSort]);
+
+  useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
-
-  const handleFilterChange = () => {
-    setPage(0);
-    fetchProperties();
-  };
 
   const formatCityName = (slug: string) => {
     return slug
@@ -161,10 +160,7 @@ export default function SearchResultsPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <select
                   value={selectedCategory}
-                  onChange={(e) => {
-                    setSelectedCategory(e.target.value);
-                    handleFilterChange();
-                  }}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
                   className="border border-gray-300 px-4 py-2 text-sm rounded-lg"
                 >
                   <option value="">Todas categorias</option>
@@ -179,7 +175,6 @@ export default function SearchResultsPage() {
                   onChange={(e) => {
                     setSelectedState(e.target.value);
                     setSelectedCity("");
-                    handleFilterChange();
                   }}
                   className="border border-gray-300 px-4 py-2 text-sm rounded-lg"
                 >
@@ -192,10 +187,7 @@ export default function SearchResultsPage() {
                 </select>
                 <select
                   value={selectedSort}
-                  onChange={(e) => {
-                    setSelectedSort(e.target.value);
-                    handleFilterChange();
-                  }}
+                  onChange={(e) => setSelectedSort(e.target.value)}
                   className="border border-gray-300 px-4 py-2 text-sm rounded-lg"
                 >
                   {sortOptions.map((opt) => (
@@ -232,10 +224,7 @@ export default function SearchResultsPage() {
                           name="category"
                           value={cat.id}
                           checked={selectedCategory === cat.id}
-                          onChange={(e) => {
-                            setSelectedCategory(e.target.value);
-                            handleFilterChange();
-                          }}
+                          onChange={(e) => setSelectedCategory(e.target.value)}
                           className="w-4 h-4"
                         />
                         <span className="text-sm">{cat.name}</span>
@@ -258,7 +247,6 @@ export default function SearchResultsPage() {
                           onChange={(e) => {
                             setSelectedState(e.target.value);
                             setSelectedCity("");
-                            handleFilterChange();
                           }}
                           className="w-4 h-4"
                         />
@@ -281,10 +269,7 @@ export default function SearchResultsPage() {
                           name="sort"
                           value={opt.id}
                           checked={selectedSort === opt.id}
-                          onChange={(e) => {
-                            setSelectedSort(e.target.value);
-                            handleFilterChange();
-                          }}
+                          onChange={(e) => setSelectedSort(e.target.value)}
                           className="w-4 h-4"
                         />
                         <span className="text-sm">{opt.name}</span>
