@@ -43,11 +43,11 @@ export default function RentSection() {
   const card = propertyCards[currentCard];
 
   return (
-    <section id="alugar" className="py-16 lg:py-24">
+    <section id="alugar" className="py-10 lg:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-0 items-stretch">
           {/* Left side - Purple background with text */}
-          <div className="bg-[#e8dff5] rounded-l-2xl p-8 lg:p-10 flex flex-col justify-center">
+          <div className="bg-[#e8dff5] p-8 lg:p-10 flex flex-col justify-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">
               Alugar bem, sem complicação e fiador
             </h2>
@@ -72,7 +72,7 @@ export default function RentSection() {
           </div>
 
           {/* Right side - Card carousel */}
-          <div className="relative rounded-r-2xl overflow-hidden min-h-[400px]">
+          <div className="relative overflow-hidden min-h-[400px]">
             {/* Background image */}
             <div
               className="absolute inset-0 bg-cover bg-center"

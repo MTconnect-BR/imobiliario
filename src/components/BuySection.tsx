@@ -43,11 +43,11 @@ export default function BuySection() {
   const card = propertyCards[currentCard];
 
   return (
-    <section id="comprar" className="py-16 lg:py-24">
+    <section id="comprar" className="py-10 lg:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-0 items-stretch">
           {/* Left side - Card carousel */}
-          <div className="relative rounded-l-2xl overflow-hidden min-h-[400px]">
+          <div className="relative overflow-hidden min-h-[400px]">
             {/* Background image */}
             <div
               className="absolute inset-0 bg-cover bg-center"
@@ -100,7 +100,7 @@ export default function BuySection() {
           </div>
 
           {/* Right side - Beige/olive background with text */}
-          <div className="bg-[#d4dbd2] rounded-r-2xl p-8 lg:p-10 flex flex-col justify-center">
+          <div className="bg-[#d4dbd2] p-8 lg:p-10 flex flex-col justify-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">
               Comprar seu imóvel e ter um cantinho só seu
             </h2>
