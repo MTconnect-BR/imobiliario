@@ -470,7 +470,7 @@ export default function PropertyDetailsPage() {
               <div className="bg-white p-6 border border-gray-200 rounded-lg sticky top-20">
                 <div className="text-center mb-6">
                   <div className="text-3xl font-bold text-primary mb-1">
-                    {property.valor_venda1 || property.preco_principal_txt || "Consulte"}
+                    {property.valor_venda1 || (property.precos && property.precos.length > 0 ? property.precos[0].valor : "Consulte")}
                   </div>
                   {property.valor_avaliacao_txt && (
                     <div className="text-sm text-gray-500">
@@ -567,7 +567,7 @@ export default function PropertyDetailsPage() {
                       </div>
                       <div className="p-4">
                         <div className="text-lg font-bold text-primary mb-1">
-                          {item.valor_venda1 || item.preco_principal_txt || "Consulte"}
+                          {item.valor_venda1 || (item.precos && item.precos.length > 0 ? item.precos[0].valor : "Consulte")}
                         </div>
                         <h3 className="font-medium text-foreground mb-1 text-sm">
                           {item.categoria_nome}
