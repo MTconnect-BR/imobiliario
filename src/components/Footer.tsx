@@ -1,20 +1,10 @@
 export default function Footer() {
-  const aboutLinks = [
-    { text: "Conheça o SextoAndar", href: "#" },
-    { text: "Regiões atendidas", href: "#" },
-    { text: "Condomínios", href: "#" },
-    { text: "Conheça a Garantia SextoAndar", href: "#" },
-    { text: "Central de Ajuda", href: "#" },
-    { text: "Compliance", href: "#" },
-    { text: "Mapa do Site", href: "#" },
-  ];
-
-  const productsLinks = [
-    { text: "Indique um imóvel", href: "#" },
-    { text: "Valor de aluguel por bairro", href: "#" },
-    { text: "Guias", href: "#" },
-    { text: "Consórcio de Imóveis", href: "#" },
-    { text: "Carreiras", href: "#" },
+  const legalLinks = [
+    { text: "Aviso de privacidade", href: "#" },
+    { text: "Termos e condições de uso", href: "#" },
+    { text: "Política de Cookies", href: "#" },
+    { text: "Preferências de cookies", href: "#" },
+    { text: "Manual do usuário", href: "#" },
   ];
 
   const socialLinks = [
@@ -24,148 +14,77 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-primary text-white">
+    <footer className="bg-[#f5f5f7] text-foreground">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* About */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Sobre nós</h3>
-            <ul className="space-y-3">
-              {aboutLinks.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href={link.href}
-                    className="text-white/80 hover:text-white transition-colors text-sm"
-                  >
-                    {link.text}
-                  </a>
-                </li>
-              ))}
-            </ul>
+        {/* Upper section with links */}
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8 mb-10">
+          <div className="flex flex-wrap gap-6 text-sm text-gray-600">
+            {legalLinks.map((link, index) => (
+              <a
+                key={index}
+                href={link.href}
+                className="hover:text-primary transition-colors inline-flex items-center gap-1"
+              >
+                {link.text}
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            ))}
           </div>
-
-          {/* Products */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Produtos</h3>
-            <ul className="space-y-3">
-              {productsLinks.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href={link.href}
-                    className="text-white/80 hover:text-white transition-colors text-sm"
-                  >
-                    {link.text}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Work with us */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Trabalhe conosco</h3>
-            <ul className="space-y-3">
-              <li>
-                <a
-                  href="#"
-                  className="text-white/80 hover:text-white transition-colors text-sm"
-                >
-                  Corretagem
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-white/80 hover:text-white transition-colors text-sm"
-                >
-                  Fotografia
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-white/80 hover:text-white transition-colors text-sm"
-                >
-                  Vistorias
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-white/80 hover:text-white transition-colors text-sm"
-                >
-                  Parceria de Reparos
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Social & Legal */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Redes sociais</h3>
-            <div className="flex space-x-4 mb-6">
-              {socialLinks.map((social, index) => (
-                <a
-                  key={index}
-                  href={social.href}
-                  className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
-                  aria-label={social.name}
-                >
-                  <svg
-                    className="w-5 h-5 fill-current"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d={social.icon} />
-                  </svg>
-                </a>
-              ))}
-            </div>
-            <div className="space-y-2 text-sm text-white/80">
-              <a href="#" className="block hover:text-white transition-colors">
-                Aviso de privacidade
+          <div className="flex space-x-3">
+            {socialLinks.map((social, index) => (
+              <a
+                key={index}
+                href={social.href}
+                className="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors"
+                aria-label={social.name}
+              >
+                <svg className="w-4 h-4 fill-current text-white" viewBox="0 0 24 24">
+                  <path d={social.icon} />
+                </svg>
               </a>
-              <a href="#" className="block hover:text-white transition-colors">
-                Termos e condições de uso
-              </a>
-              <a href="#" className="block hover:text-white transition-colors">
-                Política de Cookies
-              </a>
-              <a href="#" className="block hover:text-white transition-colors">
-                Manual do usuário
-              </a>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Brand Statement */}
-        <div className="mt-12 pt-8 border-t border-white/20">
-          <p className="text-white/80 text-sm text-center">
-            Para proporcionar uma experiência inesquecível para quem precisa de
-            um lar ou anuncia com a gente, o SextoAndar aposta em design,
-            segurança e tecnologia de ponta.
+        {/* Company info */}
+        <div className="border-t border-gray-300 pt-6 mb-6">
+          <p className="text-sm text-gray-600">
+            <span className="font-semibold">SextoAndar</span> Ltda. | CRECI-SP J00.000
           </p>
         </div>
 
-        {/* Bottom */}
-        <div className="mt-8 pt-8 border-t border-white/20 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-white/60 text-sm">
-            SextoAndar Ltda. | CRECI-SP J00.000
-          </div>
-          <div className="flex gap-4">
-            <a
-              href="#"
-              className="bg-white/20 px-4 py-2 rounded-lg text-sm hover:bg-white/30 transition-colors"
-            >
-              Google Play
-            </a>
-            <a
-              href="#"
-              className="bg-white/20 px-4 py-2 rounded-lg text-sm hover:bg-white/30 transition-colors"
-            >
-              App Store
-            </a>
-          </div>
+        {/* App store badges */}
+        <div className="flex items-center gap-4 mb-6">
+          <a href="#" className="inline-block">
+            <div className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 1.33a1 1 0 010 1.72l-2.302 1.33-2.536-2.19 2.536-2.19zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/>
+              </svg>
+              <div>
+                <div className="text-[10px] leading-none">GET IT ON</div>
+                <div className="text-sm font-semibold">Google Play</div>
+              </div>
+            </div>
+          </a>
+          <a href="#" className="inline-block">
+            <div className="bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              <div>
+                <div className="text-[10px] leading-none">Download on the</div>
+                <div className="text-sm font-semibold">App Store</div>
+              </div>
+            </div>
+          </a>
         </div>
+
+        {/* Brand statement */}
+        <p className="text-sm text-gray-500 max-w-3xl">
+          Para proporcionar uma experiência inesquecível para quem precisa de um lar ou anuncia com a gente, o SextoAndar aposta em design, segurança e tecnologia de ponta.
+        </p>
       </div>
     </footer>
   );
