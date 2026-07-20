@@ -204,12 +204,7 @@ export const categories = [
   { id: "32", name: "Terreno" },
   { id: "16", name: "Galpão" },
   { id: "144", name: "Andar Corporativo" },
-  { id: "17", name: "Imóvel Comercial" },
-  { id: "18", name: "Loja" },
-  { id: "19", name: "Prédio" },
   { id: "20", name: "Sobrado" },
-  { id: "21", name: "Casa duplex" },
-  { id: "22", name: "Grupo de Salas Comerciais" },
 ];
 
 export const states = [
