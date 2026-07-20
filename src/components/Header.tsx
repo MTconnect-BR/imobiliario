@@ -12,7 +12,7 @@ export default function Header() {
 
           {/* Fale Conosco */}
           <a
-            href="#fale-conosco"
+            href="/fale-conosco"
             className="text-gray-600 hover:text-primary font-medium transition-colors"
           >
             Fale Conosco
