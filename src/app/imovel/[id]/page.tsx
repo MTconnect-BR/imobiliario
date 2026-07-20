@@ -503,15 +503,6 @@ export default function PropertyDetailsPage() {
                   Tenho interesse
                 </a>
 
-                <a
-                  href={`https://api.whatsapp.com/send?phone=5508005431000&text=Olá! Gostaria de agendar uma visita ao imóvel ${property.referencia_plain} - ${property.categoria_nome} em ${property.cidade}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full border-2 border-primary text-primary py-3 font-semibold hover:bg-primary hover:text-white transition-colors mb-6 rounded-lg"
-                >
-                  Agendar visita
-                </a>
-
                 <div className="text-center text-sm text-gray-500 space-y-1">
                   <p>Código: {property.referencia_plain}</p>
                   {property.ref_caixa && (
