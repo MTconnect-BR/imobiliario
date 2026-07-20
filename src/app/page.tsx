@@ -69,7 +69,7 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <Hero />
-        {categories.map((category) => (
+        {categories.map((category, index) => (
           <CategorySection
             key={category.id}
             categoryId={category.id}
@@ -79,6 +79,7 @@ export default function Home() {
             linkHref={category.linkHref}
             backgroundImage={category.backgroundImage}
             accentColor={category.accentColor}
+            reverse={index % 2 === 1}
           />
         ))}
         <LocationsSection />
