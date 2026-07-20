@@ -71,9 +71,17 @@ export default function SearchResultsPage() {
         const validItems = (data.items || []).filter(
           (p) => p.id_master && p.id_master !== 0
         );
-        setProperties(validItems);
+        const sorted = [...validItems];
+        if (selectedSort === "menor_valor") {
+          sorted.sort((a, b) => parsePrice(a.valor_venda1 || "") - parsePrice(b.valor_venda1 || ""));
+        } else if (selectedSort === "maior_valor") {
+          sorted.sort((a, b) => parsePrice(b.valor_venda1 || "") - parsePrice(a.valor_venda1 || ""));
+        } else if (selectedSort === "maior_desconto") {
+          sorted.sort((a, b) => getDiscountPercentage(b) - getDiscountPercentage(a));
+        }
+        setProperties(sorted);
 
-        let filtered = validItems;
+        let filtered = sorted;
 
         if (precoMax > 0) {
           filtered = filtered.filter((p) => {
@@ -95,14 +103,6 @@ export default function SearchResultsPage() {
             }
             return bedrooms === quartosFilter;
           });
-        }
-
-        if (selectedSort === "menor_valor") {
-          filtered.sort((a, b) => parsePrice(a.valor_venda1 || "") - parsePrice(b.valor_venda1 || ""));
-        } else if (selectedSort === "maior_valor") {
-          filtered.sort((a, b) => parsePrice(b.valor_venda1 || "") - parsePrice(a.valor_venda1 || ""));
-        } else if (selectedSort === "maior_desconto") {
-          filtered.sort((a, b) => getDiscountPercentage(b) - getDiscountPercentage(a));
         }
 
         setFilteredProperties(filtered);
