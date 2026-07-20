@@ -42,15 +42,15 @@ export default function FinancingSection() {
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
                   style={{ backgroundImage: `url(${card.image})` }}
                 />
-                {/* White overlay with text */}
-                <div className="absolute inset-0 bg-white/90 flex flex-col justify-end p-5">
-                  <h3 className="text-xl font-bold text-foreground mb-2 leading-tight">
+                {/* Gradient overlay with text */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-5">
+                  <h3 className="text-xl font-bold text-white mb-2 leading-tight">
                     {card.title}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                  <p className="text-sm text-white/90 mb-3 line-clamp-2">
                     {card.description}
                   </p>
-                  <span className="text-primary font-semibold text-sm inline-flex items-center gap-1 group-hover:underline">
+                  <span className="text-white font-semibold text-sm inline-flex items-center gap-1 group-hover:underline">
                     {card.cta}
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
