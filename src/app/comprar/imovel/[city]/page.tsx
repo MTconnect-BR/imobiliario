@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
@@ -45,64 +45,67 @@ export default function SearchResultsPage() {
   const precoMin = Number(searchParams.get("preco_min")) || 0;
   const quartosFilter = Number(searchParams.get("quartos")) || 0;
 
-  const fetchProperties = useCallback(async () => {
-    setLoading(true);
-    try {
-      const searchFilters: SearchFilters = {
-        ...filters,
-        ordena: selectedSort,
-        pagina: page,
-      };
-
-      if (selectedCategory) searchFilters.categoria = selectedCategory;
-      if (selectedState) searchFilters.estado = selectedState;
-      if (selectedCity) searchFilters.cidade = selectedCity;
-      if (bairroFilter) searchFilters.bairro = bairroFilter;
-
-      const data = await searchProperties(searchFilters);
-      setProperties(data.items);
-
-      // Apply client-side filters for price and bedrooms
-      let filtered = data.items;
-
-      if (precoMax > 0) {
-        filtered = filtered.filter((p) => {
-          const price = parsePrice(p.valor_venda1 || "");
-          return price > 0 && price <= precoMax;
-        });
-      } else if (precoMin > 0) {
-        filtered = filtered.filter((p) => {
-          const price = parsePrice(p.valor_venda1 || "");
-          return price >= precoMin;
-        });
-      }
-
-      if (quartosFilter > 0) {
-        filtered = filtered.filter((p) => {
-          const bedrooms = parseBedrooms(p.quartos || p.quartos_txt);
-          if (quartosFilter === 4) {
-            return bedrooms >= 4;
-          }
-          return bedrooms === quartosFilter;
-        });
-      }
-
-      setFilteredProperties(filtered);
-      setTotal(precoMax > 0 || precoMin > 0 || quartosFilter > 0 ? filtered.length : data.meta.total);
-    } catch (error) {
-      console.error("Error fetching properties:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, selectedSort, page, selectedCategory, selectedState, selectedCity, bairroFilter, precoMax, precoMin, quartosFilter]);
-
   useEffect(() => {
     setPage(0);
   }, [selectedCategory, selectedState, selectedSort]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    async function fetchProperties() {
+      setLoading(true);
+      try {
+        const searchFilters: SearchFilters = {
+          ...filters,
+          ordena: selectedSort,
+          pagina: page,
+        };
+
+        if (selectedCategory) searchFilters.categoria = selectedCategory;
+        if (selectedState) searchFilters.estado = selectedState;
+        if (selectedCity) searchFilters.cidade = selectedCity;
+        if (bairroFilter) searchFilters.bairro = bairroFilter;
+
+        const data = await searchProperties(searchFilters);
+        if (cancelled) return;
+        setProperties(data.items);
+
+        let filtered = data.items;
+
+        if (precoMax > 0) {
+          filtered = filtered.filter((p) => {
+            const price = parsePrice(p.valor_venda1 || "");
+            return price > 0 && price <= precoMax;
+          });
+        } else if (precoMin > 0) {
+          filtered = filtered.filter((p) => {
+            const price = parsePrice(p.valor_venda1 || "");
+            return price >= precoMin;
+          });
+        }
+
+        if (quartosFilter > 0) {
+          filtered = filtered.filter((p) => {
+            const bedrooms = parseBedrooms(p.quartos || p.quartos_txt);
+            if (quartosFilter === 4) {
+              return bedrooms >= 4;
+            }
+            return bedrooms === quartosFilter;
+          });
+        }
+
+        setFilteredProperties(filtered);
+        setTotal(precoMax > 0 || precoMin > 0 || quartosFilter > 0 ? filtered.length : data.meta.total);
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
     fetchProperties();
-  }, [fetchProperties]);
+    return () => { cancelled = true; };
+  }, [selectedSort, page, selectedCategory, selectedState, selectedCity, bairroFilter, precoMax, precoMin, quartosFilter]);
 
   const formatCityName = (slug: string) => {
     return slug
