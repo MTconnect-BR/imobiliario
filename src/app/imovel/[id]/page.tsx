@@ -460,7 +460,7 @@ export default function PropertyDetailsPage() {
                   />
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
-                  {property.mapa_linha || fullAddress}
+                  {fullAddress}
                 </p>
               </div>
             </div>
