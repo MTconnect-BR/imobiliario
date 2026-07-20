@@ -201,7 +201,7 @@ export default function CategorySection({
       <p className="text-lg text-white/80 mb-8">{description}</p>
       <a
         href={linkHref}
-        className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white transition-colors text-center inline-block w-fit"
+        className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white hover:text-gray-900 transition-colors text-center inline-block w-fit"
       >
         {linkText}
       </a>
