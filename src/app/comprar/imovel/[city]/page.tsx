@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
@@ -20,9 +20,11 @@ import {
 
 export default function SearchResultsPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const citySlug = params.city as string;
 
   const [properties, setProperties] = useState<Property[]>([]);
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -37,6 +39,12 @@ export default function SearchResultsPage() {
   const [selectedSort, setSelectedSort] = useState("recentes");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
+  // URL filter params
+  const bairroFilter = searchParams.get("bairro") || "";
+  const precoMax = Number(searchParams.get("preco_max")) || 0;
+  const precoMin = Number(searchParams.get("preco_min")) || 0;
+  const quartosFilter = Number(searchParams.get("quartos")) || 0;
+
   const fetchProperties = useCallback(async () => {
     setLoading(true);
     try {
@@ -49,16 +57,44 @@ export default function SearchResultsPage() {
       if (selectedCategory) searchFilters.categoria = selectedCategory;
       if (selectedState) searchFilters.estado = selectedState;
       if (selectedCity) searchFilters.cidade = selectedCity;
+      if (bairroFilter) searchFilters.bairro = bairroFilter;
 
       const data = await searchProperties(searchFilters);
       setProperties(data.items);
-      setTotal(data.meta.total);
+
+      // Apply client-side filters for price and bedrooms
+      let filtered = data.items;
+
+      if (precoMax > 0) {
+        filtered = filtered.filter((p) => {
+          const price = parsePrice(p.valor_venda1 || "");
+          return price > 0 && price <= precoMax;
+        });
+      } else if (precoMin > 0) {
+        filtered = filtered.filter((p) => {
+          const price = parsePrice(p.valor_venda1 || "");
+          return price >= precoMin;
+        });
+      }
+
+      if (quartosFilter > 0) {
+        filtered = filtered.filter((p) => {
+          const bedrooms = parseBedrooms(p.quartos || p.quartos_txt);
+          if (quartosFilter === 4) {
+            return bedrooms >= 4;
+          }
+          return bedrooms === quartosFilter;
+        });
+      }
+
+      setFilteredProperties(filtered);
+      setTotal(precoMax > 0 || precoMin > 0 || quartosFilter > 0 ? filtered.length : data.meta.total);
     } catch (error) {
       console.error("Error fetching properties:", error);
     } finally {
       setLoading(false);
     }
-  }, [filters, selectedSort, page, selectedCategory, selectedState, selectedCity]);
+  }, [filters, selectedSort, page, selectedCategory, selectedState, selectedCity, bairroFilter, precoMax, precoMin, quartosFilter]);
 
   useEffect(() => {
     fetchProperties();
@@ -278,7 +314,7 @@ export default function SearchResultsPage() {
                 <div className="flex items-center justify-center py-20">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                 </div>
-              ) : properties.length === 0 ? (
+              ) : (precoMax > 0 || precoMin > 0 || quartosFilter > 0 ? filteredProperties : properties).length === 0 ? (
                 <div className="text-center py-20">
                   <p className="text-gray-500 text-lg">
                     Nenhum imóvel encontrado com os filtros selecionados.
@@ -287,7 +323,7 @@ export default function SearchResultsPage() {
               ) : (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {properties.map((property) => {
+                    {(precoMax > 0 || precoMin > 0 || quartosFilter > 0 ? filteredProperties : properties).map((property) => {
                       const discount = getDiscountPercentage(property);
                       const price = parsePrice(property.valor_venda1);
                       const bedrooms = parseBedrooms(property.quartos);

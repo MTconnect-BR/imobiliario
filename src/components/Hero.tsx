@@ -16,10 +16,52 @@ const cities = [
   "Fortaleza",
 ];
 
+const priceRanges = [
+  { label: "Qualquer valor", min: 0, max: 0 },
+  { label: "Até R$ 100.000", min: 0, max: 100000 },
+  { label: "Até R$ 200.000", min: 0, max: 200000 },
+  { label: "Até R$ 300.000", min: 0, max: 300000 },
+  { label: "Até R$ 500.000", min: 0, max: 500000 },
+  { label: "Até R$ 700.000", min: 0, max: 700000 },
+  { label: "Até R$ 1.000.000", min: 0, max: 1000000 },
+  { label: "Acima de R$ 1.000.000", min: 1000000, max: 0 },
+];
+
+const bedroomOptions = [
+  { label: "Qualquer", value: 0 },
+  { label: "1 quarto", value: 1 },
+  { label: "2 quartos", value: 2 },
+  { label: "3 quartos", value: 3 },
+  { label: "4+ quartos", value: 4 },
+];
+
 export default function Hero() {
   const router = useRouter();
-  const [activeSection, setActiveSection] = useState<"buscar" | "anunciar">("buscar");
   const [selectedCity, setSelectedCity] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [selectedPrice, setSelectedPrice] = useState(0);
+  const [selectedBedrooms, setSelectedBedrooms] = useState(0);
+
+  const handleSearch = () => {
+    const city = selectedCity || "sao-paulo";
+    const params = new URLSearchParams();
+
+    if (bairro) params.set("bairro", bairro);
+    if (selectedPrice > 0) {
+      const price = priceRanges[selectedPrice];
+      if (price.max > 0) {
+        params.set("preco_max", String(price.max));
+      } else {
+        params.set("preco_min", String(price.min));
+      }
+    }
+    if (selectedBedrooms > 0) {
+      params.set("quartos", String(selectedBedrooms));
+    }
+
+    const queryString = params.toString();
+    router.push(`/comprar/imovel/${city}${queryString ? `?${queryString}` : ""}`);
+  };
 
   return (
     <section className="relative">
@@ -30,30 +72,6 @@ export default function Hero() {
           alt="Família em casa"
           className="w-full h-full object-cover"
         />
-      </div>
-
-      {/* Tab Buttons - Overlapping top of image */}
-      <div className="absolute top-0 left-0 right-0 mt-6 flex justify-center gap-4 z-10">
-        <button
-          onClick={() => setActiveSection("buscar")}
-          className={`px-8 py-3 rounded-full font-medium transition-all backdrop-blur-sm ${
-            activeSection === "buscar"
-              ? "bg-white border-2 border-foreground text-foreground shadow-lg"
-              : "bg-white/80 border-2 border-gray-300 text-gray-600 hover:border-gray-400"
-          }`}
-        >
-          Buscar Imóveis
-        </button>
-        <button
-          onClick={() => setActiveSection("anunciar")}
-          className={`px-8 py-3 rounded-full font-medium transition-all backdrop-blur-sm ${
-            activeSection === "anunciar"
-              ? "bg-white border-2 border-foreground text-foreground shadow-lg"
-              : "bg-white/80 border-2 border-gray-300 text-gray-600 hover:border-gray-400"
-          }`}
-        >
-          Anunciar Imóveis
-        </button>
       </div>
 
       {/* Search Form - Overlapping bottom of image */}
@@ -97,42 +115,53 @@ export default function Hero() {
                 <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
-                <div>
-                  <div className="text-sm font-medium text-foreground">Bairro</div>
-                  <div className="text-sm text-gray-500">Busque por bairro</div>
-                </div>
+                <input
+                  type="text"
+                  value={bairro}
+                  onChange={(e) => setBairro(e.target.value)}
+                  placeholder="Busque por bairro"
+                  className="w-full bg-transparent text-sm font-medium text-foreground outline-none placeholder-gray-500"
+                />
               </div>
 
               {/* Valor e Quartos */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between border border-gray-300 p-4 bg-white">
-                  <div className="flex items-center gap-3">
+                <div className="relative border border-gray-300 bg-white">
+                  <div className="flex items-center gap-3 p-4">
                     <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
-                    <div>
-                      <div className="text-sm font-medium text-foreground">Valor total até</div>
-                      <div className="text-sm text-gray-500">Escolha o valor</div>
-                    </div>
+                    <select
+                      value={selectedPrice}
+                      onChange={(e) => setSelectedPrice(Number(e.target.value))}
+                      className="w-full bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer appearance-none"
+                    >
+                      {priceRanges.map((price, index) => (
+                        <option key={index} value={index}>
+                          {price.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
                 </div>
 
-                <div className="flex items-center justify-between border border-gray-300 p-4 bg-white">
-                  <div className="flex items-center gap-3">
+                <div className="relative border border-gray-300 bg-white">
+                  <div className="flex items-center gap-3 p-4">
                     <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
-                    <div>
-                      <div className="text-sm font-medium text-foreground">Quartos</div>
-                      <div className="text-sm text-gray-500">Nº de quartos</div>
-                    </div>
+                    <select
+                      value={selectedBedrooms}
+                      onChange={(e) => setSelectedBedrooms(Number(e.target.value))}
+                      className="w-full bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer appearance-none"
+                    >
+                      {bedroomOptions.map((option, index) => (
+                        <option key={index} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
                 </div>
               </div>
             </div>
@@ -140,10 +169,7 @@ export default function Hero() {
             {/* Search Button */}
             <div className="mt-6">
               <button
-                onClick={() => {
-                  const city = selectedCity || "sao-paulo";
-                  router.push(`/comprar/imovel/${city}`);
-                }}
+                onClick={handleSearch}
                 className="w-full bg-primary text-white py-4 px-8 font-semibold text-lg hover:bg-primary-dark transition-colors"
               >
                 Buscar imóveis
