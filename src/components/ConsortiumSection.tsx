@@ -8,13 +8,13 @@ export default function ConsortiumSection() {
   const benefitCards = [
     {
       title: "Receba 10% de cashback",
-      description: "Compre sua casa no SextoAndar com 10% de cashback ao ser contemplado.",
+      description: "Compre sua casa na Siena com 10% de cashback ao ser contemplado.",
       cta: "Conhecer o Consórcio",
       image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=600&fit=crop",
     },
     {
       title: "Resgate antecipado",
-      description: "Após 60 parcelas, use o saldo para comprar no SextoAndar sem sorteio ou multa.",
+      description: "Após 60 parcelas, use o saldo para comprar na Siena sem sorteio ou multa.",
       cta: "Conhecer o Consórcio",
       image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&h=600&fit=crop",
     },
@@ -46,13 +46,13 @@ export default function ConsortiumSection() {
               Conquistar um novo lar pagando menos
             </h2>
             <p className="text-lg text-gray-700 mb-8">
-              Com o Consórcio SextoAndar você conquista um novo lar sem entrada, sem juros, parcelas leves, cashback e resgate do saldo sem sorteio ou multa se comprar com a gente.
+              Com o Consórcio Siena você conquista um novo lar sem entrada, sem juros, parcelas leves, cashback e resgate do saldo sem sorteio ou multa se comprar com a gente.
             </p>
             <a
               href="#conhecer-consorcio"
               className="border-2 border-foreground text-foreground px-8 py-4 rounded-full font-semibold text-lg hover:bg-foreground hover:text-white transition-colors text-center inline-block w-fit"
             >
-              Conhecer o Consórcio SextoAndar
+              Conhecer o Consórcio Siena
             </a>
           </div>
 

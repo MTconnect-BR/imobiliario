@@ -75,8 +75,8 @@
 :root {
   --background: #ffffff;
   --foreground: #1a1a2e;
-  --primary: #5063F0;
-  --primary-dark: #3d4ed8;
+  --primary: #2c3e50;
+  --primary-dark: #1a252f;
 }
 
 @theme inline {

@@ -8,7 +8,7 @@ export default function RentSection() {
   const propertyCards = [
     {
       title: "Casas para alugar",
-      description: "Aluguel de casas para morar bem com o SextoAndar.",
+      description: "Aluguel de casas para morar bem com a Siena.",
       cta: "Ver casas para alugar",
       image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop",
     },
@@ -64,7 +64,7 @@ export default function RentSection() {
               href="#como-alugar"
               className="text-foreground font-semibold inline-flex items-center gap-2 hover:underline"
             >
-              Como alugar no SextoAndar
+              Como alugar na Siena
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>

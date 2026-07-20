@@ -51,7 +51,7 @@ export default function Footer() {
         {/* Company info */}
         <div className="border-t border-gray-300 pt-6 mb-6">
           <p className="text-sm text-gray-600">
-            <span className="font-semibold">SextoAndar</span> Ltda. | CRECI-SP J00.000
+            <span className="font-semibold">Siena Gestão & Imobiliária</span> Ltda. | CRECI-SP J00.000
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export default function Footer() {
 
         {/* Brand statement */}
         <p className="text-sm text-gray-500 max-w-3xl">
-          Para proporcionar uma experiência inesquecível para quem precisa de um lar ou anuncia com a gente, o SextoAndar aposta em design, segurança e tecnologia de ponta.
+          Para proporcionar uma experiência inesquecível para quem precisa de um lar ou anuncia com a gente, a Siena Gestão & Imobiliária aposta em design, segurança e tecnologia de ponta.
         </p>
       </div>
     </footer>

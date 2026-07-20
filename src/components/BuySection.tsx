@@ -117,7 +117,7 @@ export default function BuySection() {
               href="#como-comprar"
               className="text-foreground font-semibold inline-flex items-center gap-2 hover:underline"
             >
-              Como comprar no SextoAndar
+              Como comprar na Siena
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>

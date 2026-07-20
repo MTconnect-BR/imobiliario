@@ -6,8 +6,7 @@ export default function Header() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <a href="/" className="flex items-center">
-              <span className="text-2xl font-bold text-primary">Sexto</span>
-              <span className="text-2xl font-bold text-foreground">Andar</span>
+              <span className="text-2xl font-bold text-foreground">Siena</span>
             </a>
           </div>
 
