@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
@@ -21,7 +21,15 @@ import {
 export default function SearchResultsPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const citySlug = params.city as string;
+
+  const stateDefaultCity: Record<string, string> = {
+    RJ: "rio-de-janeiro",
+    SP: "sao-paulo",
+    PR: "curitiba",
+    SC: "florianopolis",
+  };
 
   const [properties, setProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
@@ -33,11 +41,18 @@ export default function SearchResultsPage() {
     pagina: 0,
     limite: 24,
   });
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedState, setSelectedState] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("categoria") || "");
+  const [selectedState, setSelectedState] = useState(searchParams.get("estado") || "");
   const [selectedCity, setSelectedCity] = useState("");
-  const [selectedSort, setSelectedSort] = useState("recentes");
+  const [selectedSort, setSelectedSort] = useState(searchParams.get("ordena") || "recentes");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  useEffect(() => {
+    setSelectedCategory(searchParams.get("categoria") || "");
+    setSelectedState(searchParams.get("estado") || "");
+    setSelectedSort(searchParams.get("ordena") || "recentes");
+    setPage(0);
+  }, [searchParams]);
 
   // URL filter params
   const bairroFilter = searchParams.get("bairro") || "";
@@ -165,7 +180,9 @@ export default function SearchResultsPage() {
               <div>
                 <h1 className="text-xl font-bold text-foreground">
                   Imóveis para venda em{" "}
-                  {formatCityName(citySlug || "sao-paulo")}
+                  {selectedState
+                    ? states.find((s) => s.id === selectedState)?.name || formatCityName(citySlug)
+                    : formatCityName(citySlug)}
                 </h1>
                 <p className="text-sm text-gray-600 mt-1">
                   {loading ? "Carregando..." : `${total.toLocaleString("pt-BR")} imóveis encontrados`}
@@ -174,7 +191,14 @@ export default function SearchResultsPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <select
                   value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  onChange={(e) => {
+                    const newCat = e.target.value;
+                    setSelectedCategory(newCat);
+                    const qs = new URLSearchParams(searchParams.toString());
+                    if (newCat) qs.set("categoria", newCat);
+                    else qs.delete("categoria");
+                    router.push(`/comprar/imovel/${citySlug}?${qs.toString()}`);
+                  }}
                   className="border border-gray-300 px-4 py-2 text-sm rounded-lg"
                 >
                   <option value="">Todas categorias</option>
@@ -187,8 +211,13 @@ export default function SearchResultsPage() {
                 <select
                   value={selectedState}
                   onChange={(e) => {
-                    setSelectedState(e.target.value);
+                    const newState = e.target.value;
+                    setSelectedState(newState);
                     setSelectedCity("");
+                    const qs = new URLSearchParams(searchParams.toString());
+                    if (newState) qs.set("estado", newState);
+                    else qs.delete("estado");
+                    router.push(`/comprar/imovel/${citySlug}?${qs.toString()}`);
                   }}
                   className="border border-gray-300 px-4 py-2 text-sm rounded-lg"
                 >
@@ -201,7 +230,14 @@ export default function SearchResultsPage() {
                 </select>
                 <select
                   value={selectedSort}
-                  onChange={(e) => setSelectedSort(e.target.value)}
+                  onChange={(e) => {
+                    const newSort = e.target.value;
+                    setSelectedSort(newSort);
+                    const qs = new URLSearchParams(searchParams.toString());
+                    if (newSort !== "recentes") qs.set("ordena", newSort);
+                    else qs.delete("ordena");
+                    router.push(`/comprar/imovel/${citySlug}?${qs.toString()}`);
+                  }}
                   className="border border-gray-300 px-4 py-2 text-sm rounded-lg"
                 >
                   {sortOptions.map((opt) => (
@@ -238,7 +274,13 @@ export default function SearchResultsPage() {
                           name="category"
                           value={cat.id}
                           checked={selectedCategory === cat.id}
-                          onChange={(e) => setSelectedCategory(e.target.value)}
+                          onChange={(e) => {
+                            setSelectedCategory(e.target.value);
+                            const qs = new URLSearchParams(searchParams.toString());
+                            if (e.target.value) qs.set("categoria", e.target.value);
+                            else qs.delete("categoria");
+                            router.push(`/comprar/imovel/${citySlug}?${qs.toString()}`);
+                          }}
                           className="w-4 h-4"
                         />
                         <span className="text-sm">{cat.name}</span>
@@ -259,8 +301,13 @@ export default function SearchResultsPage() {
                           value={state.id}
                           checked={selectedState === state.id}
                           onChange={(e) => {
-                            setSelectedState(e.target.value);
+                            const newState = e.target.value;
+                            setSelectedState(newState);
                             setSelectedCity("");
+                            const qs = new URLSearchParams(searchParams.toString());
+                            if (newState) qs.set("estado", newState);
+                            else qs.delete("estado");
+                            router.push(`/comprar/imovel/${citySlug}?${qs.toString()}`);
                           }}
                           className="w-4 h-4"
                         />
@@ -299,6 +346,7 @@ export default function SearchResultsPage() {
                     setSelectedCity("");
                     setSelectedSort("recentes");
                     setPage(0);
+                    router.push(`/comprar/imovel/${citySlug}`);
                   }}
                   className="w-full border border-gray-300 text-foreground py-2 font-medium hover:bg-gray-50 transition-colors rounded-lg"
                 >
