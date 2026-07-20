@@ -136,6 +136,26 @@ const mockProperties: Property[] = [
     area: 75,
     image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&h=400&fit=crop",
   },
+  {
+    id: 9,
+    title: "Apartamento garden",
+    address: "Rua dos Bandeirantes, 500 - Morumbi, São Paulo",
+    price: 4500,
+    bedrooms: 3,
+    bathrooms: 2,
+    area: 110,
+    image: "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=600&h=400&fit=crop",
+  },
+  {
+    id: 10,
+    title: "Studio compacto",
+    address: "Rua Vergueiro, 3000 - Vila Mariana, São Paulo",
+    price: 2200,
+    bedrooms: 1,
+    bathrooms: 1,
+    area: 30,
+    image: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600&h=400&fit=crop",
+  },
 ];
 
 export default function SearchResultsPage() {
