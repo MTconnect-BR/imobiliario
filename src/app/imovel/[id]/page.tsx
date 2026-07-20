@@ -32,12 +32,12 @@ export default function PropertyDetailsPage() {
       try {
         const data = await searchProperties({ limite: 100 });
         const found = data.items.find(
-          (p) => p.id_master === parseInt(propertyId) || p.id === propertyId
+          (p) => p.id === propertyId
         );
         setProperty(found || data.items[0]);
 
         const similar = data.items
-          .filter((p) => p.id_master !== (found?.id_master || data.items[0]?.id_master))
+          .filter((p) => p.id !== (found?.id || data.items[0]?.id))
           .slice(0, 3);
         setSimilarProperties(similar);
       } catch (error) {
@@ -623,8 +623,8 @@ export default function PropertyDetailsPage() {
 
                   return (
                     <Link
-                      key={item.id_master}
-                      href={`/imovel/${item.id_master}`}
+                      key={item.id}
+                      href={`/imovel/${item.id}`}
                       className="bg-white border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow rounded-lg block"
                     >
                       <div className="relative h-48">

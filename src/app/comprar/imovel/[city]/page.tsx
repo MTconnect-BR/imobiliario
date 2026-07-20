@@ -69,7 +69,7 @@ export default function SearchResultsPage() {
         const data = await searchProperties(searchFilters);
         if (cancelled) return;
         const validItems = (data.items || []).filter(
-          (p) => p.id_master && p.id_master !== 0
+          (p) => p.id && p.id !== "0"
         );
         const sorted = [...validItems];
         if (selectedSort === "menor_valor") {
@@ -330,8 +330,8 @@ export default function SearchResultsPage() {
 
                       return (
                         <Link
-                          key={property.id_master}
-                          href={`/imovel/${property.id_master}`}
+                          key={property.id}
+                          href={`/imovel/${property.id}`}
                           className="bg-white border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow block rounded-lg"
                         >
                           {/* Property Image */}
