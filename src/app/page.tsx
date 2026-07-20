@@ -1,6 +1,5 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import RentSection from "@/components/RentSection";
 import BuySection from "@/components/BuySection";
 import ConsortiumSection from "@/components/ConsortiumSection";
 import FinancingSection from "@/components/FinancingSection";
@@ -14,7 +13,6 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <Hero />
-        <RentSection />
         <BuySection />
         <ConsortiumSection />
         <FinancingSection />

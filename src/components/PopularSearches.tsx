@@ -1,21 +1,21 @@
 export default function PopularSearches() {
   const searches = [
-    { text: "Apartamento para alugar em Curitiba", href: "#" },
-    { text: "Apartamento para alugar em Goiânia", href: "#" },
-    { text: "Apartamento para alugar em Salvador", href: "#" },
-    { text: "Apartamento para alugar em Santos", href: "#" },
-    { text: "Apartamento para alugar em Niterói", href: "#" },
+    { text: "Apartamento para comprar em Curitiba", href: "#" },
+    { text: "Apartamento para comprar em Goiânia", href: "#" },
+    { text: "Apartamento para comprar em Salvador", href: "#" },
+    { text: "Apartamento para comprar em Santos", href: "#" },
+    { text: "Apartamento para comprar em Niterói", href: "#" },
     { text: "Casas à venda em Jundiaí", href: "#" },
     { text: "Casas à venda em Barueri", href: "#" },
     { text: "Apartamento à venda Butantã", href: "#" },
     { text: "Apartamento à venda Brooklin", href: "#" },
     { text: "Apartamento à venda Tatuapé", href: "#" },
-    { text: "Casas para alugar na Mooca", href: "#" },
-    { text: "Casas para alugar em Jabaquara", href: "#" },
-    { text: "Casas para alugar em Vila Matilde", href: "#" },
+    { text: "Casas para comprar na Mooca", href: "#" },
+    { text: "Casas para comprar em Jabaquara", href: "#" },
+    { text: "Casas para comprar em Vila Matilde", href: "#" },
     { text: "Apartamento à venda Itaquera", href: "#" },
-    { text: "Casas para alugar no Ipiranga", href: "#" },
-    { text: "Casas para alugar na Freguesia do Ó", href: "#" },
+    { text: "Casas para comprar no Ipiranga", href: "#" },
+    { text: "Casas para comprar na Freguesia do Ó", href: "#" },
   ];
 
   return (

@@ -18,7 +18,6 @@ const cities = [
 
 export default function Hero() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"alugar" | "comprar">("alugar");
   const [activeSection, setActiveSection] = useState<"buscar" | "anunciar">("buscar");
   const [selectedCity, setSelectedCity] = useState("");
 
@@ -63,40 +62,10 @@ export default function Hero() {
           <div className="bg-[#f0f0f2] p-6 md:p-8 shadow-2xl">
             {/* Title */}
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">
-              Alugue um lar
+              Encontre o lar
               <br />
-              para chamar de seu
+              dos seus sonhos
             </h2>
-
-            {/* Tabs */}
-            <div className="flex gap-6 mb-6 border-b border-gray-200">
-              <button
-                onClick={() => setActiveTab("alugar")}
-                className={`pb-3 font-medium transition-all relative ${
-                  activeTab === "alugar"
-                    ? "text-primary"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Alugar
-                {activeTab === "alugar" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                )}
-              </button>
-              <button
-                onClick={() => setActiveTab("comprar")}
-                className={`pb-3 font-medium transition-all relative ${
-                  activeTab === "comprar"
-                    ? "text-primary"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Comprar
-                {activeTab === "comprar" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                )}
-              </button>
-            </div>
 
             {/* Search Fields */}
             <div className="space-y-4">
@@ -173,7 +142,7 @@ export default function Hero() {
               <button
                 onClick={() => {
                   const city = selectedCity || "sao-paulo";
-                  router.push(`/alugar/imovel/${city}`);
+                  router.push(`/comprar/imovel/${city}`);
                 }}
                 className="w-full bg-primary text-white py-4 px-8 font-semibold text-lg hover:bg-primary-dark transition-colors"
               >

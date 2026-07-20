@@ -186,7 +186,7 @@ export default function FaleConoscoPage() {
                     </svg>
                   </div>
                   <h3 className="font-semibold text-gray-900">
-                    Para quem está alugando
+                    Para quem está comprando
                   </h3>
                 </div>
                 <div className="space-y-2 text-sm text-gray-600">
@@ -260,7 +260,7 @@ export default function FaleConoscoPage() {
 
               <details className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <summary className="p-6 cursor-pointer font-semibold text-gray-900 hover:bg-gray-50 transition-colors">
-                  Como enviar uma proposta de aluguel?
+                  Como enviar uma proposta de compra?
                 </summary>
                 <div className="px-6 pb-6 text-gray-600">
                   Após encontrar o imóvel ideal, clique em &quot;Tenho
@@ -271,7 +271,7 @@ export default function FaleConoscoPage() {
 
               <details className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <summary className="p-6 cursor-pointer font-semibold text-gray-900 hover:bg-gray-50 transition-colors">
-                  Quais documentos são necessários para alugar?
+                  Quais documentos são necessários para comprar?
                 </summary>
                 <div className="px-6 pb-6 text-gray-600">
                   Geralmente são necessários: documento de identidade (RG ou
