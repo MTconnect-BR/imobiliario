@@ -171,9 +171,9 @@ export default function PropertyDetailsPage() {
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto">
             {hasMultiplePhotos ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2">
+              <div className="grid grid-cols-1 lg:grid-cols-2 lg:h-[520px]">
                 {/* Main Image */}
-                <div className="relative h-[400px] lg:h-[500px]">
+                <div className="relative h-[300px] sm:h-[400px] lg:h-full">
                   <img
                     src={photos[currentImage]}
                     alt={property.categoria_nome}
@@ -194,7 +194,7 @@ export default function PropertyDetailsPage() {
                 </div>
 
                 {/* Thumbnail Grid */}
-                <div className="hidden lg:grid grid-cols-2 grid-rows-2 gap-1">
+                <div className="hidden lg:grid grid-cols-2 grid-rows-2 gap-1 h-full">
                   {photos.slice(1, 5).map((photo, index) => (
                     <div
                       key={index}
@@ -223,7 +223,7 @@ export default function PropertyDetailsPage() {
               </div>
             ) : (
               /* Single Image - Centered */
-              <div className="relative h-[400px] lg:h-[500px] max-w-4xl mx-auto">
+              <div className="relative h-[300px] sm:h-[400px] lg:h-[520px] max-w-4xl mx-auto">
                 <img
                   src={photos[0]}
                   alt={property.categoria_nome}
