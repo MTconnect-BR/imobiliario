@@ -148,6 +148,27 @@ export function parsePrice(priceHtml: string): number {
   return 0;
 }
 
+export function formatPrice(price: string | number): string {
+  if (!price && price !== 0) return "Consulte";
+  const str = String(price).trim();
+  if (str.toLowerCase() === "consulte" || str === "") return "Consulte";
+
+  let numStr = str.replace(/[^\d,\.]/g, "");
+  if (!numStr) return "Consulte";
+
+  if (numStr.includes(",")) {
+    numStr = numStr.replace(/\./g, "").replace(",", ".");
+  }
+
+  const num = parseFloat(numStr);
+  if (isNaN(num)) return "Consulte";
+
+  return num.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+}
+
 export function parseArea(areaHtml: string): number {
   const cleaned = stripHtml(areaHtml);
   const match = cleaned.match(/([\d.,]+)/);

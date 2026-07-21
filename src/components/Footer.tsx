@@ -52,7 +52,7 @@ export default function Footer() {
         {/* Company info */}
         <div className="border-t border-gray-300 pt-6 mb-6">
           <p className="text-sm text-gray-600">
-            <span className="font-semibold">Siena Gestão & Imobiliária</span> Ltda. | CRECI-SP J00.000
+            <span className="font-semibold">Siena Gestão & Imobiliária</span> Ltda.
           </p>
         </div>
 

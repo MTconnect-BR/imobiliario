@@ -19,12 +19,6 @@ export default function Header() {
               Comprar
             </a>
             <a
-              href="/crm"
-              className="text-gray-600 hover:text-primary font-medium transition-colors text-sm"
-            >
-              Imóveis
-            </a>
-            <a
               href="https://www.instagram.com/sienagestaoimobiliaria/"
               target="_blank"
               rel="noopener noreferrer"
@@ -47,12 +41,6 @@ export default function Header() {
               className="text-gray-600 hover:text-primary font-medium transition-colors text-sm"
             >
               Comprar
-            </a>
-            <a
-              href="/crm"
-              className="text-gray-600 hover:text-primary font-medium transition-colors text-sm"
-            >
-              Imóveis
             </a>
             <a
               href="/fale-conosco"

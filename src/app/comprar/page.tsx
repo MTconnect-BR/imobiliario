@@ -11,6 +11,7 @@ import {
   parseArea,
   parseBedrooms,
   getDiscountPercentage,
+  formatPrice,
   categories,
   states,
   sortOptions,
@@ -461,7 +462,7 @@ function ComprarContent() {
                           <div className="p-4">
                             <div className="flex items-center gap-2 mb-2">
                               <span className="text-lg font-bold text-primary">
-                                {property.valor_venda1 || "Consulte"}
+                                {formatPrice(property.valor_venda1)}
                               </span>
                             </div>
                             <h3 className="font-medium text-foreground mb-1 text-sm">
