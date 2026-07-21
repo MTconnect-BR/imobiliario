@@ -1,16 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, type UserProperty } from "@/lib/supabase";
+import ConfirmModal from "./ConfirmModal";
 
 const categorias = [
-  "Apartamento",
-  "Casa",
-  "Sobrado",
-  "Terreno",
-  "Galpão",
-  "Andar Corporativo",
+  "Apartamento", "Casa", "Sobrado", "Terreno", "Galpão", "Andar Corporativo",
 ];
 
 const estados = ["RJ", "SP", "PR", "SC"];
@@ -27,9 +23,18 @@ interface PropertyFormProps {
   isEdit?: boolean;
 }
 
+function hasChanges(init: Partial<UserProperty> | undefined, current: Record<string, unknown>): boolean {
+  if (!init) return Object.values(current).some((v) => v !== "" && v !== 0 && !(Array.isArray(v) && v.length === 0));
+  const fields: (keyof UserProperty)[] = ["titulo", "descricao", "preco", "categoria", "estado", "cidade", "bairro", "endereco", "quartos", "banheiros", "vagas", "area", "area_terreno", "referencia", "status"];
+  return fields.some((f) => JSON.stringify(current[f]) !== JSON.stringify(init[f]));
+}
+
 export default function PropertyForm({ initialData, isEdit = false }: PropertyFormProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [saving, setSaving] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
   const [error, setError] = useState("");
 
   const [titulo, setTitulo] = useState(initialData?.titulo || "");
@@ -49,10 +54,14 @@ export default function PropertyForm({ initialData, isEdit = false }: PropertyFo
   const [fotos, setFotos] = useState<string[]>(initialData?.fotos || []);
   const [novaFotoUrl, setNovaFotoUrl] = useState("");
   const [status, setStatus] = useState<"ativo" | "vendido" | "pausado">(initialData?.status || "ativo");
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const cidadesDisponiveis = cidadesPorEstado[estado] || [];
 
-  function addFoto() {
+  const currentValues = { titulo, descricao, preco, categoria, estado, cidade, bairro, endereco, quartos, banheiros, vagas, area, area_terreno: areaTerreno, referencia, fotos, status };
+  const dirty = hasChanges(initialData, currentValues);
+
+  function addFotoUrl() {
     const url = novaFotoUrl.trim();
     if (!url) return;
     if (fotos.length >= 10) {
@@ -61,10 +70,63 @@ export default function PropertyForm({ initialData, isEdit = false }: PropertyFo
     }
     setFotos([...fotos, url]);
     setNovaFotoUrl("");
+    setError("");
+  }
+
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadingFiles(true);
+    setError("");
+
+    const remaining = 10 - fotos.length;
+    if (files.length > remaining) {
+      setError(`Máximo de 10 fotos. Você pode adicionar mais ${remaining}.`);
+      setUploadingFiles(false);
+      return;
+    }
+
+    const newFotos: string[] = [];
+    let loaded = 0;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.size > 10 * 1024 * 1024) {
+        setError(`Arquivo "${file.name}" excede 10MB`);
+        continue;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result && typeof ev.target.result === "string") {
+          newFotos.push(ev.target.result);
+        }
+        loaded++;
+        if (loaded === files.length) {
+          setFotos((prev) => [...prev, ...newFotos]);
+          setUploadingFiles(false);
+        }
+      };
+      reader.onerror = () => {
+        setError(`Erro ao ler arquivo "${file.name}"`);
+        loaded++;
+        if (loaded === files.length) {
+          setUploadingFiles(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   function removeFoto(index: number) {
     setFotos(fotos.filter((_, i) => i !== index));
+  }
+
+  function handleCancel() {
+    if (dirty) {
+      setShowCancelModal(true);
+    } else {
+      router.push("/crm");
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -124,300 +186,323 @@ export default function PropertyForm({ initialData, isEdit = false }: PropertyFo
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">
-        {isEdit ? "Editar imóvel" : "Novo imóvel"}
-      </h1>
+    <>
+      <ConfirmModal
+        open={showCancelModal}
+        title="Descartar alterações?"
+        message="Você tem alterações não salvas. Deseja descartá-las e sair?"
+        confirmLabel="Descartar"
+        cancelLabel="Continuar editando"
+        variant="warning"
+        onConfirm={() => { setShowCancelModal(false); router.push("/crm"); }}
+        onCancel={() => setShowCancelModal(false)}
+      />
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-          {error}
-        </div>
-      )}
+      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-8">
+          {isEdit ? "Editar imóvel" : "Novo imóvel"}
+        </h1>
 
-      <div className="space-y-8">
-        {/* Básico */}
-        <div className="bg-white p-6 border border-gray-200 rounded-lg">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Informações básicas</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
-              <input
-                type="text"
-                value={titulo}
-                onChange={(e) => setTitulo(e.target.value)}
-                placeholder="Ex: Apartamento 2 quartos no Centro"
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-              <select
-                value={categoria}
-                onChange={(e) => setCategoria(e.target.value)}
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-              >
-                <option value="">Selecione</option>
-                {categorias.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Preço</label>
-              <input
-                type="text"
-                value={preco}
-                onChange={(e) => setPreco(e.target.value)}
-                placeholder="Ex: R$ 250.000,00 ou Consulte"
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
-              <textarea
-                value={descricao}
-                onChange={(e) => setDescricao(e.target.value)}
-                rows={4}
-                placeholder="Descreva o imóvel..."
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none resize-none"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Localização */}
-        <div className="bg-white p-6 border border-gray-200 rounded-lg">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Localização</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-              <select
-                value={estado}
-                onChange={(e) => {
-                  setEstado(e.target.value);
-                  setCidade("");
-                }}
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-              >
-                <option value="">Selecione</option>
-                {estados.map((e) => (
-                  <option key={e} value={e}>{e}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
-              <select
-                value={cidade}
-                onChange={(e) => setCidade(e.target.value)}
-                disabled={!estado}
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none disabled:opacity-50"
-              >
-                <option value="">{estado ? "Selecione" : "Primeiro selecione o estado"}</option>
-                {cidadesDisponiveis.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
-              <input
-                type="text"
-                value={bairro}
-                onChange={(e) => setBairro(e.target.value)}
-                placeholder="Ex: Centro"
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
-              <input
-                type="text"
-                value={endereco}
-                onChange={(e) => setEndereco(e.target.value)}
-                placeholder="Rua, número..."
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Características */}
-        <div className="bg-white p-6 border border-gray-200 rounded-lg">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Características</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quartos</label>
-              <input
-                type="number"
-                value={quartos}
-                onChange={(e) => setQuartos(Number(e.target.value))}
-                min={0}
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Banheiros</label>
-              <input
-                type="number"
-                value={banheiros}
-                onChange={(e) => setBanheiros(Number(e.target.value))}
-                min={0}
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Vagas</label>
-              <input
-                type="number"
-                value={vagas}
-                onChange={(e) => setVagas(Number(e.target.value))}
-                min={0}
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Área (m²)</label>
-              <input
-                type="number"
-                value={area || ""}
-                onChange={(e) => setArea(Number(e.target.value))}
-                min={0}
-                placeholder="0"
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Área terreno (m²)</label>
-              <input
-                type="number"
-                value={areaTerreno || ""}
-                onChange={(e) => setAreaTerreno(Number(e.target.value))}
-                min={0}
-                placeholder="0"
-                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-              />
-            </div>
-          </div>
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Referência</label>
-            <input
-              type="text"
-              value={referencia}
-              onChange={(e) => setReferencia(e.target.value)}
-              placeholder="Código de referência do imóvel"
-              className="w-full md:w-1/2 border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Fotos */}
-        <div className="bg-white p-6 border border-gray-200 rounded-lg">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Fotos</h2>
-          <p className="text-sm text-gray-500 mb-4">
-            Cole URLs das fotos (máximo 10). A primeira foto será a capa.
-          </p>
-          <div className="flex gap-2 mb-4">
-            <input
-              type="url"
-              value={novaFotoUrl}
-              onChange={(e) => setNovaFotoUrl(e.target.value)}
-              placeholder="https://exemplo.com/foto.jpg"
-              className="flex-1 border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addFoto();
-                }
-              }}
-            />
-            <button
-              type="button"
-              onClick={addFoto}
-              className="bg-gray-100 border border-gray-300 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-            >
-              Adicionar
-            </button>
-          </div>
-
-          {fotos.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {fotos.map((foto, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={foto}
-                    alt={`Foto ${index + 1}`}
-                    className="w-full h-24 object-cover rounded-lg border border-gray-200"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=200&h=100&fit=crop";
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeFoto(index)}
-                    className="absolute top-1 right-1 bg-red-600 text-white w-6 h-6 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                  >
-                    ×
-                  </button>
-                  {index === 0 && (
-                    <span className="absolute bottom-1 left-1 bg-[#1b4332] text-white text-[10px] px-1.5 py-0.5 rounded">
-                      Capa
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Status */}
-        {isEdit && (
-          <div className="bg-white p-6 border border-gray-200 rounded-lg">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Status</h2>
-            <div className="flex gap-3">
-              {(["ativo", "pausado", "vendido"] as const).map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setStatus(s)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                    status === s
-                      ? s === "ativo"
-                        ? "bg-green-600 text-white border-green-600"
-                        : s === "vendido"
-                        ? "bg-red-600 text-white border-red-600"
-                        : "bg-yellow-500 text-white border-yellow-500"
-                      : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {s === "ativo" ? "Ativo" : s === "vendido" ? "Vendido" : "Pausado"}
-                </button>
-              ))}
-            </div>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            {error}
           </div>
         )}
 
-        {/* Submit */}
-        <div className="flex items-center gap-4">
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-[#1b4332] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#143526] transition-colors disabled:opacity-50"
-          >
-            {saving ? "Salvando..." : isEdit ? "Salvar alterações" : "Cadastrar imóvel"}
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push("/crm")}
-            className="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-          >
-            Cancelar
-          </button>
+        <div className="space-y-8">
+          {/* Básico */}
+          <div className="bg-white p-6 border border-gray-200 rounded-lg">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Informações básicas</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
+                <input
+                  type="text"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  placeholder="Ex: Apartamento 2 quartos no Centro"
+                  className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                <select
+                  value={categoria}
+                  onChange={(e) => setCategoria(e.target.value)}
+                  className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
+                >
+                  <option value="">Selecione</option>
+                  {categorias.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Preço</label>
+                <input
+                  type="text"
+                  value={preco}
+                  onChange={(e) => setPreco(e.target.value)}
+                  placeholder="Ex: R$ 250.000,00 ou Consulte"
+                  className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                <textarea
+                  value={descricao}
+                  onChange={(e) => setDescricao(e.target.value)}
+                  rows={4}
+                  placeholder="Descreva o imóvel..."
+                  className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none resize-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Localização */}
+          <div className="bg-white p-6 border border-gray-200 rounded-lg">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Localização</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                <select
+                  value={estado}
+                  onChange={(e) => { setEstado(e.target.value); setCidade(""); }}
+                  className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
+                >
+                  <option value="">Selecione</option>
+                  {estados.map((e) => (
+                    <option key={e} value={e}>{e}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+                <select
+                  value={cidade}
+                  onChange={(e) => setCidade(e.target.value)}
+                  disabled={!estado}
+                  className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none disabled:opacity-50"
+                >
+                  <option value="">{estado ? "Selecione" : "Primeiro selecione o estado"}</option>
+                  {cidadesDisponiveis.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
+                <input
+                  type="text"
+                  value={bairro}
+                  onChange={(e) => setBairro(e.target.value)}
+                  placeholder="Ex: Centro"
+                  className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
+                <input
+                  type="text"
+                  value={endereco}
+                  onChange={(e) => setEndereco(e.target.value)}
+                  placeholder="Rua, número..."
+                  className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Características */}
+          <div className="bg-white p-6 border border-gray-200 rounded-lg">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Características</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Quartos</label>
+                <input type="number" value={quartos} onChange={(e) => setQuartos(Number(e.target.value))} min={0} className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Banheiros</label>
+                <input type="number" value={banheiros} onChange={(e) => setBanheiros(Number(e.target.value))} min={0} className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Vagas</label>
+                <input type="number" value={vagas} onChange={(e) => setVagas(Number(e.target.value))} min={0} className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Área (m²)</label>
+                <input type="number" value={area || ""} onChange={(e) => setArea(Number(e.target.value))} min={0} placeholder="0" className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Área terreno (m²)</label>
+                <input type="number" value={areaTerreno || ""} onChange={(e) => setAreaTerreno(Number(e.target.value))} min={0} placeholder="0" className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none" />
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Referência</label>
+              <input
+                type="text"
+                value={referencia}
+                onChange={(e) => setReferencia(e.target.value)}
+                placeholder="Código de referência do imóvel"
+                className="w-full md:w-1/2 border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Fotos e Vídeos */}
+          <div className="bg-white p-6 border border-gray-200 rounded-lg">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Fotos e Vídeos</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Adicione fotos ou vídeos do seu computador ou cole URLs. Máximo 10 arquivos. Máximo 10MB cada.
+            </p>
+
+            {/* File upload from PC */}
+            <div className="mb-6">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingFiles || fotos.length >= 10}
+                className="flex items-center gap-2 border-2 border-dashed border-gray-300 rounded-lg px-6 py-4 text-gray-600 hover:border-[#1b4332] hover:text-[#1b4332] transition-colors disabled:opacity-50 w-full justify-center"
+              >
+                {uploadingFiles ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#1b4332]" />
+                    <span>Carregando arquivos...</span>
+                  </div>
+                ) : (
+                  <>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="font-medium">Clique para selecionar fotos/vídeos do computador</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* URL input */}
+            <div className="flex gap-2 mb-4">
+              <input
+                type="url"
+                value={novaFotoUrl}
+                onChange={(e) => setNovaFotoUrl(e.target.value)}
+                placeholder="Ou cole URL de imagem externa..."
+                className="flex-1 border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none"
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addFotoUrl(); } }}
+              />
+              <button
+                type="button"
+                onClick={addFotoUrl}
+                disabled={fotos.length >= 10}
+                className="bg-gray-100 border border-gray-300 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium disabled:opacity-50"
+              >
+                Adicionar URL
+              </button>
+            </div>
+
+            {fotos.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {fotos.map((foto, index) => (
+                  <div key={index} className="relative group">
+                    {foto.startsWith("data:video") ? (
+                      <video
+                        src={foto}
+                        className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                        controls={false}
+                      />
+                    ) : (
+                      <img
+                        src={foto}
+                        alt={`Foto ${index + 1}`}
+                        className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=200&h=100&fit=crop";
+                        }}
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeFoto(index)}
+                      className="absolute top-1 right-1 bg-red-600 text-white w-6 h-6 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-700"
+                    >
+                      ×
+                    </button>
+                    {index === 0 && (
+                      <span className="absolute bottom-1 left-1 bg-[#1b4332] text-white text-[10px] px-1.5 py-0.5 rounded">
+                        Capa
+                      </span>
+                    )}
+                    {foto.startsWith("data:") && (
+                      <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                        PC
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {fotos.length > 0 && (
+              <p className="text-xs text-gray-400 mt-2">{fotos.length}/10 arquivos</p>
+            )}
+          </div>
+
+          {/* Status */}
+          {isEdit && (
+            <div className="bg-white p-6 border border-gray-200 rounded-lg">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Status</h2>
+              <div className="flex gap-3">
+                {(["ativo", "pausado", "vendido"] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setStatus(s)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                      status === s
+                        ? s === "ativo" ? "bg-green-600 text-white border-green-600"
+                          : s === "vendido" ? "bg-red-600 text-white border-red-600"
+                          : "bg-yellow-500 text-white border-yellow-500"
+                        : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {s === "ativo" ? "Ativo" : s === "vendido" ? "Vendido" : "Pausado"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Submit */}
+          <div className="flex items-center gap-4">
+            <button
+              type="submit"
+              disabled={saving}
+              className="bg-[#1b4332] text-white px-8 py-3 rounded-lg font-medium hover:bg-[#143526] transition-colors disabled:opacity-50"
+            >
+              {saving ? "Salvando..." : isEdit ? "Salvar alterações" : "Cadastrar imóvel"}
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </>
   );
 }
