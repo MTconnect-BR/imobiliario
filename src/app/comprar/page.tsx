@@ -206,7 +206,7 @@ function ComprarContent() {
 
   const faqItems = [
     {
-      question: "Como comprar um imóvel no Rei do Apê?",
+      question: "Como comprar um imóvel com a Siena?",
       answer:
         "É simples! Escolha o imóvel que deseja, entre em contato com nosso time e acompanhe todo o processo de compra com segurança e transparência.",
     },
