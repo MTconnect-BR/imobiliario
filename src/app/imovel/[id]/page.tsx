@@ -84,6 +84,7 @@ export default function PropertyDetailsPage() {
               ref_caixa: "",
               descricao_html: up.descricao || "",
               instagram_url: up.instagram_url || "",
+              instagram_texto: up.instagram_texto || "",
               enderecoPermissao: up.endereco || "",
               bairroPermissao: "",
               numeroPermissao: "",
@@ -402,6 +403,18 @@ export default function PropertyDetailsPage() {
                     : property.titulo_plain || "Descrição não disponível."}
                 </div>
               </div>
+
+              {/* Instagram Texto */}
+              {property.id.startsWith("user_") && property.instagram_texto && (
+                <div className="mb-8">
+                  <h2 className="text-lg font-bold text-foreground mb-4">
+                    Resumo para Instagram
+                  </h2>
+                  <div className="bg-white border border-gray-200 rounded-lg p-4 text-gray-600 whitespace-pre-line">
+                    {property.instagram_texto}
+                  </div>
+                </div>
+              )}
 
               {/* Property Details Grid */}
               <div className="mb-8">

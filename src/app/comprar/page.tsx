@@ -70,6 +70,7 @@ function ComprarContent() {
       numeroPermissao: "",
       descricao_html: up.descricao || "",
       instagram_url: up.instagram_url || "",
+      instagram_texto: up.instagram_texto || "",
       tipo: "",
       mostrar_mapa: "",
       map_geocode_queries: [],

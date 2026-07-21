@@ -20,7 +20,8 @@ CREATE TABLE user_properties (
   referencia TEXT DEFAULT '',
   status TEXT DEFAULT 'ativo',
   endereco TEXT DEFAULT '',
-  instagram_url TEXT DEFAULT ''
+  instagram_url TEXT DEFAULT '',
+  instagram_texto TEXT DEFAULT ''
 );
 
 -- Permitir leitura pública (qualquer um vê os imóveis)

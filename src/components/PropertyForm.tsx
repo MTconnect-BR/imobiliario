@@ -118,7 +118,7 @@ interface PropertyFormProps {
 
 function hasChanges(init: Partial<UserProperty> | undefined, current: Record<string, unknown>): boolean {
   if (!init) return Object.values(current).some((v) => v !== "" && v !== 0 && !(Array.isArray(v) && v.length === 0));
-  const fields: (keyof UserProperty)[] = ["titulo", "descricao", "preco", "categoria", "estado", "cidade", "bairro", "endereco", "quartos", "banheiros", "vagas", "area", "area_terreno", "referencia", "instagram_url", "status"];
+  const fields: (keyof UserProperty)[] = ["titulo", "descricao", "preco", "categoria", "estado", "cidade", "bairro", "endereco", "quartos", "banheiros", "vagas", "area", "area_terreno", "referencia", "instagram_url", "instagram_texto", "status"];
   return fields.some((f) => JSON.stringify(current[f]) !== JSON.stringify(init[f]));
 }
 
@@ -145,6 +145,7 @@ export default function PropertyForm({ initialData, isEdit = false }: PropertyFo
   const [areaTerreno, setAreaTerreno] = useState(initialData?.area_terreno || 0);
   const [referencia, setReferencia] = useState(initialData?.referencia || "");
   const [instagramUrl, setInstagramUrl] = useState(initialData?.instagram_url || "");
+  const [instagramTexto, setInstagramTexto] = useState(initialData?.instagram_texto || "");
   const [fotos, setFotos] = useState<string[]>(initialData?.fotos || []);
   const [novaFotoUrl, setNovaFotoUrl] = useState("");
   const [status, setStatus] = useState<"ativo" | "vendido" | "pausado">(initialData?.status || "ativo");
@@ -152,7 +153,7 @@ export default function PropertyForm({ initialData, isEdit = false }: PropertyFo
 
   const cidadesDisponiveis = cidadesPorEstado[estado] || [];
 
-  const currentValues = { titulo, descricao, preco, categoria, estado, cidade, bairro, endereco, quartos, banheiros, vagas, area, area_terreno: areaTerreno, referencia, instagram_url: instagramUrl, fotos, status };
+  const currentValues = { titulo, descricao, preco, categoria, estado, cidade, bairro, endereco, quartos, banheiros, vagas, area, area_terreno: areaTerreno, referencia, instagram_url: instagramUrl, instagram_texto: instagramTexto, fotos, status };
   const dirty = hasChanges(initialData, currentValues);
 
   function addFotoUrl() {
@@ -250,6 +251,7 @@ export default function PropertyForm({ initialData, isEdit = false }: PropertyFo
       area_terreno: areaTerreno,
       referencia: referencia.trim(),
       instagram_url: instagramUrl.trim() || null,
+      instagram_texto: instagramTexto.trim() || null,
       fotos,
       status,
     };
@@ -591,6 +593,21 @@ export default function PropertyForm({ initialData, isEdit = false }: PropertyFo
               </div>
             </div>
           )}
+
+          {/* Instagram Texto */}
+          <div className="bg-white p-6 border border-gray-200 rounded-lg">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Texto para Instagram</h2>
+            <p className="text-sm text-gray-500 mb-3">
+              Escreva aqui um resumo do imóvel para compartilhar no Instagram. O texto aparecerá na página do imóvel.
+            </p>
+            <textarea
+              value={instagramTexto}
+              onChange={(e) => setInstagramTexto(e.target.value)}
+              rows={4}
+              placeholder="Resumo do imóvel para post no Instagram..."
+              className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#1b4332] focus:border-transparent outline-none resize-none"
+            />
+          </div>
 
           {/* Submit */}
           <div className="flex items-center gap-4">

@@ -35,4 +35,5 @@ export interface UserProperty {
   status: "ativo" | "vendido" | "pausado";
   endereco: string;
   instagram_url?: string;
+  instagram_texto?: string;
 }

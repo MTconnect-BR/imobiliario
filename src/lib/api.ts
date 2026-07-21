@@ -61,6 +61,7 @@ export interface Property {
   leilao_pracas: unknown[];
   leilao_ativo: boolean;
   instagram_url?: string;
+  instagram_texto?: string;
 }
 
 export interface ApiResponse {
