@@ -158,6 +158,8 @@ export function formatPrice(price: string | number): string {
 
   if (numStr.includes(",")) {
     numStr = numStr.replace(/\./g, "").replace(",", ".");
+  } else {
+    numStr = numStr.replace(/\./g, "");
   }
 
   const num = parseFloat(numStr);
