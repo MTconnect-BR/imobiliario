@@ -111,6 +111,7 @@ function ComprarContent() {
 
   const bairroFilter = searchParams.get("bairro") || "";
   const cidadeFilter = searchParams.get("cidade") || "";
+  const cidadeNome = searchParams.get("cidade_nome") || "";
   const precoMax = Number(searchParams.get("preco_max")) || 0;
   const precoMin = Number(searchParams.get("preco_min")) || 0;
   const quartosFilter = Number(searchParams.get("quartos")) || 0;
@@ -277,7 +278,7 @@ function ComprarContent() {
               <div>
                 <h1 className="text-xl font-bold text-foreground">
                   {selectedState
-                    ? `Imóveis para venda em ${states.find((s) => s.id === selectedState)?.name || selectedState}`
+                    ? `Imóveis para venda em ${cidadeNome || states.find((s) => s.id === selectedState)?.name || selectedState}`
                     : "Todos os imóveis para venda"}
                 </h1>
                 <p className="text-sm text-gray-600 mt-1">

@@ -80,10 +80,12 @@ export default function Hero() {
 
   const handleSearch = () => {
     const city = selectedCity || availableCities[0]?.slug || "";
+    const cityName = availableCities.find((c) => c.slug === city)?.name || "";
     const params = new URLSearchParams();
 
     if (selectedState) params.set("estado", selectedState);
     if (city) params.set("cidade", city);
+    if (cityName) params.set("cidade_nome", cityName);
     if (selectedType) params.set("categoria", selectedType);
     if (selectedBedrooms > 0) {
       params.set("quartos", String(selectedBedrooms));
