@@ -109,7 +109,7 @@ export default function Hero() {
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8">
             {/* Title */}
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-6 text-center">
+            <h1 className="text-lg sm:text-xl md:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-4 sm:mb-6 text-center">
               Encontre o lar
               <br />
               dos seus sonhos
