@@ -83,16 +83,12 @@ function ComprarContent() {
   }
 
   const [properties, setProperties] = useState<Property[]>([]);
-  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
-  const [total, setTotal] = useState(0);
-  const [displayTotal, setDisplayTotal] = useState(0);
+  const [userProperties, setUserProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
-  const [displayPage, setDisplayPage] = useState(0);
-  const [filters, setFilters] = useState<SearchFilters>({
-    ordena: "recentes",
-    pagina: 0,
-    limite: 100,
-  });
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [apiTotal, setApiTotal] = useState(0);
+  const PAGE_SIZE = 100;
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("categoria") || "");
   const [selectedState, setSelectedState] = useState(searchParams.get("estado") || "");
   const [selectedSort, setSelectedSort] = useState(searchParams.get("ordena") || "recentes");
@@ -106,7 +102,7 @@ function ComprarContent() {
     setSelectedState(searchParams.get("estado") || "");
     setSelectedSort(searchParams.get("ordena") || "recentes");
     setSelectedOrigem(searchParams.get("origem") || "todas");
-    setDisplayPage(0);
+    setCurrentPage(0);
   }, [searchParamsStr]);
 
   const bairroFilter = searchParams.get("bairro") || "";
@@ -116,34 +112,59 @@ function ComprarContent() {
   const precoMin = Number(searchParams.get("preco_min")) || 0;
   const quartosFilter = Number(searchParams.get("quartos")) || 0;
 
+  const totalPages = Math.ceil(apiTotal / PAGE_SIZE);
+  const displayItems = properties;
+
+  const fetchPage = async (page: number, supabaseItems: Property[]): Promise<Property[]> => {
+    const searchFilters: SearchFilters = {
+      ordena: selectedSort,
+      pagina: page,
+      limite: PAGE_SIZE,
+    };
+    if (selectedCategory) searchFilters.categoria = selectedCategory;
+    if (selectedState) searchFilters.estado = selectedState;
+    if (cidadeFilter) searchFilters.cidade = cidadeFilter;
+    if (bairroFilter) searchFilters.bairro = bairroFilter;
+
+    const apiData = await searchProperties(searchFilters).catch(() => null);
+    const apiItems = (apiData?.items || []).filter((p) => p.id && p.id !== "0");
+    const total = apiData?.meta?.total || 0;
+    setApiTotal(total);
+
+    let merged = page === 0 ? [...supabaseItems, ...apiItems] : [...supabaseItems, ...apiItems];
+
+    if (selectedOrigem === "siena") {
+      merged = merged.filter((p) => p.id.startsWith("user_"));
+    } else if (selectedOrigem === "caixa") {
+      merged = merged.filter((p) => !p.id.startsWith("user_"));
+    }
+
+    if (selectedSort === "menor_valor") {
+      merged.sort((a, b) => parsePrice(a.valor_venda1 || "") - parsePrice(b.valor_venda1 || ""));
+    } else if (selectedSort === "maior_valor") {
+      merged.sort((a, b) => parsePrice(b.valor_venda1 || "") - parsePrice(a.valor_venda1 || ""));
+    } else if (selectedSort === "maior_desconto") {
+      merged.sort((a, b) => getDiscountPercentage(b) - getDiscountPercentage(a));
+    }
+
+    return merged;
+  };
+
   useEffect(() => {
     let cancelled = false;
 
-    async function fetchProperties() {
+    async function fetchInitial() {
       setLoading(true);
       try {
-        const searchFilters: SearchFilters = {
-          ...filters,
-          ordena: selectedSort,
-        };
-
-        if (selectedCategory) searchFilters.categoria = selectedCategory;
-        if (selectedState) searchFilters.estado = selectedState;
-        if (cidadeFilter) searchFilters.cidade = cidadeFilter;
-        if (bairroFilter) searchFilters.bairro = bairroFilter;
-
-        const [supabaseData, apiData] = await Promise.all([
-          supabase
-            .from("user_properties")
-            .select("*")
-            .eq("status", "ativo")
-            .then(({ data }) => data || []),
-          searchProperties({ ...searchFilters, pagina: 0, limite: 24 }).catch(() => null),
-        ]);
+        const supabaseData = await supabase
+          .from("user_properties")
+          .select("*")
+          .eq("status", "ativo")
+          .then(({ data }) => data || []);
 
         if (cancelled) return;
 
-        const userItems = (supabaseData as UserProperty[])
+        const supabaseItems = (supabaseData as UserProperty[])
           .filter((up) => {
             if (selectedCategory && up.categoria !== categories.find((c) => c.id === selectedCategory)?.name) return false;
             if (selectedState && up.estado !== selectedState) return false;
@@ -153,55 +174,12 @@ function ComprarContent() {
           })
           .map(userPropertyToProperty);
 
-        const apiItems = (apiData?.items || []).filter((p) => p.id && p.id !== "0");
-        const apiTotal = apiData?.meta?.total || 0;
+        setUserProperties(supabaseItems);
 
-        const merged = [...userItems, ...apiItems];
-
-        let origemFiltered = merged;
-        if (selectedOrigem === "siena") {
-          origemFiltered = merged.filter((p) => p.id.startsWith("user_"));
-        } else if (selectedOrigem === "caixa") {
-          origemFiltered = merged.filter((p) => !p.id.startsWith("user_"));
-        }
-
-        if (selectedSort === "menor_valor") {
-          origemFiltered.sort((a, b) => parsePrice(a.valor_venda1 || "") - parsePrice(b.valor_venda1 || ""));
-        } else if (selectedSort === "maior_valor") {
-          origemFiltered.sort((a, b) => parsePrice(b.valor_venda1 || "") - parsePrice(a.valor_venda1 || ""));
-        } else if (selectedSort === "maior_desconto") {
-          origemFiltered.sort((a, b) => getDiscountPercentage(b) - getDiscountPercentage(a));
-        }
-        setProperties(origemFiltered);
-
-        let filtered = origemFiltered;
-
-        if (precoMax > 0) {
-          filtered = filtered.filter((p) => {
-            const price = parsePrice(p.valor_venda1 || "");
-            return price > 0 && price <= precoMax;
-          });
-        } else if (precoMin > 0) {
-          filtered = filtered.filter((p) => {
-            const price = parsePrice(p.valor_venda1 || "");
-            return price >= precoMin;
-          });
-        }
-
-        if (quartosFilter > 0) {
-          filtered = filtered.filter((p) => {
-            const bedrooms = parseBedrooms(p.quartos || p.quartos_txt);
-            if (quartosFilter === 4) {
-              return bedrooms >= 4;
-            }
-            return bedrooms === quartosFilter;
-          });
-        }
-
-        setFilteredProperties(filtered);
-        const displayTotal = precoMax > 0 || precoMin > 0 || quartosFilter > 0 ? filtered.length : Math.max(merged.length, apiTotal);
-        setTotal(displayTotal);
-        setDisplayPage(0);
+        const merged = await fetchPage(0, supabaseItems);
+        if (cancelled) return;
+        setProperties(merged);
+        setCurrentPage(0);
       } catch (error) {
         console.error("Error fetching properties:", error);
       } finally {
@@ -209,9 +187,43 @@ function ComprarContent() {
       }
     }
 
-    fetchProperties();
+    fetchInitial();
     return () => { cancelled = true; };
   }, [selectedSort, selectedCategory, selectedState, selectedOrigem, cidadeFilter, bairroFilter, precoMax, precoMin, quartosFilter]);
+
+  const loadMore = async () => {
+    if (loadingMore || currentPage + 1 >= totalPages) return;
+    setLoadingMore(true);
+    try {
+      const next = currentPage + 1;
+      const merged = await fetchPage(next, userProperties);
+      setProperties((prev) => [...prev, ...merged.filter((p) => !prev.some((x) => x.id === p.id))]);
+      setCurrentPage(next);
+    } catch (error) {
+      console.error("Error loading more:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  let filteredDisplay = displayItems;
+  if (precoMax > 0 || precoMin > 0 || quartosFilter > 0) {
+    filteredDisplay = displayItems.filter((p) => {
+      if (precoMax > 0) {
+        const price = parsePrice(p.valor_venda1 || "");
+        if (price <= 0 || price > precoMax) return false;
+      }
+      if (precoMin > 0) {
+        const price = parsePrice(p.valor_venda1 || "");
+        if (price < precoMin) return false;
+      }
+      if (quartosFilter > 0) {
+        const bedrooms = parseBedrooms(p.quartos || p.quartos_txt);
+        if (quartosFilter === 4 ? bedrooms < 4 : bedrooms !== quartosFilter) return false;
+      }
+      return true;
+    });
+  }
 
   const faqItems = [
     {
@@ -263,7 +275,7 @@ function ComprarContent() {
                     : "Todos os imóveis para venda"}
                 </h1>
                 <p className="text-sm text-gray-600 mt-1">
-                  {loading ? "Carregando..." : `${total.toLocaleString("pt-BR")} imóveis encontrados`}
+                  {loading ? "Carregando..." : `${apiTotal.toLocaleString("pt-BR")} imóveis encontrados`}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
@@ -428,7 +440,7 @@ function ComprarContent() {
                     </div>
                   ))}
                 </div>
-              ) : (precoMax > 0 || precoMin > 0 || quartosFilter > 0 ? filteredProperties : properties).length === 0 ? (
+              ) : filteredDisplay.length === 0 ? (
                 <div className="text-center py-20">
                   <p className="text-gray-500 text-lg">
                     Nenhum imóvel encontrado com os filtros selecionados.
@@ -437,8 +449,7 @@ function ComprarContent() {
               ) : (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {(precoMax > 0 || precoMin > 0 || quartosFilter > 0 ? filteredProperties : properties)
-                      .slice(displayPage * 12, (displayPage + 1) * 12)
+                    {filteredDisplay
                       .map((property) => {
                       const discount = getDiscountPercentage(property);
                       const price = parsePrice(property.valor_venda1);
@@ -534,21 +545,11 @@ function ComprarContent() {
 
                   <div className="mt-8 flex justify-center items-center gap-2">
                     <button
-                      onClick={() => setDisplayPage(Math.max(0, displayPage - 1))}
-                      disabled={displayPage === 0}
-                      className="px-4 py-2 border border-gray-300 hover:border-primary transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={loadMore}
+                      disabled={loadingMore || currentPage + 1 >= totalPages}
+                      className="px-6 py-3 bg-[#1b4332] text-white font-medium rounded-lg hover:bg-[#143526] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      ← Anterior
-                    </button>
-                    <span className="px-4 py-2 text-sm text-gray-600">
-                      Página {displayPage + 1} de {Math.ceil((precoMax > 0 || precoMin > 0 || quartosFilter > 0 ? filteredProperties : properties).length / 12)}
-                    </span>
-                    <button
-                      onClick={() => setDisplayPage(displayPage + 1)}
-                      disabled={(displayPage + 1) * 12 >= (precoMax > 0 || precoMin > 0 || quartosFilter > 0 ? filteredProperties : properties).length}
-                      className="px-4 py-2 border border-gray-300 hover:border-primary transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Próximo →
+                      {loadingMore ? "Carregando..." : `Carregar mais (${filteredDisplay.length.toLocaleString("pt-BR")} de ${apiTotal.toLocaleString("pt-BR")})`}
                     </button>
                   </div>
                 </>
